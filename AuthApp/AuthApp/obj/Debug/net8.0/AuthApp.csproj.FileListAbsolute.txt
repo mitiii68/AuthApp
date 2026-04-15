@@ -45,3 +45,15 @@ C:\MyProject\AuthApp\AuthApp\AuthApp\obj\Debug\net8.0\refint\AuthApp.dll
 C:\MyProject\AuthApp\AuthApp\AuthApp\obj\Debug\net8.0\AuthApp.pdb
 C:\MyProject\AuthApp\AuthApp\AuthApp\obj\Debug\net8.0\AuthApp.genruntimeconfig.cache
 C:\MyProject\AuthApp\AuthApp\AuthApp\obj\Debug\net8.0\ref\AuthApp.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\obj\Debug\net8.0\AuthApp.sourcelink.json
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\MySqlConnector.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Pomelo.EntityFrameworkCore.MySql.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
