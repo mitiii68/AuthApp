@@ -13,11 +13,6 @@ namespace AuthApp.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         public IActionResult Privacy()
         {
             return View();
@@ -27,6 +22,12 @@ namespace AuthApp.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        public IActionResult Index()
+        {
+            if (HttpContext.Session.GetString("user") == null)
+                return RedirectToAction("Login", "Account");
+            return View();
         }
     }
 }

@@ -6,8 +6,12 @@ namespace AuthApp.Models
         public string?FullName { get; set; }
         public string?Email { get; set; }
         public string?Login { get; set; }
-        public string?Password { get; set; }
-      
+        public string?PasswordHash { get; set; }
+      public string? ConfirmationToken { get; set; }
+        public string? ConfirmationCode { get; set; } 
+        public bool IsConfirmed { get; set; }
        
+
+
     }
 }

@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Вход";
+}
+
+<h2>Вход</h2>
+
+<form asp-action="Login" method="post">
+    <div>
+        <label>Email</label>
+        <input name="email" />
+    </div>
+
+    <div>
+        <label>Пароль</label>
+        <input name="password" type="password" />
+    </div>
+
+    <button type="submit">Войти</button>
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <p style="color:red">Неверный email, пароль или почта не подтверждена.</p>
+}

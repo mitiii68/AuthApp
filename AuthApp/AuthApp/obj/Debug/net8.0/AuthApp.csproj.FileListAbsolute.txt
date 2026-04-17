@@ -57,3 +57,8 @@ C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Microsoft.Extensions.Primi
 C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\MySqlConnector.dll
 C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Pomelo.EntityFrameworkCore.MySql.dll
 C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\MailKit.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\MimeKit.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Security.Cryptography.Pkcs.dll
