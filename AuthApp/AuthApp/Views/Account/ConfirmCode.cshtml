@@ -1,0 +1,35 @@
+@{
+    ViewData["Title"] = "Подтверждение кода";
+}
+
+<div style="max-width: 400px; margin: 80px auto; text-align: center; font-family: Arial, sans-serif;">
+    <h2>Подтверждение email</h2>
+    <p>Мы отправили код на вашу почту. Введите его ниже.</p>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div style="color: red; margin-bottom: 10px;">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <p>@error.ErrorMessage</p>
+            }
+        </div>
+    }
+
+    <form method="post" action="/Account/ConfirmCode">
+        <input type="hidden" name="email" value="@TempData["Email"]" />
+
+        <div style="margin-bottom: 15px;">
+            <input type="text"
+                   name="code"
+                   placeholder="Введите 6-значный код"
+                   maxlength="6"
+                   style="width: 100%; padding: 12px; font-size: 20px; text-align: center; letter-spacing: 6px; border: 2px solid #ccc; border-radius: 8px;" />
+        </div>
+
+        <button type="submit"
+                style="width: 100%; padding: 12px; background-color: #4CAF50; color: white; font-size: 16px; border: none; border-radius: 8px; cursor: pointer;">
+            Подтвердить
+        </button>
+    </form>
+</div>

@@ -1,24 +1,36 @@
-﻿@{
-    ViewData["Title"] = "Вход";
+﻿@model AuthApp.Models.LoginViewModel
+
+@{
+    Layout = null;
 }
 
-<h2>Вход</h2>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вход</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Вход</h2>
 
-<form asp-action="Login" method="post">
-    <div>
-        <label>Email</label>
-        <input name="email" />
+            <form asp-action="Login" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <input asp-for="Email" class="input" placeholder="Email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+
+                <input asp-for="Password" class="input" placeholder="Пароль" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+
+                <button type="submit" class="btn">Войти</button>
+            </form>
+
+            <a href="/Account/Register" class="auth-link">Регистрация</a>
+        </div>
     </div>
-
-    <div>
-        <label>Пароль</label>
-        <input name="password" type="password" />
-    </div>
-
-    <button type="submit">Войти</button>
-</form>
-
-@if (!ViewData.ModelState.IsValid)
-{
-    <p style="color:red">Неверный email, пароль или почта не подтверждена.</p>
-}
+</body>
+</html>

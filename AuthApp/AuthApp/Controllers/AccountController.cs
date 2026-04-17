@@ -1,15 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using AuthApp.Models;
 using AuthApp.Data;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.Security.Cryptography;
 using AuthApp.Services;
-using System.Runtime.CompilerServices;
-
 
 namespace AuthApp.Controllers
-
 {
     public class AccountController : Controller
     {
@@ -33,20 +27,12 @@ namespace AuthApp.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
             if (string.IsNullOrWhiteSpace(model.Email))
             {
                 ModelState.AddModelError("Email", "Введите email");
                 return View(model);
             }
-            await _context.SaveChangesAsync();
-            await _emailService.SendEmailAsync(
-            model.Email!,
-                "Подтверждение регистрации",
-                "Вы успешно зарегестрировались"
-                );
-            
-            
-            string code = new Random().Next(100000, 999999).ToString();
 
             if (string.IsNullOrWhiteSpace(model.Password) || !IsValidPassword(model.Password))
             {
@@ -61,14 +47,17 @@ namespace AuthApp.Controllers
                 return View(model);
             }
 
+            
+            string code = new Random().Next(100000, 999999).ToString();
             string login = model.Email!.Split('@')[0];
             string token = Guid.NewGuid().ToString();
 
+            
             var user = new User
             {
                 FullName = model.FullName,
                 Email = model.Email,
-                PasswordHash = HashPassword(model.Password),
+                PasswordHash = HashPassword(model.Password!),
                 Login = login,
                 ConfirmationCode = code,
                 ConfirmationToken = token,
@@ -76,15 +65,45 @@ namespace AuthApp.Controllers
             };
 
             _context.Users.Add(user);
-            _context.SaveChanges();
-            //_emailService.SendEmail(
-            // model.Email!,
-            // "Код подтверждения",
-            // $"Ваш код: {code}"
-            // );
-            return Content($"Код подтверждения: {code}");
+            await _context.SaveChangesAsync();
 
-            //return RedirectToAction("ConfirmCode");
+            
+            await _emailService.SendEmailAsync(
+                model.Email!,
+                "Код подтверждения регистрации",
+                $@"<h2>Добро пожаловать, {model.FullName}!</h2>
+                   <p>Ваш код подтверждения:</p>
+                   <h1 style='color:#4CAF50; letter-spacing:4px;'>{code}</h1>
+                   <p>Введите этот код на странице подтверждения.</p>"
+            );
+
+            
+            TempData["Email"] = model.Email;
+            return RedirectToAction("ConfirmCode");
+        }
+
+        [HttpGet]
+        public IActionResult ConfirmCode()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ConfirmCode(string email, string code)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null || user.ConfirmationCode != code)
+            {
+                ModelState.AddModelError(string.Empty, "Неверный код подтверждения.");
+                return View();
+            }
+
+            user.IsConfirmed = true;
+            user.ConfirmationCode = null;
+            _context.SaveChanges();
+
+            return RedirectToAction("Login");
         }
 
         [HttpGet]
@@ -93,9 +112,7 @@ namespace AuthApp.Controllers
             var user = _context.Users.FirstOrDefault(u => u.ConfirmationToken == token);
 
             if (user == null)
-            {
                 return Content("Ссылка недействительна");
-            }
 
             user.IsConfirmed = true;
             user.ConfirmationToken = null;
@@ -116,7 +133,7 @@ namespace AuthApp.Controllers
             var user = _context.Users
                 .FirstOrDefault(u => u.Email == email && u.IsConfirmed);
 
-            if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !VerifyPassword(password,user.PasswordHash))
+            if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !VerifyPassword(password, user.PasswordHash))
             {
                 ModelState.AddModelError(string.Empty, "Неверный email, пароль или почта не подтверждена.");
                 return View();
@@ -135,8 +152,7 @@ namespace AuthApp.Controllers
 
         private bool IsValidPassword(string password)
         {
-            if (password.Length < 8)
-                return false;
+            if (password.Length < 8) return false;
 
             bool hasUpper = password.Any(char.IsUpper);
             bool hasLower = password.Any(char.IsLower);
@@ -145,8 +161,8 @@ namespace AuthApp.Controllers
 
             return hasUpper && hasLower && hasDigit && hasSpecial;
         }
-    
-    private string HashPassword(string password)
+
+        private string HashPassword(string password)
         {
             using var sha256 = System.Security.Cryptography.SHA256.Create();
             var bytes = System.Text.Encoding.UTF8.GetBytes(password);
@@ -157,20 +173,6 @@ namespace AuthApp.Controllers
         private bool VerifyPassword(string password, string hash)
         {
             return HashPassword(password) == hash;
-        }
-        [HttpPost]
-        public IActionResult ConfirmCode(string email, string code)
-        {
-            var user = _context.Users.FirstOrDefault(u => u.Email == email);
-            if (user == null || user.ConfirmationCode != code)
-            {
-                ModelState.AddModelError(string.Empty, "Неверный код подтверждения.");
-                return View();
-            }
-            user.IsConfirmed = true;
-            user.ConfirmationCode = null;
-            _context.SaveChanges();
-            return RedirectToAction("Login");
         }
     }
 }
