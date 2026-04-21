@@ -1,73 +1,258 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - AuthApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/AuthApp.styles.css" asp-append-version="true" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue: #1a6fd4;
+            --blue-dark: #1458aa;
+            --blue-light: #e8f1fc;
+            --text: #1a1a2e;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #f4f6fb;
+            --white: #ffffff;
+            --green: #16a34a;
+            --green-light: #dcfce7;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+        }
+        body {
+            font-family: 'Golos Text', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar-custom {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        .navbar-logo {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--blue);
+            text-decoration: none;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .navbar-logo::before {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: var(--blue);
+            border-radius: 8px;
+            display: block;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z'/%3E%3C/svg%3E");
+            background-size: 16px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .navbar-nav-links {
+            display: flex;
+            gap: 4px;
+            list-style: none;
+        }
+        .navbar-nav-links a {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: background 0.15s, color 0.15s;
+        }
+        .navbar-nav-links a:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-nav {
+            font-family: 'Golos Text', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-nav:hover {
+            border-color: var(--blue);
+            color: var(--blue);
+        }
+        .btn-nav-primary {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+        .btn-nav-primary:hover {
+            background: var(--blue-dark);
+            border-color: var(--blue-dark);
+            color: white;
+        }
+        .btn-nav-danger {
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        .btn-nav-danger:hover {
+            background: #fef2f2;
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 4px 12px 4px 4px;
+        }
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--blue-light);
+            color: var(--blue);
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        main {
+            flex: 1;
+        }
+        .footer-custom {
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: 16px 32px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .footer-custom a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+        .alert {
+            border-radius: var(--radius-sm);
+            border: none;
+            font-size: 14px;
+        }
+        .alert-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border-left: 3px solid #dc2626;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AuthApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+<header>
+    <nav class="navbar-custom">
+        <a class="navbar-logo" asp-controller="Home" asp-action="Index">AuthApp</a>
+
+        <ul class="navbar-nav-links">
+            <li><a asp-controller="Home" asp-action="Index">Главная</a></li>
+            <li><a asp-controller="Home" asp-action="Privacy">Политика</a></li>
+        </ul>
+
+            @using Microsoft.AspNetCore.Http
+            
+
+            <ul class="navbar-nav-links">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                        Основной раздел
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" asp-controller="Home" asp-action="Index">
+                                Главная
+                            </a>
                         </li>
                     </ul>
-                    @if (Context.Session.GetString("user") == null)
-                    {
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Вход</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Регистрация</a>
-                            </li>
-                        </ul>
-                    }
-                    else
-                    {
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">
-                                    Привет, @Context.Session.GetString("user")
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Выйти</a>
-                            </li>
-                        </ul>
-                    }
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+                </li>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - AuthApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+                @if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                            Настройки
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Пользователи</a></li>
+                            <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Роли</a></li>
+                        </ul>
+                    </li>
+                }
+            </ul>
+            <div class="navbar-right">
+                @if (Context.Session.GetString("user") == null)
+                {
+                    <a class="btn-nav" asp-controller="Account" asp-action="Login">Вход</a>
+                    <a class="btn-nav btn-nav-primary" asp-controller="Account" asp-action="Register">Регистрация</a>
+                }
+                else
+                {
+                    <span class="user-name">
+                        Привет, @Context.Session.GetString("FullName")
+                    </span>
+                    <a class="btn-nav btn-nav-danger" asp-controller="Account" asp-action="Logout">Выход</a>
+                }
+            </div>
+
+
+        
+    </nav>
+</header>
+
+<main>
+    @RenderBody()
+</main>
+
+<footer class="footer-custom">
+    &copy; 2026 AuthApp &mdash; <a asp-controller="Home" asp-action="Privacy">Политика конфиденциальности</a>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,36 +1,164 @@
-﻿@model AuthApp.Models.LoginViewModel
-
 @{
-    Layout = null;
+    ViewData["Title"] = "Вход";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Вход</title>
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>Вход</h2>
+<style>
+    .auth-page {
+        min-height: calc(100vh - 58px - 53px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 16px;
+        background: var(--bg);
+    }
+    .auth-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 40px 40px 36px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: var(--shadow-md);
+        animation: fadeUp 0.3s ease;
+    }
+    @@keyframes fadeUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .auth-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--blue-light);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .auth-icon svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--blue);
+    }
+    .auth-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+    .auth-sub {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 28px;
+    }
+    .form-field {
+        margin-bottom: 16px;
+    }
+    .form-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+    .form-field input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--white);
+        color: var(--text);
+        font-family: 'Golos Text', sans-serif;
+        font-size: 14px;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        outline: none;
+    }
+    .form-field input:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(26, 111, 212, 0.12);
+    }
+    .form-field input::placeholder { color: #c0c7d0; }
 
-            <form asp-action="Login" method="post">
-                <div asp-validation-summary="All" class="text-danger"></div>
+    .error-box {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #dc2626;
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 11px;
+        background: var(--blue);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-family: 'Golos Text', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s;
+        margin-top: 4px;
+    }
+    .btn-submit:hover { background: var(--blue-dark); }
+    .btn-submit:active { transform: scale(0.99); }
 
-                <input asp-for="Email" class="input" placeholder="Email" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+    .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 20px 0;
+    }
+    .auth-footer {
+        text-align: center;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+    .auth-footer a {
+        color: var(--blue);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .auth-footer a:hover { text-decoration: underline; }
+</style>
 
-                <input asp-for="Password" class="input" placeholder="Пароль" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+<div class="auth-page">
+    <div class="auth-card">
 
-                <button type="submit" class="btn">Войти</button>
-            </form>
+        <div class="auth-icon">
+            <svg viewBox="0 0 24 24"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>
+        </div>
 
-            <a href="/Account/Register" class="auth-link">Регистрация</a>
+        <div class="auth-title">Добро пожаловать</div>
+        <div class="auth-sub">Войдите в свой аккаунт</div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="error-box">
+                @Html.ValidationSummary(false)
+            </div>
+        }
+
+        <form method="post" asp-action="Login">
+            <div class="form-field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="ivan@example.com" required />
+            </div>
+
+            <div class="form-field">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Ваш пароль" required />
+            </div>
+
+            <button type="submit" class="btn-submit">Войти</button>
+        </form>
+
+        <hr class="divider" />
+
+        <div class="auth-footer">
+            Нет аккаунта? <a asp-controller="Account" asp-action="Register">Зарегистрироваться</a>
         </div>
     </div>
-</body>
-</html>
+</div>

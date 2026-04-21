@@ -11,5 +11,8 @@ namespace AuthApp.Models
         [Required]
         [MinLength(8)]
         public string? Password { get; set; }
+        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
+        public string? ConfirmPassword { get; set; }
+
     }
 }

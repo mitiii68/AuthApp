@@ -26,6 +26,7 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
+           
                 return View(model);
 
             if (string.IsNullOrWhiteSpace(model.Email))
@@ -59,15 +60,15 @@ namespace AuthApp.Controllers
                 Email = model.Email,
                 PasswordHash = HashPassword(model.Password!),
                 Login = login,
+                RoleId =1,
                 ConfirmationCode = code,
                 ConfirmationToken = token,
+                Role ="User",
                 IsConfirmed = false
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
-            
             await _emailService.SendEmailAsync(
                 model.Email!,
                 "Код подтверждения регистрации",
@@ -77,9 +78,9 @@ namespace AuthApp.Controllers
                    <p>Введите этот код на странице подтверждения.</p>"
             );
 
-            
             TempData["Email"] = model.Email;
             return RedirectToAction("ConfirmCode");
+           
         }
 
         [HttpGet]
@@ -103,7 +104,11 @@ namespace AuthApp.Controllers
             user.ConfirmationCode = null;
             _context.SaveChanges();
 
-            return RedirectToAction("Login");
+            HttpContext.Session.SetString("UserId", user.UserId.ToString());
+            HttpContext.Session.SetString("Login", user.Login ?? "");
+            HttpContext.Session.SetString("user", user.Email ?? "");
+
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
@@ -140,6 +145,9 @@ namespace AuthApp.Controllers
             }
 
             HttpContext.Session.SetString("user", user.Email!);
+            HttpContext.Session.SetString("UserRole", user.Role ?? "");
+            HttpContext.Session.SetString("FullName", user.FullName ?? ""); 
+            HttpContext.Session.SetString("Login", user.Login ?? "");
             return RedirectToAction("Index", "Home");
         }
 
