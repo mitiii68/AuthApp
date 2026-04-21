@@ -54,7 +54,7 @@ namespace AuthApp.Controllers
             string login = model.Email!.Split('@')[0];
             string token = Guid.NewGuid().ToString();
 
-            
+
             var user = new User
             {
                 FullName = model.FullName,
@@ -64,7 +64,8 @@ namespace AuthApp.Controllers
                 ConfirmationCode = code,
                 ConfirmationToken = token,
                 RoleId = 1,
-                IsConfirmed = false
+                IsConfirmed = false,
+                CreateAt = DateTime.Now
             };
 
             _context.Users.Add(user);

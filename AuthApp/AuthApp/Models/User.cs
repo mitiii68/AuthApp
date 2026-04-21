@@ -12,8 +12,9 @@ namespace AuthApp.Models
       public string? ConfirmationToken { get; set; }
         public string? ConfirmationCode { get; set; }
         public bool IsConfirmed { get; set; }
-        
-       
+        public DateTime CreateAt { get; set; } = DateTime.Now;
+
+
 
 
     }

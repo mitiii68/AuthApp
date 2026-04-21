@@ -1,46 +1,272 @@
 ﻿@model List<AuthApp.Models.User>
 
-<h2>Пользователи</h2>
+@{
+    ViewData["Title"] = "Пользователи";
+    var totalUsers = Model.Count;
+    var totalAdmins = Model.Count(u => u.RoleId == 2);
+    var totalRegularUsers = Model.Count(u => u.RoleId == 1);
+}
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>ФИО</th>
-            <th>Email</th>
-            <th>Логин</th>
-            <th>Роль</th>
-            <th>Действие</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            <tr>
-                <td>@user.UserId</td>
-                <td>@user.FullName</td>
-                <td>@user.Email</td>
-                <td>@user.Login</td>
-                <td>@user.Role?.RoleName</td>
-                <td>
-                    @if (user.RoleId == 1)
-                    {
-                        <form asp-action="ChangeRole" asp-controller="Users" method="post" style="display:inline;">
-                            <input type="hidden" name="userId" value="@user.UserId" />
-                            <input type="hidden" name="roleId" value="2" />
-                            <button type="submit" class="btn btn-sm btn-danger">Сделать Admin</button>
-                        </form>
-                    }
-                    else if (user.RoleId == 2)
-                    {
-                        <form asp-action="ChangeRole" asp-controller="Users" method="post" style="display:inline;">
-                            <input type="hidden" name="userId" value="@user.UserId" />
-                            <input type="hidden" name="roleId" value="1" />
-                            <button type="submit" class="btn btn-sm btn-secondary">Сделать User</button>
-                        </form>
-                    }
-                </td>
-            </tr>
+<style>
+    .users-page {
+        max-width: 1200px;
+        margin: 32px auto;
+        padding: 0 16px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        padding: 18px 20px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a1a2e;
+    }
+
+    .users-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .users-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8fafc;
+    }
+
+    .users-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a1a2e;
+    }
+
+    .users-subtitle {
+        margin-top: 6px;
+        font-size: 14px;
+        color: #6b7280;
+    }
+
+    .table-wrap {
+        overflow-x: auto;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1050px;
+    }
+
+        .users-table th {
+            background: #f8fafc;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
         }
-    </tbody>
-</table>
+
+        .users-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #1f2937;
+            vertical-align: middle;
+        }
+
+        .users-table tr:hover {
+            background: #f9fbff;
+        }
+
+    .role-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .role-admin {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .role-user {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .action-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .action-form {
+        display: inline;
+        margin: 0;
+    }
+
+    .btn-mini {
+        border: none;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .btn-admin {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+        .btn-admin:hover {
+            background: #bfdbfe;
+        }
+
+    .btn-user {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+        .btn-user:hover {
+            background: #e5e7eb;
+        }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+    .self-text {
+        font-size: 12px;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+</style>
+
+<div class="users-page">
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Всего пользователей</div>
+            <div class="stat-value">@totalUsers</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Администраторов</div>
+            <div class="stat-value">@totalAdmins</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Обычных пользователей</div>
+            <div class="stat-value">@totalRegularUsers</div>
+        </div>
+    </div>
+
+    <div class="users-card">
+        <div class="users-header">
+            <h2 class="users-title">Пользователи</h2>
+            <div class="users-subtitle">Управление пользователями, ролями и датой регистрации</div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ФИО</th>
+                        <th>Email</th>
+                        <th>Логин</th>
+                        <th>Роль</th>
+                        <th>Дата регистрации</th>
+                        <th>Смена роли</th>
+                        <th>Удаление</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.UserId</td>
+                            <td>@user.FullName</td>
+                            <td>@user.Email</td>
+                            <td>@user.Login</td>
+                            <td>
+                                @if (user.RoleId == 2)
+                                {
+                                    <span class="role-badge role-admin">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="role-badge role-user">User</span>
+                                }
+                            </td>
+                            <td>@user.CreateAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <div class="action-group">
+                                    @if (user.RoleId == 1)
+                                    {
+                                        <form asp-action="ChangeRole" asp-controller="Users" method="post" class="action-form">
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <input type="hidden" name="roleId" value="2" />
+                                            <button type="submit" class="btn-mini btn-admin">Сделать Admin</button>
+                                        </form>
+                                    }
+                                    else if (user.RoleId == 2)
+                                    {
+                                        <form asp-action="ChangeRole" asp-controller="Users" method="post" class="action-form">
+                                            <input type="hidden" name="userId" value="@user.UserId" />
+                                            <input type="hidden" name="roleId" value="1" />
+                                            <button type="submit" class="btn-mini btn-user">Сделать User</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                @if (user.Email != Context.Session.GetString("user"))
+                                {
+                                    <form asp-action="DeleteUser" asp-controller="Users" method="post" class="action-form"
+                                          onsubmit="return confirm('Удалить пользователя?');">
+                                        <input type="hidden" name="userId" value="@user.UserId" />
+                                        <button type="submit" class="btn-mini btn-delete">Удалить</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="self-text">Нельзя удалить себя</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
