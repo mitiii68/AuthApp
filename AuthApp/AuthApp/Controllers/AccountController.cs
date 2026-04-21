@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AuthApp.Models;
 using AuthApp.Data;
 using AuthApp.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthApp.Controllers
 {
@@ -60,10 +61,9 @@ namespace AuthApp.Controllers
                 Email = model.Email,
                 PasswordHash = HashPassword(model.Password!),
                 Login = login,
-                RoleId =1,
                 ConfirmationCode = code,
                 ConfirmationToken = token,
-                Role ="User",
+                RoleId = 1,
                 IsConfirmed = false
             };
 
@@ -136,6 +136,7 @@ namespace AuthApp.Controllers
         public IActionResult Login(string email, string password)
         {
             var user = _context.Users
+                .Include(u => u.Role)
                 .FirstOrDefault(u => u.Email == email && u.IsConfirmed);
 
             if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !VerifyPassword(password, user.PasswordHash))
@@ -145,7 +146,7 @@ namespace AuthApp.Controllers
             }
 
             HttpContext.Session.SetString("user", user.Email!);
-            HttpContext.Session.SetString("UserRole", user.Role ?? "");
+            HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "");
             HttpContext.Session.SetString("FullName", user.FullName ?? ""); 
             HttpContext.Session.SetString("Login", user.Login ?? "");
             return RedirectToAction("Index", "Home");

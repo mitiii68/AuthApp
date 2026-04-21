@@ -1,5 +1,46 @@
-﻿@{
-    ViewData["Title"] = "Пользователи";
-}
+﻿@model List<AuthApp.Models.User>
+
 <h2>Пользователи</h2>
-<p>Только для администратора</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>ФИО</th>
+            <th>Email</th>
+            <th>Логин</th>
+            <th>Роль</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserId</td>
+                <td>@user.FullName</td>
+                <td>@user.Email</td>
+                <td>@user.Login</td>
+                <td>@user.Role?.RoleName</td>
+                <td>
+                    @if (user.RoleId == 1)
+                    {
+                        <form asp-action="ChangeRole" asp-controller="Users" method="post" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.UserId" />
+                            <input type="hidden" name="roleId" value="2" />
+                            <button type="submit" class="btn btn-sm btn-danger">Сделать Admin</button>
+                        </form>
+                    }
+                    else if (user.RoleId == 2)
+                    {
+                        <form asp-action="ChangeRole" asp-controller="Users" method="post" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.UserId" />
+                            <input type="hidden" name="roleId" value="1" />
+                            <button type="submit" class="btn btn-sm btn-secondary">Сделать User</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

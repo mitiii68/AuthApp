@@ -1,5 +1,21 @@
-﻿@{
-    ViewData["Title"] = "Роли";
-}
+﻿@model List<AuthApp.Models.Role>
+
 <h2>Роли</h2>
-<p>Только для администратора</p>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Название роли</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var role in Model)
+        {
+            <tr>
+                <td>@role.RoleId</td>
+                <td>@role.RoleName</td>
+            </tr>
+        }
+    </tbody>
+</table>
