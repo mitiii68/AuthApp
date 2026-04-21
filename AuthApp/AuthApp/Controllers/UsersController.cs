@@ -44,14 +44,19 @@ namespace AuthApp.Controllers
         [HttpPost]
         public IActionResult DeleteUser(int userId)
         {
-            if (HttpContext.Session.GetString("UseRole") != "Admin")
+            if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
+
             var user  = _context.Users.FirstOrDefault(u => u.UserId == userId);
+
             if (user == null)
                 return RedirectToAction("Index");
+
             var currentUserEmail = HttpContext.Session.GetString("user");
+
             if (user .Email == currentUserEmail)
                 return RedirectToAction("Index");
+
             _context.Users.Remove(user);
             _context.SaveChanges();
             return RedirectToAction("Index");
