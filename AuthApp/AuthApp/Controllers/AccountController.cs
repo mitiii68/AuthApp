@@ -3,6 +3,7 @@ using AuthApp.Models;
 using AuthApp.Data;
 using AuthApp.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthApp.Controllers
 {
@@ -10,6 +11,7 @@ namespace AuthApp.Controllers
     {
         private readonly AppDbContext _context;
         private readonly EmailService _emailService;
+        private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
 
         public AccountController(AppDbContext context, EmailService emailService)
         {
@@ -146,6 +148,9 @@ namespace AuthApp.Controllers
                 return View();
             }
 
+            user.LoginCount += 1;
+            _context.SaveChanges();
+
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
 
             var log = new LoginHistory
@@ -167,6 +172,38 @@ namespace AuthApp.Controllers
         }
 
         [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        {
+            var email = HttpContext.Session.GetString("user");
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+            if (string.IsNullOrEmpty(user.PasswordHash) || !VerifyPassword(oldPassword, user.PasswordHash))
+            {
+                TempData["ErrorMessage"] = "Старый пароль неверный";
+                return View();
+            }
+            if (newPassword != confirmPassword)
+            {
+                TempData["ErrorMessage"] = "Пароли не совпадают";
+                return View();
+            }
+            user.PasswordHash = HashPassword(newPassword);
+            _context.SaveChanges();
+            TempData["SuccessMessage"] = "Пароль успешно изменён";
+            return RedirectToAction("Index", "Home");
+        }
+
+            [HttpGet]
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();

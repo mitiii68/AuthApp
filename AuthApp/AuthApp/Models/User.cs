@@ -15,7 +15,8 @@ namespace AuthApp.Models
         public DateTime CreateAt { get; set; } = DateTime.Now;
         public string? PasswordResetCode { get; set; }
         public DateTime? PasswordResetExpiresAt { get; set; }
-        
+        public int LoginCount { get; set; }
+
 
 
 

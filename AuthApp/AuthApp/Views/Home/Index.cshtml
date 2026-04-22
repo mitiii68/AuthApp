@@ -51,7 +51,7 @@
     }
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 14px;
         animation: fadeUp 0.4s ease 0.05s both;
     }
@@ -86,6 +86,27 @@
         padding: 4px 10px;
         border-radius: 20px;
     }
+    .info-card.ic-action {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .ic-action a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: opacity .15s;
+    }
+    .ic-action a:hover { opacity: .85; }
     .badge-active::before {
         content: '';
         width: 7px;
@@ -124,6 +145,11 @@
             <div class="ic-label">Статус аккаунта</div>
             <div class="ic-value"><span class="badge-active">Активен</span></div>
         </div>
+        <div class="info-card ic-action">
+            <div>
+                <div class="ic-label">Пароль</div>
+                <div class="ic-value">••••••••</div>
+            </div>
+            <a href="/Account/ChangePassword">🔐 Сменить</a>
+        </div>
     </div>
-
-</div>
