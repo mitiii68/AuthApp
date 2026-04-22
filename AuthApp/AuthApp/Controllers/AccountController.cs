@@ -17,6 +17,7 @@ namespace AuthApp.Controllers
             _emailService = emailService;
         }
 
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -27,7 +28,6 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-           
                 return View(model);
 
             if (string.IsNullOrWhiteSpace(model.Email))
@@ -49,27 +49,26 @@ namespace AuthApp.Controllers
                 return View(model);
             }
 
-            
-            string code = new Random().Next(100000, 999999).ToString();
+            string code  = new Random().Next(100000, 999999).ToString();
             string login = model.Email!.Split('@')[0];
             string token = Guid.NewGuid().ToString();
 
-
             var user = new User
             {
-                FullName = model.FullName,
-                Email = model.Email,
-                PasswordHash = HashPassword(model.Password!),
-                Login = login,
-                ConfirmationCode = code,
+                FullName          = model.FullName,
+                Email             = model.Email,
+                PasswordHash      = HashPassword(model.Password!),
+                Login             = login,
+                ConfirmationCode  = code,
                 ConfirmationToken = token,
-                RoleId = 1,
-                IsConfirmed = false,
-                CreateAt = DateTime.Now
+                RoleId            = 1,
+                IsConfirmed       = false,
+                CreateAt          = DateTime.Now
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
             await _emailService.SendEmailAsync(
                 model.Email!,
                 "Код подтверждения регистрации",
@@ -81,8 +80,8 @@ namespace AuthApp.Controllers
 
             TempData["Email"] = model.Email;
             return RedirectToAction("ConfirmCode");
-           
         }
+
 
         [HttpGet]
         public IActionResult ConfirmCode()
@@ -101,13 +100,13 @@ namespace AuthApp.Controllers
                 return View();
             }
 
-            user.IsConfirmed = true;
+            user.IsConfirmed      = true;
             user.ConfirmationCode = null;
             _context.SaveChanges();
 
             HttpContext.Session.SetString("UserId", user.UserId.ToString());
-            HttpContext.Session.SetString("Login", user.Login ?? "");
-            HttpContext.Session.SetString("user", user.Email ?? "");
+            HttpContext.Session.SetString("Login",  user.Login ?? "");
+            HttpContext.Session.SetString("user",   user.Email ?? "");
 
             return RedirectToAction("Index", "Home");
         }
@@ -120,12 +119,13 @@ namespace AuthApp.Controllers
             if (user == null)
                 return Content("Ссылка недействительна");
 
-            user.IsConfirmed = true;
+            user.IsConfirmed      = true;
             user.ConfirmationToken = null;
             _context.SaveChanges();
 
             return Content("Почта подтверждена");
         }
+
 
         [HttpGet]
         public IActionResult Login()
@@ -146,10 +146,23 @@ namespace AuthApp.Controllers
                 return View();
             }
 
-            HttpContext.Session.SetString("user", user.Email!);
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            var log = new LoginHistory
+            {
+                Email = user.Email,
+                LoginTime = DateTime.Now,
+                IPAddress = ip
+            };
+
+            _context.LoginHistories.Add(log);
+            _context.SaveChanges();
+
+            HttpContext.Session.SetString("user",     user.Email!);
             HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "");
-            HttpContext.Session.SetString("FullName", user.FullName ?? ""); 
-            HttpContext.Session.SetString("Login", user.Login ?? "");
+            HttpContext.Session.SetString("FullName", user.FullName ?? "");
+            HttpContext.Session.SetString("Login",    user.Login ?? "");
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -160,13 +173,130 @@ namespace AuthApp.Controllers
             return RedirectToAction("Login");
         }
 
+   
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError("email", "Введите email.");
+                return View();
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == email && u.IsConfirmed);
+
+            if (user != null)
+            {
+                string code = new Random().Next(100000, 999999).ToString();
+
+                user.PasswordResetCode      = code;
+                user.PasswordResetExpiresAt = DateTime.Now.AddMinutes(15); // код живёт 15 минут
+                await _context.SaveChangesAsync();
+
+                await _emailService.SendEmailAsync(
+                    email,
+                    "Сброс пароля — код подтверждения",
+                    $@"<h2>Сброс пароля</h2>
+                       <p>Вы запросили сброс пароля. Ваш код:</p>
+                       <h1 style='color:#E53935; letter-spacing:4px;'>{code}</h1>
+                       <p>Код действителен <strong>15 минут</strong>.</p>
+                       <p>Если вы не запрашивали сброс — просто проигнорируйте это письмо.</p>"
+                );
+            }
+
+            TempData["ResetEmail"] = email;
+            return RedirectToAction("VerifyResetCode");
+        }
+
+        [HttpGet]
+        public IActionResult VerifyResetCode()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult VerifyResetCode(string email, string code)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null
+                || user.PasswordResetCode != code
+                || user.PasswordResetExpiresAt == null
+                || user.PasswordResetExpiresAt < DateTime.Now)
+            {
+                ModelState.AddModelError(string.Empty, "Неверный или просроченный код.");
+                return View();
+            }
+
+            
+            HttpContext.Session.SetString("ResetEmail", email);
+
+            
+            user.PasswordResetCode      = null;
+            user.PasswordResetExpiresAt = null;
+            _context.SaveChanges();
+
+            return RedirectToAction("ResetPassword");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("ResetEmail")))
+                return RedirectToAction("ForgotPassword");
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string newPassword, string confirmPassword)
+        {
+            var email = HttpContext.Session.GetString("ResetEmail");
+
+            if (string.IsNullOrEmpty(email))
+                return RedirectToAction("ForgotPassword");
+
+            if (string.IsNullOrWhiteSpace(newPassword) || !IsValidPassword(newPassword))
+            {
+                ModelState.AddModelError("newPassword",
+                    "Пароль должен быть не менее 8 символов и содержать заглавные, строчные буквы, цифры и спецсимвол.");
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError("confirmPassword", "Пароли не совпадают.");
+                return View();
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+
+            if (user == null)
+                return RedirectToAction("ForgotPassword");
+
+            user.PasswordHash = HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            
+            HttpContext.Session.Remove("ResetEmail");
+
+            TempData["SuccessMessage"] = "Пароль успешно изменён. Войдите с новым паролем.";
+            return RedirectToAction("Login");
+        }
+
         private bool IsValidPassword(string password)
         {
             if (password.Length < 8) return false;
 
-            bool hasUpper = password.Any(char.IsUpper);
-            bool hasLower = password.Any(char.IsLower);
-            bool hasDigit = password.Any(char.IsDigit);
+            bool hasUpper   = password.Any(char.IsUpper);
+            bool hasLower   = password.Any(char.IsLower);
+            bool hasDigit   = password.Any(char.IsDigit);
             bool hasSpecial = password.Any(ch => !char.IsLetterOrDigit(ch));
 
             return hasUpper && hasLower && hasDigit && hasSpecial;
@@ -176,7 +306,7 @@ namespace AuthApp.Controllers
         {
             using var sha256 = System.Security.Cryptography.SHA256.Create();
             var bytes = System.Text.Encoding.UTF8.GetBytes(password);
-            var hash = sha256.ComputeHash(bytes);
+            var hash  = sha256.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
         }
 
@@ -184,5 +314,6 @@ namespace AuthApp.Controllers
         {
             return HashPassword(password) == hash;
         }
+        
     }
 }

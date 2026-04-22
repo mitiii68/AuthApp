@@ -13,6 +13,10 @@ namespace AuthApp.Models
         public string? ConfirmationCode { get; set; }
         public bool IsConfirmed { get; set; }
         public DateTime CreateAt { get; set; } = DateTime.Now;
+        public string? PasswordResetCode { get; set; }
+        public DateTime? PasswordResetExpiresAt { get; set; }
+        
+
 
 
 
