@@ -198,15 +198,82 @@
 
         <div class="table-wrap">
 
-            <form method="get" asp-action="Index" class="mb-3 d-flex" style="gap:10px;">
+            <style>
+                .search-row {
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 14px;
+                    flex-wrap: wrap;
+                    align-items: center;
+                }
+                .search-input {
+                    flex: 1;
+                    min-width: 220px;
+                    height: 38px;
+                    padding: 0 14px;
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius-sm);
+                    font-family: 'Golos Text', sans-serif;
+                    font-size: 14px;
+                    color: var(--text);
+                    background: var(--white);
+                    outline: none;
+                    transition: border-color 0.15s;
+                }
+                .search-input:focus { border-color: var(--blue); }
+                .search-input::placeholder { color: var(--text-muted); }
+                .btn-site {
+                    display: inline-flex;
+                    align-items: center;
+                    height: 38px;
+                    padding: 0 18px;
+                    border-radius: var(--radius-sm);
+                    font-family: 'Golos Text', sans-serif;
+                    font-size: 13px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    text-decoration: none;
+                    border: 1px solid var(--border);
+                    background: var(--white);
+                    color: var(--text);
+                    transition: all 0.15s;
+                    white-space: nowrap;
+                }
+                .btn-site:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+                .btn-site-primary {
+                    background: var(--blue);
+                    color: #fff;
+                    border-color: var(--blue);
+                }
+                .btn-site-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); color: #fff; }
+                .btn-site-dark {
+                    background: var(--text);
+                    color: #fff;
+                    border-color: var(--text);
+                }
+                .btn-site-dark:hover { background: #2d2d44; border-color: #2d2d44; color: #fff; }
+                .sort-row {
+                    display: flex;
+                    gap: 6px;
+                    margin-bottom: 14px;
+                    flex-wrap: wrap;
+                }
+            </style>
+
+            <form method="get" asp-action="Index" class="search-row">
                 <input type="text" name="search" value="@Context.Request.Query["search"]"
-                       class="form-control" placeholder="Поиск по ФИО, email или логину" />
-                <button type="submit" class="btn btn-primary">Найти</button>
-                <a asp-action="Index" class="btn btn-secondary">Сброс</a>
+                       class="search-input" placeholder="Поиск по ФИО, email или логину" />
+                <button type="submit" class="btn-site btn-site-primary">Найти</button>
+                <a asp-action="Index" class="btn-site">Сброс</a>
             </form>
-            <a asp-controller="Users" asp-action="ActionLogs" class="btn btn-dark mb-3">
+            <a asp-controller="Users" asp-action="ActionLogs" class="btn-site btn-site-dark" style="margin-bottom:14px; display:inline-flex;">
                 История действий
             </a>
+            <div class="sort-row">
+                <a asp-action="Index" asp-route-sort="date" class="btn-site">По дате</a>
+                <a asp-action="Index" asp-route-sort="login" class="btn-site">По логину</a>
+                <a asp-action="Index" asp-route-sort="count" class="btn-site">По входам</a>
+            </div>
             <table class="users-table">
                 <thead>
                     <tr>

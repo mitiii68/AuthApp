@@ -14,7 +14,7 @@ namespace AuthApp.Controllers
         {
             _context = context;
         }
-        public IActionResult Index(string search)
+        public IActionResult Index(string search, string sort)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
@@ -30,6 +30,19 @@ namespace AuthApp.Controllers
                     (u.Email != null && u.Email.Contains(search)) ||
                     (u.Login != null && u.Login.Contains(search))
                 );
+            }
+
+            switch (sort)
+            {
+                case "date":
+                    users = users.OrderByDescending(u => u.CreateAt);
+                    break;
+                case "login":
+                    users = users.OrderBy(u => u.Login);
+                    break;
+                case "email":
+                    users = users.OrderByDescending(u => u.LoginCount);
+                    break;
             }
 
             return View(users.ToList());
