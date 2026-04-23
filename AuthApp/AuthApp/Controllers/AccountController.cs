@@ -106,6 +106,15 @@ namespace AuthApp.Controllers
             user.ConfirmationCode = null;
             _context.SaveChanges();
 
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail = user.Email,
+                Action = "Зарегистрировался",
+                ActionTime = DateTime.Now
+
+            });
+            _context.SaveChanges();
+
             HttpContext.Session.SetString("UserId", user.UserId.ToString());
             HttpContext.Session.SetString("Login",  user.Login ?? "");
             HttpContext.Session.SetString("user",   user.Email ?? "");
@@ -163,6 +172,15 @@ namespace AuthApp.Controllers
             _context.LoginHistories.Add(log);
             _context.SaveChanges();
 
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail = user.Email,
+                Action = "Вход в аккаунт"
+,
+                ActionTime = DateTime.Now
+            });
+            _context.SaveChanges();
+
             HttpContext.Session.SetString("user",     user.Email!);
             HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "");
             HttpContext.Session.SetString("FullName", user.FullName ?? "");
@@ -197,11 +215,25 @@ namespace AuthApp.Controllers
                 TempData["ErrorMessage"] = "Пароли не совпадают";
                 return View();
             }
+
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail = user.Email,
+                Action = "Изменил пароль",
+                ActionTime = DateTime.Now
+            });
+            _context.SaveChanges();
+
             user.PasswordHash = HashPassword(newPassword);
             _context.SaveChanges();
             TempData["SuccessMessage"] = "Пароль успешно изменён";
             return RedirectToAction("Index", "Home");
+
+           
         }
+
+        
+
 
             [HttpGet]
         public IActionResult Logout()

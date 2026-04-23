@@ -10,6 +10,8 @@ namespace AuthApp.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<LoginHistory> LoginHistories { get; set; }
+        public DbSet<UserActionLog> UserActionLog { get; set; }
+       
         
 
     }

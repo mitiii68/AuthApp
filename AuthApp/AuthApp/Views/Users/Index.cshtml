@@ -197,6 +197,16 @@
         </div>
 
         <div class="table-wrap">
+
+            <form method="get" asp-action="Index" class="mb-3 d-flex" style="gap:10px;">
+                <input type="text" name="search" value="@Context.Request.Query["search"]"
+                       class="form-control" placeholder="Поиск по ФИО, email или логину" />
+                <button type="submit" class="btn btn-primary">Найти</button>
+                <a asp-action="Index" class="btn btn-secondary">Сброс</a>
+            </form>
+            <a asp-controller="Users" asp-action="ActionLogs" class="btn btn-dark mb-3">
+                История действий
+            </a>
             <table class="users-table">
                 <thead>
                     <tr>
@@ -204,6 +214,7 @@
                         <th>ФИО</th>
                         <th>Email</th>
                         <th>Логин</th>
+                        <th>Количество входов</th>
                         <th>Роль</th>
                         <th>Дата регистрации</th>
                         <th>Смена роли</th>
@@ -265,6 +276,7 @@
                                 }
 
                             </td>
+                           
                         </tr>
                     }
                 </tbody>

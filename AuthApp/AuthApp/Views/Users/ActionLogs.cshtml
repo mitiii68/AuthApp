@@ -1,0 +1,25 @@
+﻿@model List<AuthApp.Models.UserActionLog>
+
+<h2>История действий</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Действие</th>
+            <th>Дата</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Id</td>
+                <td>@log.UserEmail</td>
+                <td>@log.Action</td>
+                <td>@log.ActionTime.ToString("dd.MM.yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>

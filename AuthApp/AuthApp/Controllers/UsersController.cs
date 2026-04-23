@@ -2,6 +2,7 @@
 using AuthApp.Data;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using AuthApp.Models;
 
 namespace AuthApp.Controllers
 {
@@ -13,15 +14,25 @@ namespace AuthApp.Controllers
         {
             _context = context;
         }
-        public IActionResult Index()
+        public IActionResult Index(string search)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
+
             var users = _context.Users
                 .Include(u => u.Role)
-                .ToList();
+                .AsQueryable();
 
-            return View(users);
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users.Where(u =>
+                    (u.FullName != null && u.FullName.Contains(search)) ||
+                    (u.Email != null && u.Email.Contains(search)) ||
+                    (u.Login != null && u.Login.Contains(search))
+                );
+            }
+
+            return View(users.ToList());
         }
         [HttpPost]
         public IActionResult ChangeRole(int userId, int roleId)
@@ -56,11 +67,32 @@ namespace AuthApp.Controllers
 
             if (user .Email == currentUserEmail)
                 return RedirectToAction("Index");
+            string deletedEmail = user.Email ?? "";
 
             _context.Users.Remove(user);
+            _context.SaveChanges();
+
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail = HttpContext.Session.GetString("user"),
+                Action = $"Удалил пользователя {deletedEmail}",
+                ActionTime = DateTime.Now
+            });
             _context.SaveChanges();
             return RedirectToAction("Index");
 
         }
+
+        public IActionResult ActionLogs()
+        {
+            var logs = _context.UserActionLog
+                .OrderByDescending(x => x.ActionTime)
+                .ToList();
+            return View(logs);
+        }
+
+       
+        
+        
     }
 }
