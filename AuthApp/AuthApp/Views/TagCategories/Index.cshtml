@@ -1,0 +1,109 @@
+@model List<TagCategory>
+@{
+    ViewData["Title"] = "Категории тегов";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Категории тегов</h1>
+        <p class="page-subtitle">Управление категориями для классификации документов</p>
+    </div>
+    <button class="btn btn-primary" onclick="toggleForm()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Добавить категорию
+    </button>
+</div>
+
+
+<div class="add-form-card" id="addForm" style="display:none">
+    <div class="add-form-header">
+        <span>Новая категория</span>
+        <button class="btn-close-x" onclick="toggleForm()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+    <div class="add-form-body">
+        <form asp-action="Create" method="post">
+            <div class="form-group">
+                <label class="form-label">Название категории</label>
+                <input type="text" name="name" placeholder="Например: Финансовые документы" required class="form-input" />
+            </div>
+            <div class="form-footer">
+                <button type="button" class="btn btn-ghost" onclick="toggleForm()">Отмена</button>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <span>Всего категорий: <strong>@Model.Count</strong></span>
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+            </svg>
+            <p>Категорий пока нет</p>
+            <span>Нажмите «Добавить категорию» чтобы создать первую</span>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:56px">#</th>
+                    <th>Название категории</th>
+                    <th style="width:120px" class="td-right">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Model)
+                {
+                    <tr>
+                        <td class="td-muted">@cat.Id</td>
+                        <td>
+                            <span class="badge bg-primary">@cat.Name</span>
+                        </td>
+                        <td class="td-right">
+                            <form asp-action="Delete" method="post" style="display:inline"
+                                  onsubmit="return confirm('Удалить категорию «@cat.Name»?')">
+                                <input type="hidden" name="id" value="@cat.Id" />
+                                <button type="submit" class="btn-danger-soft">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"/>
+                                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                                        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                                    </svg>
+                                    Удалить
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<script>
+function toggleForm() {
+    const f = document.getElementById('addForm');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    if (f.style.display === 'block') f.querySelector('input').focus();
+}
+</script>

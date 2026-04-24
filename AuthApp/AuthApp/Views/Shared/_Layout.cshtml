@@ -216,6 +216,11 @@
                             Настройки
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="Documents" asp-action="Index">Документы</a></li>
+                            <li><a class="dropdown-item" asp-controller="Documents" asp-action="Upload">Загрузка файлов</a></li>
+                            <li><a class="dropdown-item" asp-controller="Tags" asp-action="Index">Теги</a></li>
+                            <li><a class="dropdown-item" asp-controller="TagCategories" asp-action="Index">Категории тегов</a></li>
+                            <li><hr class="dropdown-divider" /></li>
                             <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Пользователи</a></li>
                             <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Роли</a></li>
                             <li><a class="dropdown-item" asp-controller="LoginHistory" asp-action="Index">История входов</a></li>

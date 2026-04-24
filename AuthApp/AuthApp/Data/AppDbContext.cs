@@ -11,7 +11,10 @@ namespace AuthApp.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<LoginHistory> LoginHistories { get; set; }
         public DbSet<UserActionLog> UserActionLog { get; set; }
-       
+       public DbSet<FileDocuments> FileDocuments { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<FileTag> FileTags { get; set; }
+        public DbSet<TagCategory> TagCategories { get; set; }
         
 
     }

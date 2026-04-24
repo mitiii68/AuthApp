@@ -1,0 +1,129 @@
+@model List<FileDocuments>
+@{
+    ViewData["Title"] = "Документы";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var tags = ViewBag.Tags as List<Tag>;
+    var selectedTagId = ViewBag.SelectedTagId as int?;
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Документы</h1>
+        <p class="page-subtitle">Хранилище файлов и документов</p>
+    </div>
+    <a asp-action="Upload" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+        </svg>
+        Загрузить файл
+    </a>
+</div>
+
+<!-- Фильтр -->
+<div class="filter-bar">
+    <span class="filter-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:3px">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        Тег:
+    </span>
+    <a asp-action="Index" class="chip @(selectedTagId == null ? "active" : "")">Все</a>
+    @foreach (var tag in tags ?? new List<Tag>())
+    {
+        <a asp-action="Index" asp-route-tagId="@tag.Id"
+           class="chip @(selectedTagId == tag.Id ? "active" : "")">
+            @tag.Name
+            <span class="chip-sub">@tag.Category?.Name</span>
+        </a>
+    }
+</div>
+
+<!-- Список -->
+<div class="card">
+    <div class="card-header">
+        <span>
+            Найдено: <strong>@Model.Count</strong>
+            @if (selectedTagId.HasValue)
+            {
+                var t = tags?.FirstOrDefault(x => x.Id == selectedTagId);
+                <span style="color:var(--accent)"> — тег «@t?.Name»</span>
+            }
+        </span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <p>Документов не найдено</p>
+            <span>
+                @if (selectedTagId.HasValue)
+                {
+                    <text>Попробуйте снять фильтр или </text>
+                }
+                <a asp-action="Upload" style="color:var(--accent)">загрузите первый документ</a>
+            </span>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:50px"></th>
+                    <th>Файл</th>
+                    <th>Теги</th>
+                    <th style="width:130px">Дата</th>
+                    <th style="width:60px" class="td-right">↓</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doc in Model)
+                {
+                    var ext = doc.Extension?.TrimStart('.').ToLower() ?? "";
+                    var iconClass = ext switch {
+                        "pdf" => "fi-pdf",
+                        "doc" => "fi-doc",
+                        "docx" => "fi-docx",
+                        "xls" => "fi-xls",
+                        "xlsx" => "fi-xlsx",
+                        "zip" => "fi-zip",
+                        "rar" => "fi-rar",
+                        "7z" => "fi-7z",
+                        _ => "fi-default"
+                    };
+                    <tr>
+                        <td>
+                            <span class="file-icon @iconClass">@ext.ToUpper()</span>
+                        </td>
+                        <td style="font-weight:600">@doc.FileName</td>
+                        <td>
+                            <div class="tag-list">
+                                @foreach (var ft in doc.FileTags ?? new List<FileTag>())
+                                {
+                                    <span class="badge bg-primary">@ft.Tag?.Name</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <span class="date-main">@doc.UploadDate.ToString("dd.MM.yyyy")</span>
+                            <span class="date-sub">@doc.UploadDate.ToString("HH:mm")</span>
+                        </td>
+                        <td class="td-right">
+                            <a href="@doc.FilePath" download class="btn-icon" title="Скачать">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

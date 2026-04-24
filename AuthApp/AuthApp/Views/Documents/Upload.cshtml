@@ -1,0 +1,128 @@
+@{
+    ViewData["Title"] = "Загрузка файла";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var tags = ViewBag.Tags as List<Tag>;
+    var grouped = tags?
+        .GroupBy(t => t.Category?.Name ?? "Без категории")
+        .ToDictionary(g => g.Key, g => g.ToList())
+        ?? new Dictionary<string, List<Tag>>();
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Загрузка файла</h1>
+        <p class="page-subtitle">Добавьте документ в хранилище</p>
+    </div>
+    <a asp-action="Index" class="btn btn-ghost">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Назад
+    </a>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        @ViewBag.Error
+    </div>
+}
+
+<form asp-action="Upload" method="post" enctype="multipart/form-data">
+    <div class="two-col">
+        <!-- Файл -->
+        <div class="card">
+            <div class="card-header"><strong>Файл</strong></div>
+            <div class="drop-zone" id="dropZone">
+                <input type="file" name="file" id="fileInput" required
+                       accept=".doc,.docx,.xls,.xlsx,.pdf,.zip,.rar,.7z"
+                       onchange="onFile(this)" />
+                <div class="drop-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                        <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+                    </svg>
+                </div>
+                <div class="drop-text">Нажмите или перетащите файл</div>
+                <div class="drop-hint">DOC, DOCX, XLS, XLSX, PDF, ZIP, RAR, 7Z</div>
+                <div class="file-chosen" id="fileChosen">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span id="chosenName"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Теги -->
+        <div class="card">
+            <div class="card-header">
+                <strong>Теги</strong>
+                <span id="countLabel" style="color:var(--text-sub); font-size:13px">Выбрано: 0</span>
+            </div>
+            <div class="tags-scroll">
+                @if (!grouped.Any())
+                {
+                    <p class="no-tags">Нет доступных тегов. Сначала создайте теги в разделе «Теги».</p>
+                }
+                else
+                {
+                    foreach (var g in grouped)
+                    {
+                        <div>
+                            <div class="tag-group-name">@g.Key</div>
+                            <div class="tag-chips-row">
+                                @foreach (var tag in g.Value)
+                                {
+                                    <label class="tag-chip-label">
+                                        <input type="checkbox" name="tagIds" value="@tag.Id"
+                                               class="tag-chip-cb" onchange="updateCount()" />
+                                        @tag.Name
+                                    </label>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="submit-bar">
+        <a asp-action="Index" class="btn btn-ghost">Отмена</a>
+        <button type="submit" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>
+            Загрузить файл
+        </button>
+    </div>
+</form>
+
+<script>
+function onFile(input) {
+    if (input.files?.[0]) {
+        document.getElementById('chosenName').textContent = input.files[0].name;
+        const c = document.getElementById('fileChosen');
+        c.style.display = 'flex';
+        document.getElementById('dropZone').classList.add('has-file');
+    }
+}
+function updateCount() {
+    const n = document.querySelectorAll('.tag-chip-cb:checked').length;
+    document.getElementById('countLabel').textContent = 'Выбрано: ' + n;
+}
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    const inp = document.getElementById('fileInput');
+    if (e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; onFile(inp); }
+});
+</script>
