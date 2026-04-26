@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\MyProject\\AuthApp\\AuthApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\documents\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\documents\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\tags\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\tags\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\documents\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\documents\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\tagcategories\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -170,7 +170,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 307,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Document",
@@ -195,18 +195,17 @@
               "RelativeToolTip": "AuthApp\\Views\\Shared\\_Layout.cshtml",
               "ViewState": "AgIAANMAAAAAAAAAAAAiwNsAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-16T03:35:34.74Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-16T03:35:34.74Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Documents\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Documents\\Index.cshtml",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Documents\\Index.cshtml",
               "RelativeToolTip": "AuthApp\\Views\\Documents\\Index.cshtml",
-              "ViewState": "AgIAAGAAAAAAAAAAAAAAAGoAAABBAAAAAAAAAA==",
+              "ViewState": "AgIAAJ8AAAAAAAAAAAAAAKYAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-04-24T04:09:03.819Z",
               "EditorCaption": ""
@@ -221,8 +220,7 @@
               "RelativeToolTip": "AuthApp\\Views\\Documents\\Upload.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-24T04:11:13.562Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T04:11:13.562Z"
             },
             {
               "$type": "Document",
@@ -234,18 +232,17 @@
               "RelativeToolTip": "AuthApp\\Views\\TagCategories\\Index.cshtml",
               "ViewState": "AgIAAEUAAAAAAAAAAAAAAE8AAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-24T03:41:41.111Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T03:41:41.111Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Tags\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Tags\\Index.cshtml",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Tags\\Index.cshtml",
               "RelativeToolTip": "AuthApp\\Views\\Tags\\Index.cshtml",
-              "ViewState": "AgIAAFEAAAAAAAAAAAAAAFwAAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAABcAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-04-24T03:59:17.845Z",
               "EditorCaption": ""
@@ -260,8 +257,7 @@
               "RelativeToolTip": "AuthApp\\Controllers\\AccountController.cs",
               "ViewState": "AgIAACwAAAAAAAAAAAAawEAAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-23T04:09:23.033Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T04:09:23.033Z"
             },
             {
               "$type": "Document",
@@ -273,8 +269,7 @@
               "RelativeToolTip": "AuthApp\\Views\\Users\\ActionLogs.cshtml",
               "ViewState": "AgIAAIUAAAAAAAAAAAAAABgAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-23T05:19:18.737Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-23T05:19:18.737Z"
             },
             {
               "$type": "Document",
@@ -286,8 +281,7 @@
               "RelativeToolTip": "AuthApp\\Views\\Users\\Index.cshtml",
               "ViewState": "AgIAAJgAAAAAAAAAAAAAAJ8AAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-21T05:25:30.879Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-21T05:25:30.879Z"
             },
             {
               "$type": "Document",
@@ -299,8 +293,7 @@
               "RelativeToolTip": "AuthApp\\Controllers\\DocumentsController.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAAYwCcAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T04:05:17.041Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T04:05:17.041Z"
             },
             {
               "$type": "Document",
@@ -312,8 +305,7 @@
               "RelativeToolTip": "AuthApp\\Models\\FileDocuments.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T04:06:14.413Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T04:06:14.413Z"
             },
             {
               "$type": "Document",
@@ -325,8 +317,7 @@
               "RelativeToolTip": "AuthApp\\Models\\FileTag.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T04:08:22.973Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T04:08:22.973Z"
             },
             {
               "$type": "Document",
@@ -338,8 +329,7 @@
               "RelativeToolTip": "AuthApp\\Models\\Role.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-21T05:00:06.833Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-21T05:00:06.833Z"
             },
             {
               "$type": "Document",
@@ -351,8 +341,7 @@
               "RelativeToolTip": "AuthApp\\Models\\Tag.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAsAAAAXAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T02:26:33.542Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T02:26:33.542Z"
             },
             {
               "$type": "Document",
@@ -364,8 +353,7 @@
               "RelativeToolTip": "AuthApp\\Controllers\\TagsController.cs",
               "ViewState": "AgIAABUAAAAAAAAAAAAowCQAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T03:49:45.619Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T03:49:45.619Z"
             },
             {
               "$type": "Document",
@@ -377,8 +365,7 @@
               "RelativeToolTip": "AuthApp\\Controllers\\TagCategoriesController.cs",
               "ViewState": "AgIAAB0AAAAAAAAAAAAwwAgAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T03:33:46.98Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T03:33:46.98Z"
             },
             {
               "$type": "Document",
@@ -402,8 +389,7 @@
               "RelativeToolTip": "AuthApp\\Program.cs",
               "ViewState": "AgIAAB4AAAAAAAAAAAAqwCoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-15T07:39:25.119Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-15T07:39:25.119Z"
             },
             {
               "$type": "Document",
@@ -415,8 +401,7 @@
               "RelativeToolTip": "AuthApp\\Models\\TagCategory.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAywAoAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-24T02:26:53.933Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-24T02:26:53.933Z"
             },
             {
               "$type": "Document",
@@ -676,10 +661,6 @@
           "DockedHeight": 85,
           "SelectedChildIndex": -1,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"

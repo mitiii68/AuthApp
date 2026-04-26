@@ -21,23 +21,83 @@
 </div>
 
 <!-- Фильтр -->
-<div class="filter-bar">
+<div class="filter-bar" style="position:relative; align-items:center; gap:10px;">
     <span class="filter-label">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:3px">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
         </svg>
         Тег:
     </span>
-    <a asp-action="Index" class="chip @(selectedTagId == null ? "active" : "")">Все</a>
-    @foreach (var tag in tags ?? new List<Tag>())
-    {
-        <a asp-action="Index" asp-route-tagId="@tag.Id"
-           class="chip @(selectedTagId == tag.Id ? "active" : "")">
-            @tag.Name
-            <span class="chip-sub">@tag.Category?.Name</span>
-        </a>
-    }
+
+    <!-- Кнопка открытия дропдауна -->
+    <button type="button" id="tagDropdownBtn" onclick="toggleTagDropdown()" style="
+        display:inline-flex; align-items:center; gap:6px;
+        padding:6px 12px; border-radius:6px; border:1.5px solid var(--border,#d1d5db);
+        background:var(--surface,#fff); cursor:pointer; font-size:13px;
+        color:var(--text,#111); font-weight:500; transition:border-color .15s;">
+        @if (selectedTagId == null)
+        {
+            <span>Все теги</span>
+        }
+        else
+        {
+            var selTag = tags?.FirstOrDefault(x => x.Id == selectedTagId);
+            <span>@selTag?.Name</span>
+            <span style="color:#6b7280; font-weight:400">@selTag?.Category?.Name</span>
+        }
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:2px">
+            <polyline points="6 9 12 15 18 9"/>
+        </svg>
+    </button>
+
+    <!-- Выпадающее окошко -->
+    <div id="tagDropdown" style="
+        display:none; position:absolute; top:calc(100% + 6px); left:60px; z-index:200;
+        background:var(--surface,#fff); border:1.5px solid var(--border,#d1d5db);
+        border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.12);
+        min-width:260px; max-width:340px; padding:10px;">
+
+        <div style="font-size:11px; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:.06em; padding:2px 6px 8px;">Выберите тег</div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:6px; max-height:280px; overflow-y:auto; padding:2px 2px 4px;">
+            <a asp-action="Index" onclick="closeTagDropdown()"
+               class="chip @(selectedTagId == null ? "active" : "")"
+               style="margin:0">Все</a>
+
+            @foreach (var tag in tags ?? new List<Tag>())
+            {
+                <a asp-action="Index" asp-route-tagId="@tag.Id"
+                   onclick="closeTagDropdown()"
+                   class="chip @(selectedTagId == tag.Id ? "active" : "")"
+                   style="margin:0">
+                    @tag.Name
+                    @if (!string.IsNullOrEmpty(tag.Category?.Name))
+                    {
+                        <span class="chip-sub">@tag.Category.Name</span>
+                    }
+                </a>
+            }
+        </div>
+    </div>
 </div>
+
+<script>
+    function toggleTagDropdown() {
+        var dd = document.getElementById('tagDropdown');
+        dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    }
+    function closeTagDropdown() {
+        document.getElementById('tagDropdown').style.display = 'none';
+    }
+    // Закрыть при клике вне
+    document.addEventListener('click', function(e) {
+        var btn = document.getElementById('tagDropdownBtn');
+        var dd = document.getElementById('tagDropdown');
+        if (!btn.contains(e.target) && !dd.contains(e.target)) {
+            dd.style.display = 'none';
+        }
+    });
+</script>
 
 <!-- Список -->
 <div class="card">

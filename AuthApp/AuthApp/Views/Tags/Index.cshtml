@@ -91,7 +91,7 @@
                     <tr>
                         <td class="td-muted">@tag.Id</td>
                         <td><span class="badge bg-primary">@tag.Name</span></td>
-                        <td><span class="badge badge-green">@tag.Category?.Name</span></td>
+                        <td><span style="display:inline-block; padding:3px 10px; border-radius:5px; font-size:12px; font-weight:600; background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">@tag.Category?.Name</span></td>
                         <td class="td-right">
                             <form asp-action="Delete" method="post" style="display:inline"
                                   onsubmit="return confirm('Удалить тег «@tag.Name»?')">
