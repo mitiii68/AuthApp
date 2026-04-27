@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using AuthApp.Models;
 using AuthApp.Data;
+using AuthApp.Models;
 using AuthApp.Services;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AuthApp.Controllers
 {
@@ -187,12 +189,14 @@ namespace AuthApp.Controllers
             });
             _context.SaveChanges();
 
-            HttpContext.Session.SetString("user",     user.Email!);
-            HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "");
-            HttpContext.Session.SetString("FullName", user.FullName ?? "");
-            HttpContext.Session.SetString("Login",    user.Login ?? "");
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetString("UserName", user.FullName ?? "Пользователь");
+            HttpContext.Session.SetString("UserEmail", user.Email ?? "");
+            HttpContext.Session.SetString("UserLogin", user.Login ?? "");
+            HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "User");
 
             return RedirectToAction("Index", "Home");
+
         }
 
         [HttpGet]
@@ -389,6 +393,28 @@ namespace AuthApp.Controllers
         {
             return HashPassword(password) == hash;
         }
-        
+
+
+        public IActionResult Profile()
+        {
+            var email = HttpContext.Session.GetString("UserEmail");
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefault(u => u.Email == email);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View(user);
+        }
+
     }
 }
