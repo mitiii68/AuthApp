@@ -1,3 +1,5 @@
+
+@model AuthApp.Models.LoginViewModel
 @{
     ViewData["Title"] = "Вход";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -164,16 +166,23 @@
         <form method="post" asp-action="Login">
             <div class="form-field">
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="ivan@example.com" required />
+                <input asp-for="Email" class="form-control" /> 
             </div>
 
             <div class="form-field">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" placeholder="Ваш пароль" required />
+                <input asp-for="Password" class="form-control" /> 
             </div>
 
             <button type="submit" class="btn-submit">Войти</button>
         </form>
+
+        <div class="form-check mb-3">
+            <input asp-for="RememberMe" class="form-check-input" />
+            <label asp-for="RememberMe" class="form-check-label">
+                Запомнить меня
+            </label>
+        </div>
 
         <a asp-controller="Account" asp-action="ForgotPassword" class="forgot-link">Забыли пароль?</a>
 

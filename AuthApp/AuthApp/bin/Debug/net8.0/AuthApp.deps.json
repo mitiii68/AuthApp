@@ -17,6 +17,17 @@
         },
         "runtime": {
           "AuthApp.dll": {}
+        },
+        "resources": {
+          "en/AuthApp.resources.dll": {
+            "locale": "en"
+          },
+          "kk/AuthApp.resources.dll": {
+            "locale": "kk"
+          },
+          "ru/AuthApp.resources.dll": {
+            "locale": "ru"
+          }
         }
       },
       "BouncyCastle.Cryptography/2.6.2": {
