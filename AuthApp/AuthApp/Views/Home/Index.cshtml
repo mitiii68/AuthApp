@@ -1,155 +1,53 @@
 @{
     ViewData["Title"] = "Главная";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="home-page">
+    <h1>Главная страница</h1>
+    <p>Добро пожаловать в AuthApp</p>
+</div>
+
+@if (ViewBag.ShowWelcome != null && ViewBag.ShowWelcome == true)
+{
+    <div id="welcomeToast" class="welcome-toast">
+        👋 Добро пожаловать, @(ViewBag.UserName ?? "пользователь")!
+    </div>
+    
 }
 
 <style>
-    .home-page {
-        padding: 40px 32px;
-        max-width: 900px;
-        margin: 0 auto;
-    }
-    .welcome-card {
-        background: var(--white);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        padding: 32px;
-        display: flex;
-        align-items: center;
-        gap: 24px;
-        margin-bottom: 20px;
-        box-shadow: var(--shadow);
-        animation: fadeUp 0.3s ease;
-    }
-    @@keyframes fadeUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-    .big-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        background: var(--blue-light);
-        color: var(--blue);
-        font-size: 20px;
+    .welcome-toast {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #1d6fd6;
+        color: white;
+        padding: 16px 20px;
+        border-radius: 10px;
         font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        border: 2px solid rgba(26,111,212,0.15);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        opacity: 0;
+        transform: translateY(-15px);
+        transition: all 0.4s ease;
+        z-index: 9999;
     }
-    .welcome-text h1 {
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 4px;
-    }
-    .welcome-text p {
-        font-size: 14px;
-        color: var(--text-muted);
-    }
-    .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        animation: fadeUp 0.4s ease 0.05s both;
-    }
-    .info-card {
-        background: var(--white);
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        padding: 20px 24px;
-        box-shadow: var(--shadow);
-    }
-    .info-card .ic-label {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        color: var(--text-muted);
-        margin-bottom: 8px;
-    }
-    .info-card .ic-value {
-        font-size: 15px;
-        font-weight: 500;
-        color: var(--text);
-    }
-    .badge-active {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--green-light);
-        color: var(--green);
-        font-size: 13px;
-        font-weight: 500;
-        padding: 4px 10px;
-        border-radius: 20px;
-    }
-    .info-card.ic-action {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-    .ic-action a {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--blue);
-        color: #fff;
-        font-size: 13px;
-        font-weight: 500;
-        padding: 6px 14px;
-        border-radius: 8px;
-        text-decoration: none;
-        white-space: nowrap;
-        transition: opacity .15s;
-    }
-    .ic-action a:hover { opacity: .85; }
-    .badge-active::before {
-        content: '';
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green);
-        display: block;
-    }
+
+        .welcome-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
 </style>
 
-<div class="home-page"></div>
+<script>
+    const toast = document.getElementById("welcomeToast");
 
-    <div class="welcome-card">
-        @{
-            var fullName = ViewBag.FullName as string ?? "Пользователь";
-            var login = ViewBag.Login as string ?? "";
-            var initials = string.Join("", fullName.Split(' ').Take(2).Select(w => w.Length > 0 ? w[0].ToString() : ""));
-        }
-        <div class="big-avatar">@initials</div>
-        <div class="welcome-text">
-            <h1>Добро пожаловать, @fullName.Split(' ').FirstOrDefault()!</h1>
-            <p>Вы успешно вошли в систему</p>
-        </div>
-    </div>
+    if (toast) {
+        setTimeout(() => {
+            toast.classList.add("show");
+        }, 300);
 
-    <div class="info-grid">
-        <div class="info-card">
-            <div class="ic-label">ФИО</div>
-            <div class="ic-value">@fullName</div>
-        </div>
-        <div class="info-card">
-            <div class="ic-label">Логин</div>
-            <div class="ic-value">@@@login</div>
-        </div>
-        <div class="info-card">
-            <div class="ic-label">Статус аккаунта</div>
-            <div class="ic-value"><span class="badge-active">Активен</span></div>
-        </div>
-        <div class="info-card ic-action">
-            <div>
-                <div class="ic-label">Пароль</div>
-                <div class="ic-value">••••••••</div>
-            </div>
-            <a href="/Account/ChangePassword">🔐 Сменить</a>
-        </div>
-    </div>
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 3500);
+    }
+</script>

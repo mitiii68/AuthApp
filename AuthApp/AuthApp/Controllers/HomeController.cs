@@ -24,21 +24,32 @@ namespace AuthApp.Controllers
 
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("user") == null)
-                return RedirectToAction("Login", "Account");
-            var email = HttpContext.Session.GetString("user");
-            var user = _context.Users.FirstOrDefault(u => u.Email == email);
-            ViewBag.FullName = user?.FullName ?? "Пользователь";
-            ViewBag.Login = user?.Login ?? "";
-            return View();
+            var showWelcome = HttpContext.Session.GetString("ShowWelcome");
+            var userName = HttpContext.Session.GetString("UserName");
 
+            if (showWelcome == "true")
+            {
+                ViewBag.ShowWelcome = true;
+                ViewBag.UserName = string.IsNullOrEmpty(userName)
+                    ? "пользователь"
+                    : userName;
+
+                HttpContext.Session.Remove("ShowWelcome");
+            }
+
+            return View();
         }
+
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
         
+
     }
 }

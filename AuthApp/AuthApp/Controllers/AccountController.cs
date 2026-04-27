@@ -189,11 +189,13 @@ namespace AuthApp.Controllers
             });
             _context.SaveChanges();
 
-            HttpContext.Session.SetInt32("UserId", user.UserId);
-            HttpContext.Session.SetString("UserName", user.FullName ?? "Пользователь");
+            HttpContext.Session.SetString("user",     user.Email!);
+            HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "");
+            HttpContext.Session.SetString("FullName", user.FullName ?? "");
+            HttpContext.Session.SetString("Login",    user.Login ?? "");
             HttpContext.Session.SetString("UserEmail", user.Email ?? "");
-            HttpContext.Session.SetString("UserLogin", user.Login ?? "");
-            HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "User");
+
+            HttpContext.Session.SetString("ShowWelcome", "true");
 
             return RedirectToAction("Index", "Home");
 

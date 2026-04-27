@@ -103,9 +103,36 @@ namespace AuthApp.Controllers
                 .ToList();
             return View(logs);
         }
+        [HttpPost]
+        public IActionResult BlockUser(int id)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
 
-       
-        
-        
+            if (user == null)
+                return NotFound();
+
+            user.IsBlocked = true;
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult UnblockUser(int id)
+        {
+            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
+
+            if (user == null)
+                return NotFound();
+
+            user.IsBlocked = false;
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
+
+
+
     }
 }
