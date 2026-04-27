@@ -16,6 +16,7 @@ namespace AuthApp.Models
         public string? PasswordResetCode { get; set; }
         public DateTime? PasswordResetExpiresAt { get; set; }
         public int LoginCount { get; set; }
+        public bool IsBlocked { get; set; } = false;
        
 
 

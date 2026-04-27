@@ -151,6 +151,12 @@ namespace AuthApp.Controllers
                 .Include(u => u.Role)
                 .FirstOrDefault(u => u.Email == email && u.IsConfirmed);
 
+            if (user != null && user.IsBlocked)
+            {
+                ModelState.AddModelError(string.Empty, "Ваш аккаунт заблокирован.");
+                return View();
+            }
+
             if (user == null || string.IsNullOrEmpty(user.PasswordHash) || !VerifyPassword(password, user.PasswordHash))
             {
                 ModelState.AddModelError(string.Empty, "Неверный email, пароль или почта не подтверждена.");

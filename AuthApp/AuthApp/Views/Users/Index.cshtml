@@ -286,6 +286,8 @@
                         <th>Дата регистрации</th>
                         <th>Смена роли</th>
                         <th>Удаление</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -343,6 +345,38 @@
                                 }
 
                             </td>
+
+                            <td>
+    @if (user.IsBlocked)
+    {
+        <span style="color:red;">Заблокирован</span>
+    }
+    else
+    {
+        <span style="color:green;">Активен</span>
+    }
+</td>
+
+<td>
+    @if (user.IsBlocked)
+    {
+        <form asp-controller="Admin" asp-action="UnblockUser" method="post">
+            <input type="hidden" name="id" value="@user.UserId" />
+            <button type="submit" class="btn-site">
+                Разблокировать
+            </button>
+        </form>
+    }
+    else
+    {
+        <form asp-controller="Admin" asp-action="BlockUser" method="post">
+            <input type="hidden" name="id" value="@user.UserId" />
+            <button type="submit" class="btn-site">
+                Заблокировать
+            </button>
+        </form>
+    }
+</td>
                            
                         </tr>
                     }
