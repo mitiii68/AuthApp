@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 public class TagCategory
 {
@@ -7,5 +7,6 @@ public class TagCategory
 
     public string? Name { get; set; }
 
-    public List<Tag> Tags { get; set; } = new();
+    
+    public List<TagCategoryTag> TagCategoryTags { get; set; } = new();
 }

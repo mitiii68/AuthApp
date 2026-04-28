@@ -2,8 +2,10 @@
     ViewData["Title"] = "Загрузка файла";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var tags = ViewBag.Tags as List<Tag>;
+    var categories = ViewBag.Categories as List<TagCategory>;
+
     var grouped = tags?
-        .GroupBy(t => t.Category?.Name ?? "Без категории")
+        .GroupBy(t => t.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name ?? "Без категории")
         .ToDictionary(g => g.Key, g => g.ToList())
         ?? new Dictionary<string, List<Tag>>();
 }
@@ -64,7 +66,31 @@
                 <strong>Теги</strong>
                 <span id="countLabel" style="color:var(--text-sub); font-size:13px">Выбрано: 0</span>
             </div>
-            <div class="tags-scroll">
+
+            <!-- Фильтр по категориям -->
+            <div style="padding:10px 16px; border-bottom:1px solid var(--border,#e5e7eb);">
+                <div style="font-size:12px; color:#6b7280; font-weight:600; margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;">Фильтр по категориям</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;" id="categoryFilters">
+                    <button type="button" class="cat-btn active" data-id=""
+                            onclick="filterByCategory(this)"
+                            style="padding:4px 12px; border-radius:20px; border:1.5px solid var(--accent,#2563eb);
+                                   background:var(--accent,#2563eb); color:#fff; font-size:12px; font-weight:600; cursor:pointer;">
+                        Все
+                    </button>
+                    @foreach (var cat in categories ?? new List<TagCategory>())
+                    {
+                        <button type="button" class="cat-btn" data-id="@cat.Id"
+                                onclick="filterByCategory(this)"
+                                style="padding:4px 12px; border-radius:20px; border:1.5px solid var(--border,#d1d5db);
+                                       background:transparent; color:var(--text,#111); font-size:12px; font-weight:600; cursor:pointer;">
+                            @cat.Name
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Список тегов -->
+            <div class="tags-scroll" id="tagsContainer">
                 @if (!grouped.Any())
                 {
                     <p class="no-tags">Нет доступных тегов. Сначала создайте теги в разделе «Теги».</p>
@@ -73,12 +99,12 @@
                 {
                     foreach (var g in grouped)
                     {
-                        <div>
+                        <div class="tag-group" data-group="@g.Key">
                             <div class="tag-group-name">@g.Key</div>
                             <div class="tag-chips-row">
                                 @foreach (var tag in g.Value)
                                 {
-                                    <label class="tag-chip-label">
+                                    <label class="tag-chip-label" data-tag-id="@tag.Id">
                                         <input type="checkbox" name="tagIds" value="@tag.Id"
                                                class="tag-chip-cb" onchange="updateCount()" />
                                         @tag.Name
@@ -113,10 +139,88 @@ function onFile(input) {
         document.getElementById('dropZone').classList.add('has-file');
     }
 }
+
 function updateCount() {
     const n = document.querySelectorAll('.tag-chip-cb:checked').length;
     document.getElementById('countLabel').textContent = 'Выбрано: ' + n;
 }
+
+const selectedCategories = new Set();
+
+function filterByCategory(btn) {
+    const id = btn.dataset.id;
+
+    if (id === '') {
+        // "Все" — сбросить фильтр
+        selectedCategories.clear();
+        document.querySelectorAll('.cat-btn').forEach(b => {
+            const isAll = b.dataset.id === '';
+            b.style.background = isAll ? 'var(--accent,#2563eb)' : 'transparent';
+            b.style.color = isAll ? '#fff' : 'var(--text,#111)';
+            b.style.borderColor = isAll ? 'var(--accent,#2563eb)' : 'var(--border,#d1d5db)';
+        });
+        showAllTags();
+        return;
+    }
+
+    // Переключить категорию
+    if (selectedCategories.has(id)) {
+        selectedCategories.delete(id);
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text,#111)';
+        btn.style.borderColor = 'var(--border,#d1d5db)';
+    } else {
+        selectedCategories.add(id);
+        btn.style.background = 'var(--accent,#2563eb)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--accent,#2563eb)';
+    }
+
+    // Убрать подсветку с "Все"
+    const allBtn = document.querySelector('.cat-btn[data-id=""]');
+    allBtn.style.background = 'transparent';
+    allBtn.style.color = 'var(--text,#111)';
+    allBtn.style.borderColor = 'var(--border,#d1d5db)';
+
+    if (selectedCategories.size === 0) {
+        allBtn.style.background = 'var(--accent,#2563eb)';
+        allBtn.style.color = '#fff';
+        allBtn.style.borderColor = 'var(--accent,#2563eb)';
+        showAllTags();
+        return;
+    }
+
+    loadFilteredTags();
+}
+
+function showAllTags() {
+    document.querySelectorAll('.tag-chip-label').forEach(l => l.style.display = '');
+    document.querySelectorAll('.tag-group').forEach(g => g.style.display = '');
+}
+
+function loadFilteredTags() {
+    const params = new URLSearchParams();
+    selectedCategories.forEach(id => params.append('categoryIds', id));
+
+    fetch('/api/tags/by-categories?' + params.toString())
+        .then(r => r.json())
+        .then(tags => {
+            const allowedIds = new Set(tags.map(t => String(t.id)));
+
+            document.querySelectorAll('.tag-chip-label').forEach(label => {
+                label.style.display = allowedIds.has(label.dataset.tagId) ? '' : 'none';
+            });
+
+            // Скрыть группы где нет видимых тегов
+            document.querySelectorAll('.tag-group').forEach(group => {
+                const visible = group.querySelectorAll('.tag-chip-label:not([style*="none"])').length;
+                group.style.display = visible > 0 ? '' : 'none';
+            });
+
+            updateCount();
+        });
+}
+
 const dz = document.getElementById('dropZone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));

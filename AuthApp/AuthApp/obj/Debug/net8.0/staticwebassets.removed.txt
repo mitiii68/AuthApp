@@ -1,0 +1,6 @@
+C:\MyProject\AuthApp\AuthApp\AuthApp\wwwroot\uploads\30b97a3d-291a-438c-a052-a58b7a5559e9.zip
+C:\MyProject\AuthApp\AuthApp\AuthApp\wwwroot\uploads\4f90a041-5dab-43de-a6de-e4d5d6282692.pdf
+C:\MyProject\AuthApp\AuthApp\AuthApp\wwwroot\uploads\5d097259-4c8d-4bc0-ac99-97042ec624b6.zip
+C:\MyProject\AuthApp\AuthApp\AuthApp\wwwroot\uploads\77f3af80-264b-4558-8819-e9972ae6c5a8.zip
+C:\MyProject\AuthApp\AuthApp\AuthApp\wwwroot\uploads\7b113c42-8548-4d12-b0c6-b812667898fa.xlsx
+C:\MyProject\AuthApp\AuthApp\AuthApp\wwwroot\uploads\cb68f2ae-a4af-4887-979d-198718753b3d.docx

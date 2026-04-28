@@ -29,7 +29,6 @@
         Тег:
     </span>
 
-    <!-- Кнопка открытия дропдауна -->
     <button type="button" id="tagDropdownBtn" onclick="toggleTagDropdown()" style="
         display:inline-flex; align-items:center; gap:6px;
         padding:6px 12px; border-radius:6px; border:1.5px solid var(--border,#d1d5db);
@@ -42,15 +41,18 @@
         else
         {
             var selTag = tags?.FirstOrDefault(x => x.Id == selectedTagId);
+            var selCatName = selTag?.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name;
             <span>@selTag?.Name</span>
-            <span style="color:#6b7280; font-weight:400">@selTag?.Category?.Name</span>
+            @if (!string.IsNullOrEmpty(selCatName))
+            {
+                <span style="color:#6b7280; font-weight:400">@selCatName</span>
+            }
         }
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:2px">
             <polyline points="6 9 12 15 18 9"/>
         </svg>
     </button>
 
-    <!-- Выпадающее окошко -->
     <div id="tagDropdown" style="
         display:none; position:absolute; top:calc(100% + 6px); left:60px; z-index:200;
         background:var(--surface,#fff); border:1.5px solid var(--border,#d1d5db);
@@ -66,14 +68,15 @@
 
             @foreach (var tag in tags ?? new List<Tag>())
             {
+                var catName = tag.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name;
                 <a asp-action="Index" asp-route-tagId="@tag.Id"
                    onclick="closeTagDropdown()"
                    class="chip @(selectedTagId == tag.Id ? "active" : "")"
                    style="margin:0">
                     @tag.Name
-                    @if (!string.IsNullOrEmpty(tag.Category?.Name))
+                    @if (!string.IsNullOrEmpty(catName))
                     {
-                        <span class="chip-sub">@tag.Category.Name</span>
+                        <span class="chip-sub">@catName</span>
                     }
                 </a>
             }
@@ -89,7 +92,6 @@
     function closeTagDropdown() {
         document.getElementById('tagDropdown').style.display = 'none';
     }
-    // Закрыть при клике вне
     document.addEventListener('click', function(e) {
         var btn = document.getElementById('tagDropdownBtn');
         var dd = document.getElementById('tagDropdown');

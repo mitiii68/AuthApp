@@ -1,4 +1,4 @@
-﻿using AuthApp.Models;
+using AuthApp.Models;
 using System.ComponentModel.DataAnnotations;
 
 public class Tag
@@ -8,7 +8,7 @@ public class Tag
 
     public string? Name { get; set; }
 
-    public int TagCategoryId { get; set; }
-    public TagCategory?Category { get; set; }
+    // M:M с TagCategory через промежуточную таблицу
+    public List<TagCategoryTag> TagCategoryTags { get; set; } = new();
     public List<FileTag> FileTags { get; set; } = new();
 }

@@ -1,4 +1,4 @@
-﻿using AuthApp.Data;
+using AuthApp.Data;
 using AuthApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +19,8 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Index(int? tagId)
         {
             ViewBag.Tags = await _context.Tags
-                .Include(t => t.Category)
+                .Include(t => t.TagCategoryTags)
+                    .ThenInclude(tct => tct.TagCategory)
                 .ToListAsync();
 
             ViewBag.SelectedTagId = tagId;
@@ -38,14 +39,16 @@ namespace AuthApp.Controllers
             var documents = await documentsQuery.ToListAsync();
 
             return View(documents);
-
         }
 
         public async Task<IActionResult> Upload()
         {
             ViewBag.Tags = await _context.Tags
-                .Include(t => t.Category)
+                .Include(t => t.TagCategoryTags)
+                    .ThenInclude(tct => tct.TagCategory)
                 .ToListAsync();
+
+            ViewBag.Categories = await _context.TagCategories.ToListAsync();
 
             return View();
         }
@@ -56,7 +59,11 @@ namespace AuthApp.Controllers
             if (file == null || file.Length == 0)
             {
                 ViewBag.Error = "Выберите файл";
-                ViewBag.Tags = await _context.Tags.Include(t => t.Category).ToListAsync();
+                ViewBag.Tags = await _context.Tags
+                    .Include(t => t.TagCategoryTags)
+                        .ThenInclude(tct => tct.TagCategory)
+                    .ToListAsync();
+                ViewBag.Categories = await _context.TagCategories.ToListAsync();
                 return View();
             }
 
@@ -66,7 +73,11 @@ namespace AuthApp.Controllers
             if (!allowedExtensions.Contains(extension))
             {
                 ViewBag.Error = "Недопустимый формат файла";
-                ViewBag.Tags = await _context.Tags.Include(t => t.Category).ToListAsync();
+                ViewBag.Tags = await _context.Tags
+                    .Include(t => t.TagCategoryTags)
+                        .ThenInclude(tct => tct.TagCategory)
+                    .ToListAsync();
+                ViewBag.Categories = await _context.TagCategories.ToListAsync();
                 return View();
             }
 
@@ -74,7 +85,6 @@ namespace AuthApp.Controllers
 
             if (!Directory.Exists(uploadsPath))
             {
-                
                 Directory.CreateDirectory(uploadsPath);
             }
 

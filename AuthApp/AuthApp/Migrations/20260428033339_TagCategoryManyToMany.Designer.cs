@@ -4,6 +4,7 @@ using AuthApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428033339_TagCategoryManyToMany")]
+    partial class TagCategoryManyToMany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -196,7 +199,12 @@ namespace AuthApp.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("longtext");
 
+                    b.Property<int>("TagCategoryId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TagCategoryId");
 
                     b.ToTable("Tags");
                 });
@@ -215,30 +223,6 @@ namespace AuthApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TagCategories");
-                });
-
-            modelBuilder.Entity("TagCategoryTag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("TagCategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TagCategoryId");
-
-                    b.HasIndex("TagId", "TagCategoryId")
-                        .IsUnique();
-
-                    b.ToTable("TagCategoryTags");
                 });
 
             modelBuilder.Entity("AuthApp.Models.FileTag", b =>
@@ -271,23 +255,15 @@ namespace AuthApp.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("TagCategoryTag", b =>
+            modelBuilder.Entity("Tag", b =>
                 {
-                    b.HasOne("TagCategory", "TagCategory")
-                        .WithMany("TagCategoryTags")
+                    b.HasOne("TagCategory", "Category")
+                        .WithMany("Tags")
                         .HasForeignKey("TagCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Tag", "Tag")
-                        .WithMany("TagCategoryTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tag");
-
-                    b.Navigation("TagCategory");
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("AuthApp.Models.FileDocuments", b =>
@@ -303,13 +279,11 @@ namespace AuthApp.Migrations
             modelBuilder.Entity("Tag", b =>
                 {
                     b.Navigation("FileTags");
-
-                    b.Navigation("TagCategoryTags");
                 });
 
             modelBuilder.Entity("TagCategory", b =>
                 {
-                    b.Navigation("TagCategoryTags");
+                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }

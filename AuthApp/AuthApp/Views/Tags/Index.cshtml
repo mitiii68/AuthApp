@@ -18,7 +18,6 @@
     </button>
 </div>
 
-
 <div class="add-form-card" id="addForm" style="display:none">
     <div class="add-form-header">
         <span>Новый тег</span>
@@ -59,7 +58,6 @@
     </div>
 </div>
 
-
 <div class="card">
     <div class="card-header">
         <span>Всего тегов: <strong>@Model.Count</strong></span>
@@ -81,17 +79,25 @@
                 <tr>
                     <th style="width:56px">#</th>
                     <th>Тег</th>
-                    <th>Категория</th>
+                    <th>Категории</th>
                     <th style="width:120px" class="td-right">Действие</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var tag in Model)
                 {
+                    var catNames = string.Join(", ", tag.TagCategoryTags
+                        .Select(tct => tct.TagCategory?.Name)
+                        .Where(n => n != null));
+
                     <tr>
                         <td class="td-muted">@tag.Id</td>
                         <td><span class="badge bg-primary">@tag.Name</span></td>
-                        <td><span style="display:inline-block; padding:3px 10px; border-radius:5px; font-size:12px; font-weight:600; background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">@tag.Category?.Name</span></td>
+                        <td>
+                            <span style="display:inline-block; padding:3px 10px; border-radius:5px; font-size:12px; font-weight:600; background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">
+                                @(string.IsNullOrEmpty(catNames) ? "Без категории" : catNames)
+                            </span>
+                        </td>
                         <td class="td-right">
                             <form asp-action="Delete" method="post" style="display:inline"
                                   onsubmit="return confirm('Удалить тег «@tag.Name»?')">
