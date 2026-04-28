@@ -105,18 +105,22 @@
                             }
                         </td>
 
-                        <td>
-                            <button type="button"
-                                    class="btn btn-sm btn-warning"
-                                    onclick="openEditModal(@tag.Id, '@tag.Name')">
-                                ✏️
-                            </button>
+                       <td>
+    <div class="d-flex align-items-center gap-3">
+        <button type="button"
+                class="btn btn-sm btn-warning"
+                onclick="openEditModal(@tag.Id, '@tag.Name')">
+            ✎
+        </button>
 
-                            <form asp-action="Delete" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@tag.Id" />
-                                <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
-                            </form>
-                        </td>
+        <form asp-action="Delete" method="post">
+            <input type="hidden" name="id" value="@tag.Id" />
+            <button type="submit" class="btn btn-sm btn-danger">
+                Удалить
+            </button>
+        </form>
+    </div>
+</td>
 
                         
                         
