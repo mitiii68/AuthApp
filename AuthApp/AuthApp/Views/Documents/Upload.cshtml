@@ -99,7 +99,7 @@
                 {
                     foreach (var g in grouped)
                     {
-                        <div class="tag-group" data-group="@g.Key">
+                        <div class="tag-group" data-id="@g.Value.First().TagCategoryTags.First().TagCategoryId">
                             <div class="tag-group-name">@g.Key</div>
                             <div class="tag-chips-row">
                                 @foreach (var tag in g.Value)
@@ -116,6 +116,30 @@
                 }
             </div>
         </div>
+
+        <script>
+            const filterButtons = document.querySelectorAll('.category-filter');
+            const tagGroups = document.querySelectorAll('.tag-group');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const selectedCategory = this.dataset.category;
+
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    tagGroups.forEach(group => {
+                        const groupCategory = group.dataset.category;
+
+                        if (selectedCategory === 'Все' || groupCategory === selectedCategory) {
+                            group.style.display = 'block';
+                        } else {
+                            group.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        </script>
     </div>
 
     <div class="submit-bar">
@@ -229,4 +253,30 @@ dz.addEventListener('drop', e => {
     const inp = document.getElementById('fileInput');
     if (e.dataTransfer.files.length) { inp.files = e.dataTransfer.files; onFile(inp); }
 });
+</script>
+
+<script>
+    function filterByCategory(btn) {
+        const categoryId = btn.dataset.id;
+
+        document.querySelectorAll('.cat-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.background = 'transparent';
+            b.style.color = 'var(--text,#111)';
+            b.style.borderColor = 'var(--border,#d1d5db)';
+        });
+
+        btn.classList.add('active');
+        btn.style.background = 'var(--accent,#2563eb)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'var(--accent,#2563eb)';
+
+        document.querySelectorAll('.tag-group').forEach(group => {
+            if (!categoryId || group.dataset.id == categoryId) {
+                group.style.display = 'block';
+            } else {
+                group.style.display = 'none';
+            }
+        });
+    }
 </script>

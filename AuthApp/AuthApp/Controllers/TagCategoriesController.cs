@@ -48,7 +48,22 @@ namespace AuthApp.Controllers
 
             return RedirectToAction("Index");
         }
-        
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, string name)
+        {
+            var category = await _context.TagCategories.FindAsync(id);
+
+            if (category == null)
+                return NotFound();
+
+            category.Name = name;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
 
     }
 }

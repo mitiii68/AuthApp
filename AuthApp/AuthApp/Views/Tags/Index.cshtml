@@ -36,14 +36,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Категория</label>
-                    <select name="categoryId" class="form-input form-select" required>
-                        <option value="" disabled selected>Выберите категорию</option>
-                        @foreach (var cat in categories ?? new List<TagCategory>())
+                    <select name="categoryIds" multiple class="form-control">
+                        @foreach (var category in ViewBag.Categories)
                         {
-                            <option value="@cat.Id">@cat.Name</option>
+                            <option value="@category.Id">@category.Name</option>
                         }
                     </select>
-                </div>
             </div>
             <div class="form-footer">
                 <button type="button" class="btn btn-ghost" onclick="toggleForm()">Отмена</button>
@@ -53,6 +51,7 @@
                     </svg>
                     Сохранить
                 </button>
+            </div>
             </div>
         </form>
     </div>
@@ -92,30 +91,75 @@
 
                     <tr>
                         <td class="td-muted">@tag.Id</td>
-                        <td><span class="badge bg-primary">@tag.Name</span></td>
                         <td>
-                            <span style="display:inline-block; padding:3px 10px; border-radius:5px; font-size:12px; font-weight:600; background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;">
-                                @(string.IsNullOrEmpty(catNames) ? "Без категории" : catNames)
-                            </span>
+                            <span class="badge bg-primary">@tag.Name</span>
                         </td>
-                        <td class="td-right">
-                            <form asp-action="Delete" method="post" style="display:inline"
-                                  onsubmit="return confirm('Удалить тег «@tag.Name»?')">
+
+                        <td>
+                            @foreach (var item in tag.TagCategoryTags)
+                            {
+                                if (item.TagCategory != null)
+                                {
+                                    <span class="badge bg-success">@item.TagCategory.Name</span>
+                                }
+                            }
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-warning"
+                                    onclick="openEditModal(@tag.Id, '@tag.Name')">
+                                ✏️
+                            </button>
+
+                            <form asp-action="Delete" method="post" style="display:inline;">
                                 <input type="hidden" name="id" value="@tag.Id" />
-                                <button type="submit" class="btn-danger-soft">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6"/>
-                                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                                        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-                                    </svg>
-                                    Удалить
-                                </button>
+                                <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                             </form>
                         </td>
+
+                        
+                        
+                        
                     </tr>
                 }
             </tbody>
         </table>
+
+        <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999;">
+            <div style="background:white; width:450px; margin:100px auto; padding:20px; border-radius:12px;">
+                <h4>Редактировать тег</h4>
+
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" id="editTagId" name="id" />
+
+                    <div>
+                        <label>Название тега</label>
+                        <input type="text" id="editTagName" name="name" class="form-control" />
+                    </div>
+
+                    <div style="margin-top:15px;">
+                        <label>Категории</label>
+
+                        @foreach (var category in ViewBag.Categories)
+                        {
+                            <label style="display:block;">
+                                <input type="checkbox"
+                                       class="edit-category-checkbox"
+                                       name="categoryIds"
+                                       value="@category.Id" />
+                                @category.Name
+                            </label>
+                        }
+                    </div>
+
+                    <div style="margin-top:15px;">
+                        <button type="submit" class="btn btn-success">Сохранить</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     }
 </div>
 
@@ -125,4 +169,21 @@ function toggleForm() {
     f.style.display = f.style.display === 'none' ? 'block' : 'none';
     if (f.style.display === 'block') f.querySelector('input').focus();
 }
+</script>
+
+<script>
+    function openEditModal(id, name) {
+        document.getElementById('editTagId').value = id;
+        document.getElementById('editTagName').value = name;
+
+        document.querySelectorAll('.edit-category-checkbox').forEach(x => {
+            x.checked = false;
+        });
+
+        document.getElementById('editModal').style.display = 'block';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
 </script>

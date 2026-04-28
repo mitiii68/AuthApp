@@ -28,7 +28,7 @@ namespace AuthApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(string name, int categoryId)
+        public async Task<IActionResult> Create(string name, List<int> categoryIds)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -36,11 +36,15 @@ namespace AuthApp.Controllers
                 _db.Tags.Add(tag);
                 await _db.SaveChangesAsync();
 
-                _db.TagCategoryTags.Add(new TagCategoryTag
+                foreach (var categoryId in categoryIds)
                 {
-                    TagId = tag.Id,
-                    TagCategoryId = categoryId
-                });
+                    _db.TagCategoryTags.Add(new TagCategoryTag
+                    {
+                        TagId = tag.Id,
+                        TagCategoryId = categoryId
+                    });
+                }
+
                 await _db.SaveChangesAsync();
             }
 
@@ -79,6 +83,34 @@ namespace AuthApp.Controllers
                 .ToListAsync();
 
             return Ok(tags);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, string name, List<int> categoryIds)
+        {
+            var tag = await _db.Tags
+                .Include(t => t.TagCategoryTags)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (tag == null)
+                return NotFound();
+
+            tag.Name = name;
+
+            _db.TagCategoryTags.RemoveRange(tag.TagCategoryTags);
+
+            foreach (var categoryId in categoryIds)
+            {
+                _db.TagCategoryTags.Add(new TagCategoryTag
+                {
+                    TagId = tag.Id,
+                    TagCategoryId = categoryId
+                });
+            }
+
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction("Index");
         }
     }
 }

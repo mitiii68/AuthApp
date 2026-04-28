@@ -120,5 +120,31 @@ namespace AuthApp.Controllers
 
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var document = await _context.FileDocuments
+                .Include(d => d.FileTags)
+                .FirstOrDefaultAsync(d => d.Id == id);
+
+            if (document != null)
+            {
+                
+                var fullPath = Path.Combine(_environment.WebRootPath,
+                    document.FilePath!.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+
+                
+                _context.FileDocuments.Remove(document);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }
