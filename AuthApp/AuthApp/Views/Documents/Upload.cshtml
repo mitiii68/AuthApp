@@ -4,14 +4,16 @@
     var tags = ViewBag.Tags as List<Tag>;
     var categories = ViewBag.Categories as List<TagCategory>;
 
+    
     var grouped = tags?
-        .GroupBy(t => t.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name ?? "Без категории")
-        .ToDictionary(g => g.Key, g => g.ToList())
-        ?? new Dictionary<string, List<Tag>>();
+        .GroupBy(t => t.TagCategoryTags?.FirstOrDefault()?.TagCategoryId ?? 0)
+        .OrderBy(g => g.Key)
+        .ToList()
+        ?? new List<IGrouping<int, Tag>>();
 }
 
 <style>
-    @@import url('https://fonts.googleapis.com/css2?family=Nunito...');
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 
     :root {
         --accent:       #3b5bdb;
@@ -139,7 +141,7 @@
         color: var(--text-sub);
     }
 
-   
+    
     .drop-zone {
         position: relative;
         display: flex;
@@ -225,7 +227,7 @@
     .cat-btn:hover { border-color: var(--accent); color: var(--accent); }
     .cat-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-   
+    
     .tags-scroll {
         padding: 14px 16px;
         max-height: 300px;
@@ -305,7 +307,7 @@
 <form asp-action="Upload" method="post" enctype="multipart/form-data">
     <div class="two-col">
 
-
+        
         <div class="card">
             <div class="card-header">Файл</div>
             <div class="drop-zone" id="dropZone">
@@ -331,7 +333,7 @@
             </div>
         </div>
 
-       
+        
         <div class="card">
             <div class="card-header">
                 <span>Теги</span>
@@ -358,10 +360,11 @@
                 {
                     foreach (var g in grouped)
                     {
-                        <div class="tag-group" data-id="@g.Value.First().TagCategoryTags.First().TagCategoryId">
-                            <div class="tag-group-name">@g.Key</div>
+                        var catName = g.First().TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name ?? "Без категории";
+                        <div class="tag-group" data-id="@g.Key">
+                            <div class="tag-group-name">@catName</div>
                             <div class="tag-chips-row">
-                                @foreach (var tag in g.Value)
+                                @foreach (var tag in g)
                                 {
                                     <label class="tag-chip-label" data-tag-id="@tag.Id">
                                         <input type="checkbox" name="tagIds" value="@tag.Id"

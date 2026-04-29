@@ -5,10 +5,303 @@
     var categories = ViewBag.Categories as List<TagCategory>;
 }
 
-<div class="page-header">
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@@400;500;600;700;800&display=swap');
+
+    :root {
+        --accent:       #3b5bdb;
+        --accent-light: #e7ecfd;
+        --accent-hover: #2f4ac7;
+        --surface:      #ffffff;
+        --surface-2:    #f8f9fc;
+        --border:       #e3e8f0;
+        --text:         #1a1d2e;
+        --text-sub:     #6b7280;
+        --danger:       #e03131;
+        --danger-light: #fff0f0;
+        --warning:      #e67700;
+        --warning-light:#fff8ec;
+        --success:      #2f9e44;
+        --success-light:#ebfbee;
+        --shadow-sm:    0 1px 4px rgba(59,91,219,.08);
+        --shadow-md:    0 4px 24px rgba(59,91,219,.13);
+        --radius:       12px;
+        --font:         'Nunito', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    .docs-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .docs-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -.4px;
+        line-height: 1.2;
+    }
+    .docs-header p {
+        font-size: 14px;
+        color: var(--text-sub);
+        margin-top: 3px;
+        font-weight: 500;
+    }
+
+    /* ── BUTTONS ────────────────────────────────────── */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: background .15s, box-shadow .15s, transform .1s;
+        white-space: nowrap;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary  { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.25); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost    { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+    /* ── ADD FORM CARD ──────────────────────────────── */
+    .add-form-card {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-md);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .add-form-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1.5px solid var(--border);
+        font-size: 14px;
+        font-weight: 700;
+        background: var(--surface-2);
+    }
+    .btn-close-x {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: var(--text-sub);
+        cursor: pointer;
+        transition: background .12s, color .12s;
+    }
+    .btn-close-x:hover { background: var(--danger-light); color: var(--danger); }
+
+    .add-form-body { padding: 20px; }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+    }
+    @@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 12.5px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .05em; }
+    .form-input, .form-select {
+        padding: 9px 13px;
+        border-radius: 8px;
+        border: 1.5px solid var(--border);
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        background: var(--surface);
+        transition: border-color .15s, box-shadow .15s;
+        outline: none;
+        width: 100%;
+    }
+    .form-input:focus, .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .form-select { min-height: 90px; }
+
+    /* Категории как чекбоксы */
+    .cat-check-list { display: flex; flex-direction: column; gap: 6px; }
+    .cat-check-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 11px;
+        border-radius: 7px;
+        border: 1.5px solid var(--border);
+        background: var(--surface-2);
+        cursor: pointer;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text);
+        transition: border-color .12s, background .12s;
+        user-select: none;
+    }
+    .cat-check-item:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    .cat-check-item input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+    .form-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1.5px solid var(--border);
+        grid-column: 1 / -1;
+    }
+
+    /* ── CARD & TABLE ───────────────────────────────── */
+    .card {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1.5px solid var(--border);
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text-sub);
+        background: var(--surface-2);
+    }
+    .card-header strong { color: var(--text); font-weight: 800; }
+
+    .empty-state {
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; padding: 64px 20px;
+        color: var(--text-sub); gap: 12px; text-align: center;
+    }
+    .empty-state svg { opacity: .3; }
+    .empty-state p { font-size: 16px; font-weight: 700; color: var(--text); }
+    .empty-state span { font-size: 14px; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead th {
+        padding: 11px 16px;
+        background: var(--surface-2);
+        font-size: 11.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--text-sub);
+        border-bottom: 1.5px solid var(--border);
+        text-align: left;
+        white-space: nowrap;
+    }
+    .data-table thead th.th-right { text-align: right; }
+    .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f4f6ff; }
+    .data-table td { padding: 12px 16px; vertical-align: middle; }
+    .td-muted { color: var(--text-sub); font-size: 13px; font-weight: 600; }
+    .td-right { text-align: right; }
+
+    /* ── BADGES ─────────────────────────────────────── */
+    .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+    .badge-tag {
+        display: inline-flex; align-items: center;
+        padding: 4px 11px; border-radius: 20px;
+        font-size: 12px; font-weight: 700;
+        background: var(--accent-light);
+        color: var(--accent);
+        border: 1.5px solid rgba(59,91,219,.18);
+    }
+    .badge-cat {
+        display: inline-flex; align-items: center;
+        padding: 4px 11px; border-radius: 20px;
+        font-size: 12px; font-weight: 700;
+        background: var(--success-light);
+        color: var(--success);
+        border: 1.5px solid rgba(47,158,68,.2);
+    }
+
+    /* ── ACTION BUTTONS ─────────────────────────────── */
+    .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+    .btn-icon {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; border-radius: 8px;
+        border: 1.5px solid var(--border); background: var(--surface);
+        color: var(--text-sub); cursor: pointer;
+        transition: background .12s, border-color .12s, color .12s;
+        text-decoration: none; flex-shrink: 0;
+    }
+    .btn-icon:hover { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
+    .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+
+    /* ── MODAL ──────────────────────────────────────── */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15,20,40,.55);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-overlay.open {
+        display: flex;
+    }
+    .modal {
+        background: var(--surface);
+        width: 460px;
+        max-width: calc(100vw - 32px);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-md);
+        border: 1.5px solid var(--border);
+        overflow: hidden;
+        animation: modalIn .18s ease;
+    }
+    @@keyframes modalIn {
+        from { opacity: 0; transform: translateY(-12px) scale(.97); }
+        to   { opacity: 1; transform: none; }
+    }
+    .modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1.5px solid var(--border);
+        font-size: 15px; font-weight: 800;
+        background: var(--surface-2);
+    }
+    .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .modal-footer {
+        display: flex; justify-content: flex-end; gap: 10px;
+        padding: 16px 20px;
+        border-top: 1.5px solid var(--border);
+        background: var(--surface-2);
+    }
+</style>
+
+<!-- HEADER -->
+<div class="docs-header">
     <div>
-        <h1 class="page-title">Теги</h1>
-        <p class="page-subtitle">Управление тегами для маркировки документов</p>
+        <h1>Теги</h1>
+        <p>Управление тегами для маркировки документов</p>
     </div>
     <button class="btn btn-primary" onclick="toggleForm()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -18,10 +311,11 @@
     </button>
 </div>
 
+<!-- ADD FORM -->
 <div class="add-form-card" id="addForm" style="display:none">
     <div class="add-form-header">
         <span>Новый тег</span>
-        <button class="btn-close-x" onclick="toggleForm()">
+        <button class="btn-close-x" onclick="toggleForm()" type="button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -36,35 +330,40 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Категория</label>
-                    <select name="categoryIds" multiple class="form-control">
-                        @foreach (var category in ViewBag.Categories)
+                    <div class="cat-check-list">
+                        @foreach (var cat in categories ?? new List<TagCategory>())
                         {
-                            <option value="@category.Id">@category.Name</option>
+                            <label class="cat-check-item">
+                                <input type="checkbox" name="categoryIds" value="@cat.Id" />
+                                @cat.Name
+                            </label>
                         }
-                    </select>
-            </div>
-            <div class="form-footer">
-                <button type="button" class="btn btn-ghost" onclick="toggleForm()">Отмена</button>
-                <button type="submit" class="btn btn-primary">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    Сохранить
-                </button>
-            </div>
+                    </div>
+                </div>
+                <div class="form-footer">
+                    <button type="button" class="btn btn-ghost" onclick="toggleForm()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Сохранить
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
+<!-- TABLE CARD -->
 <div class="card">
     <div class="card-header">
         <span>Всего тегов: <strong>@Model.Count</strong></span>
     </div>
+
     @if (!Model.Any())
     {
         <div class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
             </svg>
             <p>Тегов пока нет</p>
@@ -79,115 +378,172 @@
                     <th style="width:56px">#</th>
                     <th>Тег</th>
                     <th>Категории</th>
-                    <th style="width:120px" class="td-right">Действие</th>
+                    <th style="width:110px" class="th-right">Действия</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var tag in Model)
                 {
-                    var catNames = string.Join(", ", tag.TagCategoryTags
-                        .Select(tct => tct.TagCategory?.Name)
-                        .Where(n => n != null));
-
                     <tr>
                         <td class="td-muted">@tag.Id</td>
                         <td>
-                            <span class="badge bg-primary">@tag.Name</span>
+                            <span class="badge-tag">@tag.Name</span>
                         </td>
-
                         <td>
-                            @foreach (var item in tag.TagCategoryTags)
-                            {
-                                if (item.TagCategory != null)
+                            <div class="tag-list">
+                                @foreach (var item in tag.TagCategoryTags)
                                 {
-                                    <span class="badge bg-success">@item.TagCategory.Name</span>
+                                    if (item.TagCategory != null)
+                                    {
+                                        <span class="badge-cat">@item.TagCategory.Name</span>
+                                    }
                                 }
-                            }
+                            </div>
                         </td>
-
-                       <td>
-    <div class="d-flex align-items-center gap-3">
-        <button type="button"
-                class="btn btn-sm btn-warning"
-                onclick="openEditModal(@tag.Id, '@tag.Name')">
-            ✎
-        </button>
-
-        <form asp-action="Delete" method="post">
-            <input type="hidden" name="id" value="@tag.Id" />
-            <button type="submit" class="btn btn-sm btn-danger">
-                Удалить
-            </button>
-        </form>
-    </div>
-</td>
-
-                        
-                        
-                        
+                        <td class="td-right">
+                            <div class="actions">
+                                <button type="button" class="btn-icon"
+                                        data-id="@tag.Id"
+                                        data-name="@tag.Name"
+                                        data-categories='@Html.Raw(Json.Serialize(tag.TagCategoryTags.Select(t => t.TagCategoryId).ToList()))'
+                                        onclick="openEditModal(this)"
+                                        title="Редактировать">
+                                </button>
+                                <form asp-action="Delete" method="post" style="display:inline"
+                                      onsubmit="return confirm('Удалить тег «@tag.Name»?')">
+                                    <input type="hidden" name="id" value="@tag.Id" />
+                                    <button type="submit" class="btn-icon danger" title="Удалить">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                                            <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
-
-        <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999;">
-            <div style="background:white; width:450px; margin:100px auto; padding:20px; border-radius:12px;">
-                <h4>Редактировать тег</h4>
-
-                <form asp-action="Edit" method="post">
-                    <input type="hidden" id="editTagId" name="id" />
-
-                    <div>
-                        <label>Название тега</label>
-                        <input type="text" id="editTagName" name="name" class="form-control" />
-                    </div>
-
-                    <div style="margin-top:15px;">
-                        <label>Категории</label>
-
-                        @foreach (var category in ViewBag.Categories)
-                        {
-                            <label style="display:block;">
-                                <input type="checkbox"
-                                       class="edit-category-checkbox"
-                                       name="categoryIds"
-                                       value="@category.Id" />
-                                @category.Name
-                            </label>
-                        }
-                    </div>
-
-                    <div style="margin-top:15px;">
-                        <button type="submit" class="btn btn-success">Сохранить</button>
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Отмена</button>
-                    </div>
-                </form>
-            </div>
-        </div>
     }
 </div>
 
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <span>Редактировать тег</span>
+            <button class="btn-close-x" type="button" onclick="closeEditModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form asp-action="Edit" method="post">
+            <input type="hidden" id="editTagId" name="id" />
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Название тега</label>
+                    <input type="text" id="editTagName" name="name" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Категории</label>
+                    <div class="cat-check-list">
+                        @foreach (var cat in categories ?? new List<TagCategory>())
+                        {
+                            <label class="cat-check-item">
+                                <input type="checkbox"
+                                       class="edit-category-checkbox"
+                                       name="categoryIds"
+                                       value="@cat.Id" />
+                                @cat.Name
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeEditModal()">Отмена</button>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Переносим модалку прямо в body — избегаем проблем с z-index и overflow
+    var modal = document.getElementById('editModal');
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+});
+
 function toggleForm() {
     const f = document.getElementById('addForm');
     f.style.display = f.style.display === 'none' ? 'block' : 'none';
-    if (f.style.display === 'block') f.querySelector('input').focus();
+    if (f.style.display === 'block') f.querySelector('input[type="text"]').focus();
 }
-</script>
 
-<script>
-    function openEditModal(id, name) {
-        document.getElementById('editTagId').value = id;
-        document.getElementById('editTagName').value = name;
+    function openEditModal(button) {
+        try {
+            console.log("Кнопка нажата", button); // Это появится в консоли браузера
 
-        document.querySelectorAll('.edit-category-checkbox').forEach(x => {
-            x.checked = false;
-        });
+            // Получаем данные
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const categoriesRaw = button.getAttribute('data-categories');
 
-        document.getElementById('editModal').style.display = 'block';
+            console.log("Данные категорий:", categoriesRaw);
+
+            const categoryIds = JSON.parse(categoriesRaw);
+
+            // Заполняем поля
+            document.getElementById('editTagId').value = id;
+            document.getElementById('editTagName').value = name;
+
+            // Чекбоксы
+            document.querySelectorAll('.edit-category-checkbox').forEach(cb => {
+                cb.checked = categoryIds.includes(parseInt(cb.value));
+            });
+
+            // Показываем окно
+            const modal = document.getElementById('editModal');
+            modal.classList.add('open');
+
+        } catch (e) {
+            console.error("Ошибка при открытии модалки:", e);
+            alert("Ошибка! Откройте консоль (F12), чтобы увидеть детали.");
+        }
     }
 
-    function closeEditModal() {
-        document.getElementById('editModal').style.display = 'none';
-    }
+function openEditModal(id, name, categoryIds) {
+    document.getElementById('editTagId').value = id;
+    document.getElementById('editTagName').value = name;
+
+    document.querySelectorAll('.edit-category-checkbox').forEach(cb => {
+        cb.checked = categoryIds.includes(parseInt(cb.value));
+    });
+
+    var modal = document.getElementById('editModal');
+    modal.style.display    = 'flex';
+    modal.style.position   = 'fixed';
+    modal.style.inset      = '0';
+    modal.style.background = 'rgba(15,20,40,.55)';
+    modal.style.zIndex     = '9999';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
 </script>
