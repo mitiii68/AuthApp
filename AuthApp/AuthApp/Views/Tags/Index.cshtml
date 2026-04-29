@@ -32,7 +32,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
 
-    /* ── HEADER ─────────────────────────────────────── */
     .docs-header {
         display: flex;
         align-items: center;
@@ -54,7 +53,6 @@
         font-weight: 500;
     }
 
-    /* ── BUTTONS ────────────────────────────────────── */
     .btn {
         display: inline-flex;
         align-items: center;
@@ -77,7 +75,6 @@
     .btn-ghost:hover { background: var(--surface-2); }
     .btn-sm { padding: 6px 12px; font-size: 13px; }
 
-    /* ── ADD FORM CARD ──────────────────────────────── */
     .add-form-card {
         background: var(--surface);
         border: 1.5px solid var(--border);
@@ -141,7 +138,6 @@
     }
     .form-select { min-height: 90px; }
 
-    /* Категории как чекбоксы */
     .cat-check-list { display: flex; flex-direction: column; gap: 6px; }
     .cat-check-item {
         display: flex;
@@ -171,7 +167,6 @@
         grid-column: 1 / -1;
     }
 
-    /* ── CARD & TABLE ───────────────────────────────── */
     .card {
         background: var(--surface);
         border: 1.5px solid var(--border);
@@ -222,7 +217,6 @@
     .td-muted { color: var(--text-sub); font-size: 13px; font-weight: 600; }
     .td-right { text-align: right; }
 
-    /* ── BADGES ─────────────────────────────────────── */
     .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
     .badge-tag {
         display: inline-flex; align-items: center;
@@ -241,7 +235,6 @@
         border: 1.5px solid rgba(47,158,68,.2);
     }
 
-    /* ── ACTION BUTTONS ─────────────────────────────── */
     .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
     .btn-icon {
         display: inline-flex; align-items: center; justify-content: center;
@@ -254,7 +247,6 @@
     .btn-icon:hover { background: var(--warning-light); border-color: var(--warning); color: var(--warning); }
     .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
 
-    /* ── MODAL ──────────────────────────────────────── */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -295,9 +287,15 @@
         border-top: 1.5px solid var(--border);
         background: var(--surface-2);
     }
+
+    /* Fix: make custom modal visible despite Bootstrap's .modal rules */
+    .modal-overlay.open .modal {
+        display: block !important;
+        position: relative; 
+        z-index: 1000;      
+    }
 </style>
 
-<!-- HEADER -->
 <div class="docs-header">
     <div>
         <h1>Теги</h1>
@@ -311,7 +309,6 @@
     </button>
 </div>
 
-<!-- ADD FORM -->
 <div class="add-form-card" id="addForm" style="display:none">
     <div class="add-form-header">
         <span>Новый тег</span>
@@ -354,7 +351,6 @@
     </div>
 </div>
 
-<!-- TABLE CARD -->
 <div class="card">
     <div class="card-header">
         <span>Всего тегов: <strong>@Model.Count</strong></span>
@@ -405,9 +401,13 @@
                                 <button type="button" class="btn-icon"
                                         data-id="@tag.Id"
                                         data-name="@tag.Name"
-                                        data-categories='@Html.Raw(Json.Serialize(tag.TagCategoryTags.Select(t => t.TagCategoryId).ToList()))'
+                                        data-categories='@Json.Serialize(tag.TagCategoryTags.Select(t => t.TagCategoryId).ToList())'
                                         onclick="openEditModal(this)"
                                         title="Редактировать">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
                                 </button>
                                 <form asp-action="Delete" method="post" style="display:inline"
                                       onsubmit="return confirm('Удалить тег «@tag.Name»?')">
@@ -429,7 +429,6 @@
     }
 </div>
 
-<!-- EDIT MODAL -->
 <div id="editModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
@@ -478,72 +477,63 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Переносим модалку прямо в body — избегаем проблем с z-index и overflow
-    var modal = document.getElementById('editModal');
-    document.body.appendChild(modal);
+    const modal = document.getElementById('editModal');
+    const editTagId = document.getElementById('editTagId');
+    const editTagName = document.getElementById('editTagName');
+    const editCategoryCheckboxes = Array.from(document.querySelectorAll('.edit-category-checkbox'));
 
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) closeEditModal();
+    document.addEventListener('click', function(e) {
+        
+        const btn = e.target.closest('.btn-icon');
+        if (btn && btn.getAttribute('data-id')) {
+            openEditModal(btn);
+            return;
+        }
+
+        if (e.target.closest('.btn-close-x') || e.target === modal) {
+            closeEditModal();
+        }
     });
+
+    // expose functions for inline handlers and other scripts
+    window.openEditModal = function(source) {
+        const btn = source && source.getAttribute ? source : null;
+        if (!btn) return;
+
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const catRaw = btn.getAttribute('data-categories');
+
+        if (editTagId) editTagId.value = id || '';
+        if (editTagName) editTagName.value = name || '';
+
+        
+        let categoryIds = [];
+        try {
+            categoryIds = JSON.parse(catRaw || "[]");
+        } catch (err) {
+            categoryIds = [];
+        }
+        const categorySet = new Set((categoryIds || []).map(Number));
+        editCategoryCheckboxes.forEach(cb => {
+            cb.checked = categorySet.has(Number(cb.value));
+        });
+
+        
+        modal.classList.add('open');
+        if (editTagName) editTagName.focus();
+    };
+
+    window.closeEditModal = function() {
+        if (modal) modal.classList.remove('open');
+    };
 });
+
 
 function toggleForm() {
     const f = document.getElementById('addForm');
+    if (!f) return;
     f.style.display = f.style.display === 'none' ? 'block' : 'none';
     if (f.style.display === 'block') f.querySelector('input[type="text"]').focus();
-}
-
-    function openEditModal(button) {
-        try {
-            console.log("Кнопка нажата", button); // Это появится в консоли браузера
-
-            // Получаем данные
-            const id = button.getAttribute('data-id');
-            const name = button.getAttribute('data-name');
-            const categoriesRaw = button.getAttribute('data-categories');
-
-            console.log("Данные категорий:", categoriesRaw);
-
-            const categoryIds = JSON.parse(categoriesRaw);
-
-            // Заполняем поля
-            document.getElementById('editTagId').value = id;
-            document.getElementById('editTagName').value = name;
-
-            // Чекбоксы
-            document.querySelectorAll('.edit-category-checkbox').forEach(cb => {
-                cb.checked = categoryIds.includes(parseInt(cb.value));
-            });
-
-            // Показываем окно
-            const modal = document.getElementById('editModal');
-            modal.classList.add('open');
-
-        } catch (e) {
-            console.error("Ошибка при открытии модалки:", e);
-            alert("Ошибка! Откройте консоль (F12), чтобы увидеть детали.");
-        }
     }
-
-function openEditModal(id, name, categoryIds) {
-    document.getElementById('editTagId').value = id;
-    document.getElementById('editTagName').value = name;
-
-    document.querySelectorAll('.edit-category-checkbox').forEach(cb => {
-        cb.checked = categoryIds.includes(parseInt(cb.value));
-    });
-
-    var modal = document.getElementById('editModal');
-    modal.style.display    = 'flex';
-    modal.style.position   = 'fixed';
-    modal.style.inset      = '0';
-    modal.style.background = 'rgba(15,20,40,.55)';
-    modal.style.zIndex     = '9999';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-}
-
-function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-}
 </script>

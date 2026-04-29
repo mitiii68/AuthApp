@@ -4,10 +4,141 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="page-header">
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@@400;500;600;700;800&display=swap');
+
+    :root {
+        --accent:       #3b5bdb;
+        --accent-light: #e7ecfd;
+        --accent-hover: #2f4ac7;
+        --surface:      #ffffff;
+        --surface-2:    #f8f9fc;
+        --border:       #e3e8f0;
+        --text:         #1a1d2e;
+        --text-sub:     #6b7280;
+        --danger:       #e03131;
+        --danger-light: #fff0f0;
+        --shadow-sm:    0 1px 4px rgba(59,91,219,.08);
+        --shadow-md:    0 4px 24px rgba(59,91,219,.13);
+        --radius:       12px;
+        --font:         'Nunito', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
+
+    .docs-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+    .docs-header h1 { font-size: 26px; font-weight: 800; letter-spacing: -.4px; line-height: 1.2; }
+    .docs-header p  { font-size: 14px; color: var(--text-sub); margin-top: 3px; font-weight: 500; }
+
+    .btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 18px; border-radius: 8px; font-family: var(--font);
+        font-size: 14px; font-weight: 700; cursor: pointer; border: none;
+        text-decoration: none; transition: background .15s, transform .1s; white-space: nowrap;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.25); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+    .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+    .add-form-card {
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-md);
+        margin-bottom: 20px; overflow: hidden;
+    }
+    .add-form-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 20px; border-bottom: 1.5px solid var(--border);
+        font-size: 14px; font-weight: 700; background: var(--surface-2);
+    }
+    .btn-close-x {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 30px; height: 30px; border-radius: 6px; border: none;
+        background: transparent; color: var(--text-sub); cursor: pointer;
+        transition: background .12s, color .12s;
+    }
+    .btn-close-x:hover { background: var(--danger-light); color: var(--danger); }
+
+    .add-form-body { padding: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; max-width: 420px; }
+    .form-label { font-size: 12.5px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .05em; }
+    .form-input {
+        padding: 9px 13px; border-radius: 8px; border: 1.5px solid var(--border);
+        font-family: var(--font); font-size: 14px; font-weight: 500;
+        color: var(--text); background: var(--surface);
+        transition: border-color .15s, box-shadow .15s; outline: none; width: 100%;
+    }
+    .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+
+    .form-footer {
+        display: flex; justify-content: flex-end; gap: 10px;
+        margin-top: 18px; padding-top: 16px; border-top: 1.5px solid var(--border);
+    }
+
+    .card {
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .card-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 20px; border-bottom: 1.5px solid var(--border);
+        font-size: 13.5px; font-weight: 600; color: var(--text-sub); background: var(--surface-2);
+    }
+    .card-header strong { color: var(--text); font-weight: 800; }
+
+    .empty-state {
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; padding: 64px 20px;
+        color: var(--text-sub); gap: 12px; text-align: center;
+    }
+    .empty-state svg { opacity: .3; }
+    .empty-state p { font-size: 16px; font-weight: 700; color: var(--text); }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead th {
+        padding: 11px 16px; background: var(--surface-2);
+        font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .07em; color: var(--text-sub);
+        border-bottom: 1.5px solid var(--border); text-align: left;
+    }
+    .data-table thead th.th-right { text-align: right; }
+    .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f4f6ff; }
+    .data-table td { padding: 11px 16px; vertical-align: middle; }
+    .td-muted { color: var(--text-sub); font-size: 13px; font-weight: 600; width: 56px; }
+    .td-right { text-align: right; }
+
+    
+    .inline-edit {
+        display: flex; align-items: center; gap: 10px;
+    }
+    .inline-edit .form-input {
+        width: 240px; padding: 7px 11px; font-size: 13.5px;
+    }
+
+    
+    .btn-icon {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; border-radius: 8px;
+        border: 1.5px solid var(--border); background: var(--surface);
+        color: var(--text-sub); cursor: pointer;
+        transition: background .12s, border-color .12s, color .12s;
+    }
+    .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+</style>
+
+
+<div class="docs-header">
     <div>
-        <h1 class="page-title">Категории тегов</h1>
-        <p class="page-subtitle">Управление категориями для классификации документов</p>
+        <h1>Категории тегов</h1>
+        <p>Управление категориями для классификации документов</p>
     </div>
     <button class="btn btn-primary" onclick="toggleForm()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -21,7 +152,7 @@
 <div class="add-form-card" id="addForm" style="display:none">
     <div class="add-form-header">
         <span>Новая категория</span>
-        <button class="btn-close-x" onclick="toggleForm()">
+        <button class="btn-close-x" onclick="toggleForm()" type="button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -46,15 +177,15 @@
     </div>
 </div>
 
-
 <div class="card">
     <div class="card-header">
         <span>Всего категорий: <strong>@Model.Count</strong></span>
     </div>
+
     @if (!Model.Any())
     {
         <div class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                 <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
             </svg>
             <p>Категорий пока нет</p>
@@ -68,7 +199,7 @@
                 <tr>
                     <th style="width:56px">#</th>
                     <th>Название категории</th>
-                    <th style="width:120px" class="td-right">Действие</th>
+                    <th style="width:80px" class="th-right">Удалить</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,12 +208,13 @@
                     <tr>
                         <td class="td-muted">@cat.Id</td>
                         <td>
-                            <form asp-action="Edit" method="post" style="display:flex; gap:10px; align-items:center;">
+                            <form asp-action="Edit" method="post" class="inline-edit">
                                 <input type="hidden" name="id" value="@cat.Id" />
-
-                                <input type="text" name="name" value="@cat.Name" class="form-input" style="width:220px;" />
-
-                                <button type="submit" class="btn btn-primary">
+                                <input type="text" name="name" value="@cat.Name" class="form-input" required />
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
                                     Сохранить
                                 </button>
                             </form>
@@ -91,13 +223,12 @@
                             <form asp-action="Delete" method="post" style="display:inline"
                                   onsubmit="return confirm('Удалить категорию «@cat.Name»?')">
                                 <input type="hidden" name="id" value="@cat.Id" />
-                                <button type="submit" class="btn-danger-soft">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <button type="submit" class="btn-icon danger" title="Удалить">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polyline points="3 6 5 6 21 6"/>
                                         <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
                                         <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
                                     </svg>
-                                    Удалить
                                 </button>
                             </form>
                         </td>
@@ -112,6 +243,6 @@
 function toggleForm() {
     const f = document.getElementById('addForm');
     f.style.display = f.style.display === 'none' ? 'block' : 'none';
-    if (f.style.display === 'block') f.querySelector('input').focus();
+    if (f.style.display === 'block') f.querySelector('input[type="text"]').focus();
 }
 </script>
