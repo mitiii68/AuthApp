@@ -1,6 +1,7 @@
 using AuthApp.Data;
 using AuthApp.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApp.Controllers
@@ -17,6 +18,21 @@ namespace AuthApp.Controllers
         }
 
         
+        private string CurrentUserEmail()
+            => HttpContext.Session.GetString("UserEmail") ?? "неизвестный";
+
+        
+        private async Task LogActionAsync(string action)
+        {
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail  = CurrentUserEmail(),
+                Action     = action,
+                ActionTime = DateTime.Now
+            });
+            await _context.SaveChangesAsync();
+        }
+
 
         public async Task<IActionResult> Upload()
         {
@@ -61,9 +77,7 @@ namespace AuthApp.Controllers
             var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
 
             if (!Directory.Exists(uploadsPath))
-            {
                 Directory.CreateDirectory(uploadsPath);
-            }
 
             var uniqueFileName = Guid.NewGuid() + extension;
             var filePath = Path.Combine(uploadsPath, uniqueFileName);
@@ -75,9 +89,9 @@ namespace AuthApp.Controllers
 
             var document = new FileDocuments
             {
-                FileName = file.FileName,
-                FilePath = "/uploads/" + uniqueFileName,
-                Extension = extension,
+                FileName   = file.FileName,
+                FilePath   = "/uploads/" + uniqueFileName,
+                Extension  = extension,
                 UploadDate = DateTime.Now
             };
 
@@ -89,11 +103,14 @@ namespace AuthApp.Controllers
                 _context.FileTags.Add(new FileTag
                 {
                     FileDocumentsId = document.Id,
-                    TagId = tagId
+                    TagId           = tagId
                 });
             }
 
             await _context.SaveChangesAsync();
+
+            
+            await LogActionAsync($"Загрузил документ «{file.FileName}»");
 
             return RedirectToAction("Index");
         }
@@ -107,27 +124,64 @@ namespace AuthApp.Controllers
 
             if (document != null)
             {
-                
                 var fullPath = Path.Combine(_environment.WebRootPath,
                     document.FilePath!.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
 
                 if (System.IO.File.Exists(fullPath))
-                {
                     System.IO.File.Delete(fullPath);
-                }
 
                 
+                var fileName = document.FileName;
+
                 _context.FileDocuments.Remove(document);
                 await _context.SaveChangesAsync();
+
+                await LogActionAsync($"Удалил документ «{fileName}»");
             }
 
             return RedirectToAction("Index");
         }
 
+        
+        public async Task<IActionResult> Download(int id)
+        {
+            var document = await _context.FileDocuments.FindAsync(id);
+
+            if (document == null || string.IsNullOrEmpty(document.FilePath))
+                return NotFound();
+
+            var fullPath = Path.Combine(_environment.WebRootPath,
+                document.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            
+            await LogActionAsync($"Скачал документ «{document.FileName}»");
+
+            var contentType = document.Extension?.ToLower() switch
+            {
+                ".pdf"  => "application/pdf",
+                ".doc"  => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls"  => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".zip"  => "application/zip",
+                ".rar"  => "application/x-rar-compressed",
+                ".7z"   => "application/x-7z-compressed",
+                _       => "application/octet-stream"
+            };
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+            return File(fileBytes, contentType, document.FileName);
+        }
+
         public async Task<IActionResult> Index(
-    string search,
-    List<int> selectedTags,
-    string sortOrder)
+            string search,
+            List<int> selectedTags,
+            string sortOrder,
+            int page = 1,
+            int pageSize = 10) 
         {
             ViewBag.Tags = await _context.Tags
                 .Include(t => t.TagCategoryTags)
@@ -142,14 +196,13 @@ namespace AuthApp.Controllers
             if (!string.IsNullOrWhiteSpace(search))
             {
                 documentsQuery = documentsQuery.Where(d =>
-                   d.FileName != null && d.FileName.Contains(search));
+                    d.FileName != null && d.FileName.Contains(search));
             }
 
             if (selectedTags != null && selectedTags.Any())
             {
                 documentsQuery = documentsQuery.Where(d =>
-                    d.FileTags.Any(ft =>
-                        selectedTags.Contains(ft.TagId)));
+                    d.FileTags.Any(ft => selectedTags.Contains(ft.TagId)));
             }
 
             documentsQuery = sortOrder switch
@@ -161,7 +214,23 @@ namespace AuthApp.Controllers
                 _ => documentsQuery.OrderByDescending(d => d.UploadDate)
             };
 
-            var documents = await documentsQuery.ToListAsync();
+            var totalItems = await documentsQuery.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            page = Math.Clamp(page, 1, Math.Max(1, totalPages));
+
+            var documents = await documentsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Page = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalItems;
+            ViewBag.SortOrder = sortOrder;
+            ViewBag.Search = search;
+            ViewBag.SelectedTags = selectedTags ?? new List<int>();
+            ViewBag.PageSize = pageSize;
 
             return View(documents);
         }

@@ -12,6 +12,13 @@
                             .ToList();
 
     var hasFilters = !string.IsNullOrWhiteSpace(currentSearch) || currentTagIds.Any();
+
+    int currentPage = ViewBag.Page is int vbp  ? vbp  : 1;
+    int totalPages  = ViewBag.TotalPages is int vbtp ? vbtp : 1;
+    int pageSize    = ViewBag.PageSize is int vbs ? vbs : 10;
+    int totalCount  = ViewBag.TotalCount is int tc
+                        ? tc
+                        : (totalPages > 1 ? (totalPages - 1) * pageSize + Model.Count : Model.Count);
 }
 
 <style>
@@ -357,6 +364,42 @@
     }
     .btn-icon:hover        { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
     .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+
+    
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 16px 20px;
+        border-top: 1.5px solid var(--border);
+        background: var(--surface-2);
+        flex-wrap: wrap;
+    }
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 13.5px;
+        font-weight: 700;
+        border: 1.5px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .12s, border-color .12s, color .12s;
+        line-height: 1;
+    }
+    .page-btn:hover       { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .page-btn.active      { background: var(--accent); border-color: var(--accent); color: #fff; pointer-events: none; }
+    .page-btn.disabled    { opacity: .38; pointer-events: none; cursor: default; }
+    .page-dots            { font-size: 13px; color: var(--text-sub); padding: 0 4px; align-self: flex-end; line-height: 36px; }
+    .pagination-info      { font-size: 12.5px; color: var(--text-sub); font-weight: 600; margin-left: 8px; }
 </style>
 
 
@@ -514,7 +557,7 @@
 <div class="card">
     <div class="card-header">
         <span>
-            Найдено: <strong>@Model.Count</strong>
+            Найдено: <strong>@totalCount</strong>
             @if (currentTagIds.Any() || !string.IsNullOrWhiteSpace(currentSearch))
             {
                 <span style="color:var(--accent);font-weight:600"> — применены фильтры</span>
@@ -600,7 +643,7 @@
                         </td>
                         <td class="td-right">
                             <div class="actions">
-                                <a href="@doc.FilePath" download class="btn-icon" title="Скачать">
+                                <a asp-action="Download" asp-route-id="@doc.Id" class="btn-icon" title="Скачать">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
                                         <polyline points="7 10 12 15 17 10"/>
@@ -624,5 +667,81 @@
                 }
             </tbody>
         </table>
+
+        
+        @if (totalPages > 1)
+        {
+            var qb = new System.Text.StringBuilder("?");
+            if (!string.IsNullOrWhiteSpace(currentSearch))
+                qb.Append($"search={Uri.EscapeDataString(currentSearch)}&");
+            if (!string.IsNullOrWhiteSpace(currentSort) && currentSort != "new")
+                qb.Append($"sortOrder={Uri.EscapeDataString(currentSort)}&");
+            foreach (var tid in currentTagIds)
+                qb.Append($"selectedTags={tid}&");
+            var baseQuery = qb.ToString().TrimEnd('&');
+
+            Func<int, string> PageUrl = p =>
+                baseQuery.Length > 1
+                    ? baseQuery + $"&page={p}"
+                    : $"?page={p}";
+
+            int winStart = Math.Max(1, currentPage - 2);
+            int winEnd   = Math.Min(totalPages, currentPage + 2);
+            while (winEnd - winStart < 4 && winStart > 1)        winStart--;
+            while (winEnd - winStart < 4 && winEnd < totalPages)  winEnd++;
+
+            <div class="pagination">
+
+                
+                @if (currentPage <= 1)
+                {
+                    <span class="page-btn disabled" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                    </span>
+                }
+                else
+                {
+                    <a href="@PageUrl(currentPage - 1)" class="page-btn" aria-label="Предыдущая страница">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                    </a>
+                }
+
+                
+                @if (winStart > 1)
+                {
+                    <a href="@PageUrl(1)" class="page-btn">1</a>
+                    @if (winStart > 2) { <span class="page-dots">…</span> }
+                }
+
+                
+                @for (int p = winStart; p <= winEnd; p++)
+                {
+                    <a href="@PageUrl(p)" class="page-btn @(p == currentPage ? "active" : "")">@p</a>
+                }
+
+               
+                @if (winEnd < totalPages)
+                {
+                    @if (winEnd < totalPages - 1) { <span class="page-dots">…</span> }
+                    <a href="@PageUrl(totalPages)" class="page-btn">@totalPages</a>
+                }
+
+                
+                @if (currentPage >= totalPages)
+                {
+                    <span class="page-btn disabled" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </span>
+                }
+                else
+                {
+                    <a href="@PageUrl(currentPage + 1)" class="page-btn" aria-label="Следующая страница">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                }
+
+                <span class="pagination-info">Стр. @currentPage из @totalPages</span>
+            </div>
+        }
     }
 </div>
