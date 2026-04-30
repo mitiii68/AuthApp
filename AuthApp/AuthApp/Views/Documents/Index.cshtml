@@ -3,11 +3,19 @@
     ViewData["Title"] = "Документы";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var tags = ViewBag.Tags as List<Tag>;
-    var selectedTagId = ViewBag.SelectedTagId as int?;
+
+    var currentSearch   = Context.Request.Query["search"].ToString();
+    var currentSort     = Context.Request.Query["sortOrder"].ToString();
+    var currentTagIds   = Context.Request.Query["selectedTags"]
+                            .Select(v => int.TryParse(v, out var n) ? n : 0)
+                            .Where(n => n > 0)
+                            .ToList();
+
+    var hasFilters = !string.IsNullOrWhiteSpace(currentSearch) || currentTagIds.Any();
 }
 
 <style>
-    @@import url('https://fonts.googleapis.com/css2?family=Nunito...');
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 
     :root {
         --accent:       #3b5bdb;
@@ -27,31 +35,19 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
 
-    
+   
     .docs-header {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         flex-wrap: wrap;
         gap: 12px;
     }
-    .docs-header h1 {
-        font-size: 26px;
-        font-weight: 800;
-        color: var(--text);
-        letter-spacing: -.4px;
-        line-height: 1.2;
-    }
-    .docs-header p {
-        font-size: 14px;
-        color: var(--text-sub);
-        margin-top: 3px;
-        font-weight: 500;
-    }
+    .docs-header h1  { font-size: 26px; font-weight: 800; letter-spacing: -.4px; line-height: 1.2; }
+    .docs-header p   { font-size: 14px; color: var(--text-sub); margin-top: 3px; font-weight: 500; }
 
     
     .btn {
@@ -68,98 +64,171 @@
         text-decoration: none;
         transition: background .15s, box-shadow .15s, transform .1s;
     }
-    .btn:active { transform: scale(.98); }
-    .btn-primary {
-        background: var(--accent);
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(59,91,219,.25);
-    }
+    .btn:active  { transform: scale(.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.25); }
     .btn-primary:hover { background: var(--accent-hover); }
-    .btn-ghost {
-        background: var(--surface);
-        color: var(--text);
-        border: 1.5px solid var(--border);
-    }
+    .btn-ghost   { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
     .btn-ghost:hover { background: var(--surface-2); }
 
     
-    .filter-bar {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .search-panel {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        padding: 16px 20px;
         margin-bottom: 18px;
-        position: relative;
     }
-    .filter-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 13px;
+    .search-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .search-field {
+        flex: 1 1 260px;
+    }
+    .filter-field {
+        flex: 0 1 220px;
+    }
+    .sort-field {
+        flex: 0 1 180px;
+    }
+    .search-label {
+        display: block;
+        font-size: 11.5px;
         font-weight: 700;
         color: var(--text-sub);
         text-transform: uppercase;
         letter-spacing: .06em;
+        margin-bottom: 6px;
     }
-    .tag-dropdown-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 14px;
-        border-radius: 8px;
-        border: 1.5px solid var(--border);
-        background: var(--surface);
-        cursor: pointer;
-        font-family: var(--font);
-        font-size: 13.5px;
-        font-weight: 600;
-        color: var(--text);
-        transition: border-color .15s, box-shadow .15s;
-        box-shadow: var(--shadow-sm);
+    .search-input-wrap {
+        position: relative;
     }
-    .tag-dropdown-btn:hover { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-    .tag-dropdown {
-        display: none;
+    .search-input-wrap svg {
         position: absolute;
-        top: calc(100% + 8px);
-        left: 90px;
-        z-index: 300;
-        background: var(--surface);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-md);
-        min-width: 270px;
-        max-width: 360px;
-        padding: 12px;
-    }
-    .tag-dropdown-title {
-        font-size: 11px;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
         color: var(--text-sub);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .07em;
-        padding: 0 4px 10px;
+        pointer-events: none;
     }
-    .chip-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 280px; overflow-y: auto; padding: 2px 2px 4px; }
-    .chip {
+    .form-input {
+        width: 100%;
+        padding: 9px 12px 9px 36px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        background: var(--surface-2);
+        outline: none;
+        transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .form-input:focus {
+        border-color: var(--accent);
+        background: var(--surface);
+        box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .form-select {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        font-family: var(--font);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        background: var(--surface-2);
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+        appearance: none;
+        cursor: pointer;
+    }
+    .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    
+    .tags-select { height: 96px; padding: 6px 8px; font-size: 13px; }
+    .tags-select option { padding: 3px 4px; border-radius: 4px; }
+    .tags-select option:checked { background: var(--accent); color: #fff; }
+
+    .select-wrap {
+        position: relative;
+    }
+    .select-wrap::after {
+        content: '';
+        pointer-events: none;
+        position: absolute;
+        right: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0; height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid var(--text-sub);
+    }
+
+    
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+    }
+    .active-filters-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-sub);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        align-self: center;
+        flex-shrink: 0;
+    }
+    .filter-chip {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        padding: 5px 12px;
+        gap: 5px;
+        padding: 4px 10px;
         border-radius: 20px;
         font-size: 12.5px;
         font-weight: 600;
-        background: var(--surface-2);
-        border: 1.5px solid var(--border);
-        color: var(--text);
-        text-decoration: none;
-        transition: background .12s, border-color .12s, color .12s;
-        cursor: pointer;
+        background: var(--accent-light);
+        color: var(--accent);
+        border: 1.5px solid rgba(59,91,219,.2);
     }
-    .chip:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
-    .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .chip-sub { font-size: 11px; font-weight: 500; opacity: .75; }
+    .filter-chip-remove {
+        cursor: pointer;
+        opacity: .65;
+        transition: opacity .1s;
+        background: none;
+        border: none;
+        color: inherit;
+        padding: 0;
+        line-height: 1;
+        display: inline-flex;
+    }
+    .filter-chip-remove:hover { opacity: 1; }
+    .btn-clear-all {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--danger);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: background .12s;
+    }
+    .btn-clear-all:hover { background: var(--danger-light); }
 
-   
+    
     .card {
         background: var(--surface);
         border: 1.5px solid var(--border);
@@ -192,15 +261,11 @@
         text-align: center;
     }
     .empty-state svg { opacity: .35; }
-    .empty-state p { font-size: 16px; font-weight: 700; color: var(--text); }
+    .empty-state p   { font-size: 16px; font-weight: 700; color: var(--text); }
     .empty-state span { font-size: 14px; }
 
-  
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
+    
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .data-table thead th {
         padding: 11px 16px;
         background: var(--surface-2);
@@ -220,13 +285,10 @@
     }
     .data-table tbody tr:last-child { border-bottom: none; }
     .data-table tbody tr:hover { background: #f4f6ff; }
-    .data-table td {
-        padding: 13px 16px;
-        vertical-align: middle;
-    }
+    .data-table td { padding: 13px 16px; vertical-align: middle; }
     .td-right { text-align: right; }
 
-
+    
     .file-icon {
         display: inline-flex;
         align-items: center;
@@ -240,11 +302,11 @@
         color: #fff;
         flex-shrink: 0;
     }
-    .fi-pdf   { background: #e03131; }
-    .fi-doc, .fi-docx { background: #1971c2; }
-    .fi-xls, .fi-xlsx { background: #2f9e44; }
+    .fi-pdf            { background: #e03131; }
+    .fi-doc, .fi-docx  { background: #1971c2; }
+    .fi-xls, .fi-xlsx  { background: #2f9e44; }
     .fi-zip, .fi-rar, .fi-7z { background: #e67700; }
-    .fi-default { background: #868e96; }
+    .fi-default        { background: #868e96; }
 
     
     .file-name {
@@ -255,9 +317,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 320px;
+        display: block;
     }
 
-
+   
     .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
     .badge {
         display: inline-flex;
@@ -275,7 +338,7 @@
     .date-main { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
     .date-sub  { display: block; font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 1px; }
 
-    
+   
     .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
     .btn-icon {
         display: inline-flex;
@@ -292,9 +355,10 @@
         text-decoration: none;
         flex-shrink: 0;
     }
-    .btn-icon:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .btn-icon:hover        { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
     .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
 </style>
+
 
 
 <div class="docs-header">
@@ -304,7 +368,8 @@
     </div>
     <a asp-action="Upload" class="btn btn-primary">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <polyline points="16 16 12 12 8 16"/>
+            <line x1="12" y1="12" x2="12" y2="21"/>
             <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
         </svg>
         Загрузить файл
@@ -312,79 +377,159 @@
 </div>
 
 
-<div class="filter-bar">
-    <span class="filter-label">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-        </svg>
-        Тег:
-    </span>
 
-    <button type="button" id="tagDropdownBtn" class="tag-dropdown-btn" onclick="toggleTagDropdown()">
-        @if (selectedTagId == null)
-        {
-            <span>Все теги</span>
-        }
-        else
-        {
-            var selTag = tags?.FirstOrDefault(x => x.Id == selectedTagId);
-            var selCatName = selTag?.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name;
-            <span>@selTag?.Name</span>
-            @if (!string.IsNullOrEmpty(selCatName))
-            {
-                <span style="color:var(--text-sub); font-weight:500">@selCatName</span>
-            }
-        }
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="6 9 12 15 18 9"/>
-        </svg>
-    </button>
+<div class="search-panel">
+    <form method="get" id="searchForm">
 
-    <div id="tagDropdown" class="tag-dropdown">
-        <div class="tag-dropdown-title">Выберите тег</div>
-        <div class="chip-list">
-            <a asp-action="Index" onclick="closeTagDropdown()" class="chip @(selectedTagId == null ? "active" : "")">Все</a>
-            @foreach (var tag in tags ?? new List<Tag>())
-            {
-                var catName = tag.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name;
-                <a asp-action="Index" asp-route-tagId="@tag.Id" onclick="closeTagDropdown()"
-                   class="chip @(selectedTagId == tag.Id ? "active" : "")">
-                    @tag.Name
-                    @if (!string.IsNullOrEmpty(catName))
+        <div class="search-row">
+
+            
+            <div class="search-field">
+                <label class="search-label" for="searchInput">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Поиск
+                </label>
+                <div class="search-input-wrap">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input id="searchInput"
+                           type="text"
+                           name="search"
+                           class="form-input"
+                           placeholder="Название документа..."
+                           value="@currentSearch"
+                           autocomplete="off" />
+                </div>
+            </div>
+
+            
+            <div class="filter-field">
+                <label class="search-label" for="tagsSelect">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                    Теги
+                    <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-sub);opacity:.7">(Ctrl+клик — несколько)</span>
+                </label>
+                <select id="tagsSelect"
+                        name="selectedTags"
+                        class="form-select tags-select"
+                        multiple>
+                    @foreach (var tag in tags ?? new List<Tag>())
                     {
-                        <span class="chip-sub">@catName</span>
+                        var catName = tag.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name;
+                        var tagLabel = tag.Name + (string.IsNullOrEmpty(catName) ? "" : $" ({catName})");
+                        if (currentTagIds.Contains(tag.Id))
+                        {
+                            <option value="@tag.Id" selected>@tagLabel</option>
+                        }
+                        else
+                        {
+                            <option value="@tag.Id">@tagLabel</option>
+                        }
                     }
-                </a>
-            }
+                </select>
+            </div>
+
+            
+            <div class="sort-field">
+                <label class="search-label" for="sortSelect">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px">
+                        <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+                    </svg>
+                    Сортировка
+                </label>
+                <div class="select-wrap">
+                    <select id="sortSelect" name="sortOrder" class="form-select">
+                        @{ var s = currentSort; }
+                        @if (s == "old") { <option value="new">Сначала новые</option> } else { <option value="new" selected>Сначала новые</option> }
+                        @if (s == "old") { <option value="old" selected>Сначала старые</option> } else { <option value="old">Сначала старые</option> }
+                        @if (s == "az")  { <option value="az"  selected>По имени A–Z</option>  } else { <option value="az">По имени A–Z</option> }
+                        @if (s == "za")  { <option value="za"  selected>По имени Z–A</option>  } else { <option value="za">По имени Z–A</option> }
+                    </select>
+                </div>
+            </div>
+
+            
+            <div style="display:flex;gap:8px;align-items:flex-end;flex-shrink:0">
+                <button type="submit" class="btn btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Найти
+                </button>
+                @if (!string.IsNullOrWhiteSpace(currentSearch) || currentTagIds.Any() || (!string.IsNullOrWhiteSpace(currentSort) && currentSort != "new"))
+                {
+                    <a asp-action="Index" class="btn btn-ghost" title="Сбросить все фильтры">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Сбросить
+                    </a>
+                }
+            </div>
+
         </div>
-    </div>
+
+       
+        @if (hasFilters)
+        {
+            <div class="active-filters">
+                <span class="active-filters-label">Активные фильтры:</span>
+
+                @if (!string.IsNullOrWhiteSpace(currentSearch))
+                {
+                    <span class="filter-chip">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        «@currentSearch»
+                    </span>
+                }
+
+                @foreach (var tagId in currentTagIds)
+                {
+                    var t = tags?.FirstOrDefault(x => x.Id == tagId);
+                    if (t != null)
+                    {
+                        <span class="filter-chip">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                            </svg>
+                            @t.Name
+                        </span>
+                    }
+                }
+            </div>
+        }
+
+    </form>
 </div>
 
-<script>
-    function toggleTagDropdown() {
-        var dd = document.getElementById('tagDropdown');
-        dd.style.display = dd.style.display === 'none' || dd.style.display === '' ? 'block' : 'none';
-    }
-    function closeTagDropdown() {
-        document.getElementById('tagDropdown').style.display = 'none';
-    }
-    document.addEventListener('click', function(e) {
-        var btn = document.getElementById('tagDropdownBtn');
-        var dd  = document.getElementById('tagDropdown');
-        if (!btn.contains(e.target) && !dd.contains(e.target)) dd.style.display = 'none';
-    });
-</script>
 
 
 <div class="card">
     <div class="card-header">
         <span>
             Найдено: <strong>@Model.Count</strong>
-            @if (selectedTagId.HasValue)
+            @if (currentTagIds.Any() || !string.IsNullOrWhiteSpace(currentSearch))
             {
-                var t = tags?.FirstOrDefault(x => x.Id == selectedTagId);
-                <span style="color:var(--accent); font-weight:600"> — тег «@t?.Name»</span>
+                <span style="color:var(--accent);font-weight:600"> — применены фильтры</span>
             }
+        </span>
+        <span style="font-size:12px;color:var(--text-sub)">
+            @{
+                var sortLabel = currentSort switch {
+                    "old" => "старые сначала",
+                    "az"  => "A–Z",
+                    "za"  => "Z–A",
+                    _     => "новые сначала"
+                };
+            }
+            Сортировка: @sortLabel
         </span>
     </div>
 
@@ -394,11 +539,16 @@
             <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
+                <line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
             </svg>
             <p>Документов не найдено</p>
             <span>
-                @if (selectedTagId.HasValue) { <text>Попробуйте снять фильтр или </text> }
-                <a asp-action="Upload" style="color:var(--accent); font-weight:700;">загрузите первый документ</a>
+                @if (hasFilters)
+                {
+                    <text>Попробуйте изменить параметры поиска или </text>
+                }
+                <a asp-action="Upload" style="color:var(--accent);font-weight:700;">загрузите первый документ</a>
             </span>
         </div>
     }
@@ -458,7 +608,7 @@
                                     </svg>
                                 </a>
                                 <form asp-action="Delete" method="post" style="display:inline"
-                                      onsubmit="return confirm('Удалить файл «@doc.FileName»? Это действие необратимо.')">
+                                      onsubmit="return confirm('Удалить файл «@doc.FileName»?\nЭто действие необратимо.')">
                                     <input type="hidden" name="id" value="@doc.Id" />
                                     <button type="submit" class="btn-icon danger" title="Удалить">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -16,30 +16,7 @@ namespace AuthApp.Controllers
             _environment = environment;
         }
 
-        public async Task<IActionResult> Index(int? tagId)
-        {
-            ViewBag.Tags = await _context.Tags
-                .Include(t => t.TagCategoryTags)
-                    .ThenInclude(tct => tct.TagCategory)
-                .ToListAsync();
-
-            ViewBag.SelectedTagId = tagId;
-
-            var documentsQuery = _context.FileDocuments
-                .Include(d => d.FileTags)
-                .ThenInclude(ft => ft.Tag)
-                .AsQueryable();
-
-            if (tagId.HasValue)
-            {
-                documentsQuery = documentsQuery
-                    .Where(d => d.FileTags.Any(ft => ft.TagId == tagId.Value));
-            }
-
-            var documents = await documentsQuery.ToListAsync();
-
-            return View(documents);
-        }
+        
 
         public async Task<IActionResult> Upload()
         {
@@ -145,6 +122,48 @@ namespace AuthApp.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Index(
+    string search,
+    List<int> selectedTags,
+    string sortOrder)
+        {
+            ViewBag.Tags = await _context.Tags
+                .Include(t => t.TagCategoryTags)
+                    .ThenInclude(tct => tct.TagCategory)
+                .ToListAsync();
+
+            var documentsQuery = _context.FileDocuments
+                .Include(d => d.FileTags)
+                    .ThenInclude(ft => ft.Tag)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                documentsQuery = documentsQuery.Where(d =>
+                   d.FileName != null && d.FileName.Contains(search));
+            }
+
+            if (selectedTags != null && selectedTags.Any())
+            {
+                documentsQuery = documentsQuery.Where(d =>
+                    d.FileTags.Any(ft =>
+                        selectedTags.Contains(ft.TagId)));
+            }
+
+            documentsQuery = sortOrder switch
+            {
+                "new" => documentsQuery.OrderByDescending(d => d.UploadDate),
+                "old" => documentsQuery.OrderBy(d => d.UploadDate),
+                "az" => documentsQuery.OrderBy(d => d.FileName),
+                "za" => documentsQuery.OrderByDescending(d => d.FileName),
+                _ => documentsQuery.OrderByDescending(d => d.UploadDate)
+            };
+
+            var documents = await documentsQuery.ToListAsync();
+
+            return View(documents);
         }
     }
 }
