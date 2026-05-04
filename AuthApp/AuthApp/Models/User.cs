@@ -17,7 +17,14 @@ namespace AuthApp.Models
         public DateTime? PasswordResetExpiresAt { get; set; }
         public int LoginCount { get; set; }
         public bool IsBlocked { get; set; } = false;
-       
+        public string? District { get; set;  }
+        public string? RuralDistrict { get; set; }   
+        public string? Settlement { get; set; }      
+        public string? Street { get; set; }          
+        public string? House { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
 
 
 

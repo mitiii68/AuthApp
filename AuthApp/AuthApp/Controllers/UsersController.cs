@@ -131,6 +131,49 @@ namespace AuthApp.Controllers
             return RedirectToAction("Index");
         }
 
+        public IActionResult EditProfile(int id)
+        {
+            if (HttpContext.Session.GetString("UserRole") != "Admin")
+                return RedirectToAction("Index", "Home");
+
+            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [HttpPost]
+        public IActionResult EditProfile(int userId, string? district, string? ruralDistrict,
+            string? settlement, string? street, string? house,
+            double? latitude, double? longitude)
+        {
+            if (HttpContext.Session.GetString("UserRole") != "Admin")
+                return RedirectToAction("Index", "Home");
+
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            if (user == null) return NotFound();
+
+            user.District = district;
+            user.RuralDistrict = ruralDistrict;
+            user.Settlement = settlement;
+            user.Street = street;
+            user.House = house;
+            user.Latitude = latitude;
+            user.Longitude = longitude;
+
+            _context.SaveChanges();
+
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail = HttpContext.Session.GetString("user"),
+                Action = $"Обновил профиль пользователя {user.Email}",
+                ActionTime = DateTime.Now
+            });
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
 
 
 

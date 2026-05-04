@@ -1,8 +1,14 @@
-﻿@model AuthApp.Models.User
+@model AuthApp.Models.User
 
 @{
     ViewData["Title"] = "Профиль";
+    var lat = Model.Latitude ?? 49.9483;
+    var lng = Model.Longitude ?? 82.6170;
+    bool hasLocation = Model.Latitude.HasValue && Model.Longitude.HasValue;
 }
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <div class="profile-page">
 
@@ -10,7 +16,6 @@
         <div class="profile-avatar">
             @(Model.FullName != null ? Model.FullName.Substring(0, 1).ToUpper() : "U")
         </div>
-
         <div>
             <h2>Добро пожаловать, @(Model.FullName ?? "Пользователь")!</h2>
             <p>Информация о вашем аккаунте</p>
@@ -51,7 +56,6 @@
 
         <div class="profile-card">
             <span>Статус аккаунта</span>
-
             @if (Model.IsBlocked)
             {
                 <strong class="status-bad">● Заблокирован</strong>
@@ -67,13 +71,109 @@
             <div class="password-row">
                 <strong>••••••••</strong>
                 <a asp-controller="Account" asp-action="ForgotPassword" class="profile-btn">
-                     Сменить
+                    Сменить
                 </a>
             </div>
         </div>
 
     </div>
+
+    
+    <div class="location-section">
+        <div class="location-header">
+            <div class="location-title-row">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d6fd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                <h3>Местоположение</h3>
+            </div>
+            <a asp-controller="Account" asp-action="EditLocation" class="profile-btn">
+                ✏️ Редактировать
+            </a>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.District) || !string.IsNullOrEmpty(Model.Settlement))
+        {
+            <div class="location-grid">
+                @if (!string.IsNullOrEmpty(Model.District))
+                {
+                    <div class="loc-item">
+                        <span>Район</span>
+                        <strong>@Model.District</strong>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.RuralDistrict))
+                {
+                    <div class="loc-item">
+                        <span>Сельский округ</span>
+                        <strong>@Model.RuralDistrict</strong>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Settlement))
+                {
+                    <div class="loc-item">
+                        <span>Населённый пункт</span>
+                        <strong>@Model.Settlement</strong>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.Street))
+                {
+                    <div class="loc-item">
+                        <span>Улица</span>
+                        <strong>@Model.Street</strong>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.House))
+                {
+                    <div class="loc-item">
+                        <span>Дом</span>
+                        <strong>@Model.House</strong>
+                    </div>
+                }
+                @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                {
+                    <div class="loc-item">
+                        <span>Координаты</span>
+                        <strong>@Model.Latitude?.ToString("F4"), @Model.Longitude?.ToString("F4")</strong>
+                    </div>
+                }
+            </div>
+
+            @if (hasLocation)
+            {
+                <div id="profileMap"></div>
+            }
+        }
+        else
+        {
+            <div class="loc-empty">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                <p>Местоположение не указано</p>
+                <a asp-controller="Account" asp-action="EditLocation" class="profile-btn">Добавить</a>
+            </div>
+        }
+    </div>
+
 </div>
+
+@if (hasLocation)
+{
+    <script>
+               document.addEventListener('DOMContentLoaded', function () {
+            var map = L.map('profileMap').setView([@lat, @lng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker([@lat, @lng]).addTo(map)
+                .bindPopup('@(Model.Settlement ?? "") @(Model.Street ?? "") @(Model.House ?? "")'.trim())
+                .openPopup();
+            setTimeout(function() { map.invalidateSize(); }, 100);
+        });
+    </script>
+}
+
 <style>
     .profile-page {
         max-width: 1000px;
@@ -105,23 +205,17 @@
         font-size: 28px;
         font-weight: 700;
         border: 2px solid #bfd8ff;
+        flex-shrink: 0;
     }
 
-    .profile-hero h2 {
-        margin: 0;
-        font-size: 26px;
-        color: #111827;
-    }
-
-    .profile-hero p {
-        margin: 8px 0 0;
-        color: #6b7280;
-    }
+    .profile-hero h2 { margin: 0; font-size: 26px; color: #111827; }
+    .profile-hero p  { margin: 8px 0 0; color: #6b7280; }
 
     .profile-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 18px;
+        margin-bottom: 24px;
     }
 
     .profile-card {
@@ -132,20 +226,17 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.07);
     }
 
-        .profile-card span {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
+    .profile-card span {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
 
-        .profile-card strong {
-            font-size: 17px;
-            color: #1f2937;
-        }
+    .profile-card strong { font-size: 17px; color: #1f2937; }
 
     .status-good {
         color: #16a34a !important;
@@ -177,10 +268,82 @@
         text-decoration: none;
         font-weight: 600;
         font-size: 14px;
+        white-space: nowrap;
     }
 
-        .profile-btn:hover {
-            background: #155ab0;
-            color: white;
-        }
+    .profile-btn:hover { background: #155ab0; color: white; }
+
+    
+    .location-section {
+        background: white;
+        border: 1px solid #dfe3ea;
+        border-radius: 14px;
+        padding: 28px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+
+    .location-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .location-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .location-title-row h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .location-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .loc-item {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 18px;
+    }
+
+    .loc-item span {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .loc-item strong { font-size: 15px; color: #1f2937; }
+
+    #profileMap {
+        height: 260px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        margin-top: 4px;
+    }
+
+    .loc-empty {
+        text-align: center;
+        padding: 40px 0;
+        color: #9ca3af;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .loc-empty p { margin: 0; font-size: 15px; }
 </style>

@@ -1,0 +1,196 @@
+@model AuthApp.Models.User
+
+@{
+    ViewData["Title"] = "Местоположение";
+    var lat = Model.Latitude ?? 49.9483;
+    var lng = Model.Longitude ?? 82.6170;
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    .edit-page { max-width: 860px; margin: 36px auto; padding: 0 20px; }
+    .edit-card {
+        background: white;
+        border: 1px solid #dfe3ea;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+    .edit-header {
+        padding: 22px 28px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .edit-header h2 { margin: 0; font-size: 20px; font-weight: 700; color: #111827; }
+    .edit-body { padding: 28px; }
+    .section-label {
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .06em; color: #6b7280; margin: 0 0 14px;
+    }
+    .form-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .form-group  { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #374151; }
+    .form-group label .req { color: #ef4444; }
+    .fc {
+        height: 40px; padding: 0 12px;
+        border: 1px solid #d1d5db; border-radius: 10px;
+        font-size: 14px; color: #1f2937; background: #fff;
+        outline: none; transition: border-color .15s; font-family: inherit; width: 100%; box-sizing: border-box;
+    }
+    .fc:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    hr.div { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+    #map {
+        height: 280px; border-radius: 12px;
+        border: 1px solid #d1d5db; margin-top: 16px;
+    }
+    .map-hint { font-size: 12px; color: #9ca3af; margin-top: 8px; }
+    .btn-row { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+    .btn-save {
+        height: 42px; padding: 0 28px; background: #1d6fd6; color: #fff;
+        border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+        cursor: pointer; transition: background .15s;
+    }
+    .btn-save:hover { background: #155ab0; }
+    .btn-cancel {
+        height: 42px; padding: 0 24px; background: #f3f4f6; color: #374151;
+        border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; font-weight: 600;
+        text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .btn-cancel:hover { background: #e5e7eb; color: #374151; }
+    .btn-clear {
+        height: 42px; padding: 0 20px; background: #fee2e2; color: #b91c1c;
+        border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+        cursor: pointer; margin-left: auto;
+    }
+    .btn-clear:hover { background: #fecaca; }
+</style>
+
+<div class="edit-page">
+    <div class="edit-card">
+        <div class="edit-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d6fd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <h2>Редактирование местоположения</h2>
+        </div>
+
+        <div class="edit-body">
+            <form method="post" asp-action="EditLocation" asp-controller="Account">
+
+                <p class="section-label">Административное деление</p>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Район</label>
+                        <select name="district" class="fc">
+                            <option value="">— Выберите район —</option>
+                            <option value="Октябрьский"   selected="@(Model.District=="Октябрьский")">Октябрьский</option>
+                            <option value="Ульбинский"    selected="@(Model.District=="Ульбинский")">Ульбинский</option>
+                            <option value="Аблакетский"   selected="@(Model.District=="Аблакетский")">Аблакетский</option>
+                            <option value="Новопокровский" selected="@(Model.District=="Новопокровский")">Новопокровский</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Сельский округ</label>
+                        <select name="ruralDistrict" class="fc">
+                            <option value="">— Выберите округ —</option>
+                            <option value="Согринский"      selected="@(Model.RuralDistrict=="Согринский")">Согринский</option>
+                            <option value="Предгорненский"  selected="@(Model.RuralDistrict=="Предгорненский")">Предгорненский</option>
+                            <option value="Меновновский"    selected="@(Model.RuralDistrict=="Меновновский")">Меновновский</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="div" />
+                <p class="section-label">Адрес</p>
+
+                <div class="form-grid" style="margin-bottom:16px;">
+                    <div class="form-group">
+                        <label>Населённый пункт</label>
+                        <select name="settlement" class="fc">
+                            <option value="">— Выберите —</option>
+                            <option value="Усть-Каменогорск" selected="@(Model.Settlement=="Усть-Каменогорск")">Усть-Каменогорск</option>
+                            <option value="Согра"            selected="@(Model.Settlement=="Согра")">Согра</option>
+                            <option value="Предгорное"       selected="@(Model.Settlement=="Предгорное")">Предгорное</option>
+                            <option value="Меновное"         selected="@(Model.Settlement=="Меновное")">Меновное</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Улица</label>
+                        <input class="fc" type="text" name="street"
+                               value="@Model.Street" placeholder="Например: ул. Ленина" />
+                    </div>
+                </div>
+
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label>Дом</label>
+                        <input class="fc" type="text" name="house"
+                               value="@Model.House" placeholder="№ дома" />
+                    </div>
+                    <div class="form-group">
+                        <label>Широта</label>
+                        <input class="fc" type="text" id="latInput" name="latitude"
+                               value="@(Model.Latitude.HasValue ? Model.Latitude.Value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) : "")"
+                               placeholder="49.948300" />
+                    </div>
+                    <div class="form-group">
+                        <label>Долгота</label>
+                        <input class="fc" type="text" id="lngInput" name="longitude"
+                               value="@(Model.Longitude.HasValue ? Model.Longitude.Value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture) : "")"
+                               placeholder="82.617000" />
+                    </div>
+                </div>
+
+                <div id="map"></div>
+                <p class="map-hint">📍 Кликните по карте или перетащите маркер чтобы указать точное местоположение</p>
+
+                <div class="btn-row">
+                    <button type="submit" class="btn-save">💾 Сохранить</button>
+                    <a asp-controller="Account" asp-action="Profile" class="btn-cancel">Отмена</a>
+                    <button type="submit" name="clear" value="true" class="btn-clear"
+                            onclick="clearCoords()">🗑 Очистить</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    var initLat = @lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var initLng = @lng.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    var map = L.map('map').setView([initLat, initLng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = L.marker([initLat, initLng], { draggable: true }).addTo(map);
+
+    function setCoords(lat, lng) {
+        document.getElementById('latInput').value = lat.toFixed(6);
+        document.getElementById('lngInput').value = lng.toFixed(6);
+    }
+
+    marker.on('dragend', function (e) {
+        var p = marker.getLatLng();
+        setCoords(p.lat, p.lng);
+    });
+
+    map.on('click', function (e) {
+        marker.setLatLng(e.latlng);
+        setCoords(e.latlng.lat, e.latlng.lng);
+    });
+
+    function clearCoords() {
+        document.getElementById('latInput').value = '';
+        document.getElementById('lngInput').value = '';
+    }
+</script>

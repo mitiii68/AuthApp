@@ -418,5 +418,79 @@ namespace AuthApp.Controllers
             return View(user);
         }
 
+        [HttpGet]
+        public IActionResult EditLocation()
+        {
+            var email = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(email))
+                return RedirectToAction("Login");
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            return View(user);
+        }
+
+        [HttpPost]
+        public IActionResult EditLocation(string? district, string? ruralDistrict,
+            string? settlement, string? street, string? house,
+            string? latitude, string? longitude, string? clear)
+        {
+            var email = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(email))
+                return RedirectToAction("Login");
+
+            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            user.District = district;
+            user.RuralDistrict = ruralDistrict;
+            user.Settlement = settlement;
+            user.Street = street;
+            user.House = house;
+
+            
+            if (!string.IsNullOrWhiteSpace(latitude) &&
+                double.TryParse(latitude, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out double lat))
+                user.Latitude = lat;
+            else
+                user.Latitude = null;
+
+            if (!string.IsNullOrWhiteSpace(longitude) &&
+                double.TryParse(longitude, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out double lng))
+                user.Longitude = lng;
+            else
+                user.Longitude = null;
+
+            
+            if (!string.IsNullOrEmpty(clear))
+            {
+                user.District = null;
+                user.RuralDistrict = null;
+                user.Settlement = null;
+                user.Street = null;
+                user.House = null;
+                user.Latitude = null;
+                user.Longitude = null;
+            }
+
+            _context.SaveChanges();
+
+            _context.UserActionLog.Add(new UserActionLog
+            {
+                UserEmail = email,
+                Action = "Обновил местоположение в профиле",
+                ActionTime = DateTime.Now
+            });
+            _context.SaveChanges();
+
+            TempData["SuccessMessage"] = "Местоположение сохранено";
+            return RedirectToAction("Profile");
+        }
+
     }
 }
