@@ -66,6 +66,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRzXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/MyProject/AuthApp/AuthApp/AuthApp/Views/Documents/Trash.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRzXFRyYXNoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/MyProject/AuthApp/AuthApp/AuthApp/Views/Documents/Upload.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRzXFVwbG9hZC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

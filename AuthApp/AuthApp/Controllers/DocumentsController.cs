@@ -1,7 +1,6 @@
 using AuthApp.Data;
 using AuthApp.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApp.Controllers
@@ -17,11 +16,9 @@ namespace AuthApp.Controllers
             _environment = environment;
         }
 
-        
         private string CurrentUserEmail()
             => HttpContext.Session.GetString("UserEmail") ?? "неизвестный";
 
-        
         private async Task LogActionAsync(string action)
         {
             _context.UserActionLog.Add(new UserActionLog
@@ -33,7 +30,7 @@ namespace AuthApp.Controllers
             await _context.SaveChangesAsync();
         }
 
-
+       
         public async Task<IActionResult> Upload()
         {
             ViewBag.Tags = await _context.Tags
@@ -42,7 +39,6 @@ namespace AuthApp.Controllers
                 .ToListAsync();
 
             ViewBag.Categories = await _context.TagCategories.ToListAsync();
-
             return View();
         }
 
@@ -52,11 +48,7 @@ namespace AuthApp.Controllers
             if (file == null || file.Length == 0)
             {
                 ViewBag.Error = "Выберите файл";
-                ViewBag.Tags = await _context.Tags
-                    .Include(t => t.TagCategoryTags)
-                        .ThenInclude(tct => tct.TagCategory)
-                    .ToListAsync();
-                ViewBag.Categories = await _context.TagCategories.ToListAsync();
+                await FillUploadViewBag();
                 return View();
             }
 
@@ -66,16 +58,11 @@ namespace AuthApp.Controllers
             if (!allowedExtensions.Contains(extension))
             {
                 ViewBag.Error = "Недопустимый формат файла";
-                ViewBag.Tags = await _context.Tags
-                    .Include(t => t.TagCategoryTags)
-                        .ThenInclude(tct => tct.TagCategory)
-                    .ToListAsync();
-                ViewBag.Categories = await _context.TagCategories.ToListAsync();
+                await FillUploadViewBag();
                 return View();
             }
 
             var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
-
             if (!Directory.Exists(uploadsPath))
                 Directory.CreateDirectory(uploadsPath);
 
@@ -83,9 +70,7 @@ namespace AuthApp.Controllers
             var filePath = Path.Combine(uploadsPath, uniqueFileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
-            {
                 await file.CopyToAsync(stream);
-            }
 
             var document = new FileDocuments
             {
@@ -108,15 +93,49 @@ namespace AuthApp.Controllers
             }
 
             await _context.SaveChangesAsync();
-
-            
             await LogActionAsync($"Загрузил документ «{file.FileName}»");
 
             return RedirectToAction("Index");
         }
 
+       
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
+        {
+            var document = await _context.FileDocuments.FindAsync(id);
+
+            if (document != null)
+            {
+                document.IsDeleted = true;
+                document.DeletedAt = DateTime.Now;
+                await _context.SaveChangesAsync();
+                await LogActionAsync($"Переместил документ «{document.FileName}» в корзину");
+            }
+
+            return RedirectToAction("Index");
+        }
+
+    
+
+        [HttpPost]
+        public async Task<IActionResult> Restore(int id)
+        {
+            var document = await _context.FileDocuments.FindAsync(id);
+
+            if (document != null)
+            {
+                document.IsDeleted = false;
+                document.DeletedAt = null;
+                await _context.SaveChangesAsync();
+                await LogActionAsync($"Восстановил документ «{document.FileName}» из корзины");
+            }
+
+            return RedirectToAction("Trash");
+        }
+
+    
+        [HttpPost]
+        public async Task<IActionResult> Purge(int id)
         {
             var document = await _context.FileDocuments
                 .Include(d => d.FileTags)
@@ -130,19 +149,17 @@ namespace AuthApp.Controllers
                 if (System.IO.File.Exists(fullPath))
                     System.IO.File.Delete(fullPath);
 
-                
                 var fileName = document.FileName;
-
                 _context.FileDocuments.Remove(document);
                 await _context.SaveChangesAsync();
-
-                await LogActionAsync($"Удалил документ «{fileName}»");
+                await LogActionAsync($"Безвозвратно удалил документ «{fileName}» из корзины");
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Trash");
         }
 
-        
+      
+
         public async Task<IActionResult> Download(int id)
         {
             var document = await _context.FileDocuments.FindAsync(id);
@@ -156,7 +173,6 @@ namespace AuthApp.Controllers
             if (!System.IO.File.Exists(fullPath))
                 return NotFound();
 
-            
             await LogActionAsync($"Скачал документ «{document.FileName}»");
 
             var contentType = document.Extension?.ToLower() switch
@@ -176,42 +192,44 @@ namespace AuthApp.Controllers
             return File(fileBytes, contentType, document.FileName);
         }
 
+    
+
         public async Task<IActionResult> Index(
             string search,
             List<int> selectedTags,
             string sortOrder,
             int page = 1,
-            int pageSize = 10) 
+            int pageSize = 10)
         {
             ViewBag.Tags = await _context.Tags
                 .Include(t => t.TagCategoryTags)
                     .ThenInclude(tct => tct.TagCategory)
                 .ToListAsync();
 
+            
+            ViewBag.TrashCount = await _context.FileDocuments.CountAsync(d => d.IsDeleted);
+
             var documentsQuery = _context.FileDocuments
+                .Where(d => !d.IsDeleted)                   
                 .Include(d => d.FileTags)
                     .ThenInclude(ft => ft.Tag)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
-            {
                 documentsQuery = documentsQuery.Where(d =>
                     d.FileName != null && d.FileName.Contains(search));
-            }
 
             if (selectedTags != null && selectedTags.Any())
-            {
                 documentsQuery = documentsQuery.Where(d =>
                     d.FileTags.Any(ft => selectedTags.Contains(ft.TagId)));
-            }
 
             documentsQuery = sortOrder switch
             {
                 "new" => documentsQuery.OrderByDescending(d => d.UploadDate),
                 "old" => documentsQuery.OrderBy(d => d.UploadDate),
-                "az" => documentsQuery.OrderBy(d => d.FileName),
-                "za" => documentsQuery.OrderByDescending(d => d.FileName),
-                _ => documentsQuery.OrderByDescending(d => d.UploadDate)
+                "az"  => documentsQuery.OrderBy(d => d.FileName),
+                "za"  => documentsQuery.OrderByDescending(d => d.FileName),
+                _     => documentsQuery.OrderByDescending(d => d.UploadDate)
             };
 
             var totalItems = await documentsQuery.CountAsync();
@@ -224,15 +242,71 @@ namespace AuthApp.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            ViewBag.Page = page;
+            ViewBag.Page       = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalCount = totalItems;
-            ViewBag.SortOrder = sortOrder;
-            ViewBag.Search = search;
+            ViewBag.SortOrder  = sortOrder;
+            ViewBag.Search     = search;
             ViewBag.SelectedTags = selectedTags ?? new List<int>();
-            ViewBag.PageSize = pageSize;
+            ViewBag.PageSize   = pageSize;
 
             return View(documents);
+        }
+
+      
+
+        public async Task<IActionResult> Trash(
+            string search,
+            string sortOrder,
+            int page = 1,
+            int pageSize = 10)
+        {
+            var query = _context.FileDocuments
+                .Where(d => d.IsDeleted)
+                .Include(d => d.FileTags)
+                    .ThenInclude(ft => ft.Tag)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(d => d.FileName != null && d.FileName.Contains(search));
+
+            query = sortOrder switch
+            {
+                "old" => query.OrderBy(d => d.DeletedAt),
+                "az"  => query.OrderBy(d => d.FileName),
+                "za"  => query.OrderByDescending(d => d.FileName),
+                _     => query.OrderByDescending(d => d.DeletedAt)  
+            };
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            page = Math.Clamp(page, 1, Math.Max(1, totalPages));
+
+            var documents = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Page       = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalItems;
+            ViewBag.SortOrder  = sortOrder;
+            ViewBag.Search     = search;
+            ViewBag.PageSize   = pageSize;
+
+            return View(documents);
+        }
+
+       
+
+        private async Task FillUploadViewBag()
+        {
+            ViewBag.Tags = await _context.Tags
+                .Include(t => t.TagCategoryTags)
+                    .ThenInclude(tct => tct.TagCategory)
+                .ToListAsync();
+            ViewBag.Categories = await _context.TagCategories.ToListAsync();
         }
     }
 }

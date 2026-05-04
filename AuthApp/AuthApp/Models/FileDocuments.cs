@@ -14,5 +14,7 @@ namespace AuthApp.Models
         public DateTime UploadDate { get; set; } = DateTime.Now;
 
         public List<FileTag> FileTags { get; set; } = new List<FileTag>();
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
     }
 }

@@ -159,9 +159,174 @@
         box-shadow: 0 0 0 3px var(--accent-light);
     }
     
-    .tags-select { height: 96px; padding: 6px 8px; font-size: 13px; }
-    .tags-select option { padding: 3px 4px; border-radius: 4px; }
-    .tags-select option:checked { background: var(--accent); color: #fff; }
+    /* Tag dropdown picker */
+    .tag-picker-wrap {
+        position: relative;
+    }
+    .tag-picker-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        min-height: 40px;
+        padding: 6px 10px 6px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-2);
+        font-family: var(--font);
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text);
+        cursor: pointer;
+        transition: border-color .15s, box-shadow .15s, background .15s;
+        text-align: left;
+        flex-wrap: wrap;
+    }
+    .tag-picker-trigger:focus,
+    .tag-picker-trigger.open {
+        border-color: var(--accent);
+        background: var(--surface);
+        box-shadow: 0 0 0 3px var(--accent-light);
+        outline: none;
+    }
+    .tag-picker-placeholder { color: var(--text-sub); }
+    .tag-picker-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        flex: 1;
+    }
+    .tag-picker-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 700;
+        background: var(--accent);
+        color: #fff;
+        white-space: nowrap;
+    }
+    .tag-picker-chip-remove {
+        cursor: pointer;
+        opacity: .75;
+        line-height: 1;
+        font-size: 13px;
+        transition: opacity .1s;
+    }
+    .tag-picker-chip-remove:hover { opacity: 1; }
+    .tag-picker-arrow {
+        flex-shrink: 0;
+        color: var(--text-sub);
+        transition: transform .2s;
+    }
+    .tag-picker-trigger.open .tag-picker-arrow { transform: rotate(180deg); }
+
+    .tag-picker-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        z-index: 200;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+    }
+    .tag-picker-dropdown.open { display: block; }
+
+    .tag-picker-cats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-2);
+    }
+    .tag-picker-cat-btn {
+        padding: 3px 11px;
+        border-radius: 20px;
+        border: 1.5px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .12s, border-color .12s, color .12s;
+    }
+    .tag-picker-cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tag-picker-cat-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .tag-picker-list {
+        padding: 10px 12px;
+        max-height: 220px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .tag-picker-group-name {
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--text-sub);
+        margin-bottom: 5px;
+    }
+    .tag-picker-chips-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    .tag-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1.5px solid var(--border);
+        background: var(--surface-2);
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text);
+        cursor: pointer;
+        transition: background .1s, border-color .1s, color .1s;
+        user-select: none;
+    }
+    .tag-option:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .tag-option.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tag-option.selected:hover { background: var(--accent-hover); }
+    .tag-picker-no-tags { font-size: 13px; color: var(--text-sub); font-style: italic; padding: 4px 0; }
+
+    .tag-picker-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border-top: 1px solid var(--border);
+        background: var(--surface-2);
+        font-size: 12px;
+        color: var(--text-sub);
+        font-weight: 600;
+    }
+    .tag-picker-clear {
+        background: none;
+        border: none;
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--danger);
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 5px;
+        transition: background .1s;
+    }
+    .tag-picker-clear:hover { background: var(--danger-light); }
 
     .select-wrap {
         position: relative;
@@ -409,14 +574,28 @@
         <h1>Документы</h1>
         <p>Хранилище файлов и документов</p>
     </div>
-    <a asp-action="Upload" class="btn btn-primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="16 16 12 12 8 16"/>
-            <line x1="12" y1="12" x2="12" y2="21"/>
-            <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
-        </svg>
-        Загрузить файл
-    </a>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <a asp-action="Trash" class="btn btn-ghost" style="position:relative;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+            Корзина
+            @if (ViewBag.TrashCount is int tc && tc > 0)
+            {
+                <span style="position:absolute;top:-7px;right:-7px;background:var(--danger);color:#fff;font-size:10px;font-weight:800;border-radius:20px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;">@tc</span>
+            }
+        </a>
+        <a asp-action="Upload" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="16 16 12 12 8 16"/>
+                <line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>
+            Загрузить файл
+        </a>
+    </div>
 </div>
 
 
@@ -448,33 +627,105 @@
                 </div>
             </div>
 
-            
-            <div class="filter-field">
-                <label class="search-label" for="tagsSelect">
+            <div class="filter-field" style="flex: 1 1 240px;">
+                <label class="search-label">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
                     </svg>
                     Теги
-                    <span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-sub);opacity:.7">(Ctrl+клик — несколько)</span>
                 </label>
-                <select id="tagsSelect"
-                        name="selectedTags"
-                        class="form-select tags-select"
-                        multiple>
-                    @foreach (var tag in tags ?? new List<Tag>())
+
+                @{
+                    var allTags = tags ?? new List<Tag>();
+                    var groupedTags = allTags
+                        .GroupBy(t => new {
+                            Id   = t.TagCategoryTags?.FirstOrDefault()?.TagCategoryId ?? 0,
+                            Name = t.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name ?? "Без категории"
+                        })
+                        .OrderBy(g => g.Key.Id)
+                        .ToList();
+                }
+
+                <!-- Hidden inputs for selected tags (submitted with form) -->
+                <div id="tagHiddenInputs">
+                    @foreach (var tid in currentTagIds)
                     {
-                        var catName = tag.TagCategoryTags?.FirstOrDefault()?.TagCategory?.Name;
-                        var tagLabel = tag.Name + (string.IsNullOrEmpty(catName) ? "" : $" ({catName})");
-                        if (currentTagIds.Contains(tag.Id))
-                        {
-                            <option value="@tag.Id" selected>@tagLabel</option>
-                        }
-                        else
-                        {
-                            <option value="@tag.Id">@tagLabel</option>
-                        }
+                        <input type="hidden" name="selectedTags" value="@tid" />
                     }
-                </select>
+                </div>
+
+                <div class="tag-picker-wrap" id="tagPickerWrap">
+                    <button type="button" class="tag-picker-trigger" id="tagPickerTrigger"
+                            onclick="toggleTagPicker(event)">
+                        <span class="tag-picker-chips" id="tagPickerChips">
+                            @if (!currentTagIds.Any())
+                            {
+                                <span class="tag-picker-placeholder" id="tagPickerPlaceholder">Все теги</span>
+                            }
+                            @foreach (var tid in currentTagIds)
+                            {
+                                var t = allTags.FirstOrDefault(x => x.Id == tid);
+                                if (t != null)
+                                {
+                                    <span class="tag-picker-chip" data-id="@tid">
+                                        @t.Name
+                                        <span class="tag-picker-chip-remove" onclick="removeTag(event, @tid)">×</span>
+                                    </span>
+                                }
+                            }
+                        </span>
+                        <svg class="tag-picker-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+
+                    <div class="tag-picker-dropdown" id="tagPickerDropdown">
+                        <!-- Category filter -->
+                        @if (groupedTags.Count > 1)
+                        {
+                            <div class="tag-picker-cats">
+                                <button type="button" class="tag-picker-cat-btn active" data-cat="" onclick="filterTagCat(this)">Все</button>
+                                @foreach (var g in groupedTags)
+                                {
+                                    <button type="button" class="tag-picker-cat-btn" data-cat="@g.Key.Id" onclick="filterTagCat(this)">@g.Key.Name</button>
+                                }
+                            </div>
+                        }
+
+                        <div class="tag-picker-list" id="tagPickerList">
+                            @if (!allTags.Any())
+                            {
+                                <p class="tag-picker-no-tags">Нет доступных тегов</p>
+                            }
+                            @foreach (var g in groupedTags)
+                            {
+                                <div class="tag-picker-group" data-cat="@g.Key.Id">
+                                    @if (groupedTags.Count > 1)
+                                    {
+                                        <div class="tag-picker-group-name">@g.Key.Name</div>
+                                    }
+                                    <div class="tag-picker-chips-row">
+                                        @foreach (var tag in g)
+                                        {
+                                            var isSelected = currentTagIds.Contains(tag.Id);
+                                            <span class="tag-option @(isSelected ? "selected" : "")"
+                                                  data-id="@tag.Id"
+                                                  data-name="@tag.Name"
+                                                  onclick="toggleTag(this)">
+                                                @tag.Name
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="tag-picker-footer">
+                            <span id="tagPickerCount">Выбрано: @currentTagIds.Count</span>
+                            <button type="button" class="tag-picker-clear" onclick="clearAllTags()">Сбросить всё</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             
@@ -650,10 +901,9 @@
                                         <line x1="12" y1="15" x2="12" y2="3"/>
                                     </svg>
                                 </a>
-                                <form asp-action="Delete" method="post" style="display:inline"
-                                      onsubmit="return confirm('Удалить файл «@doc.FileName»?\nЭто действие необратимо.')">
+                                <form asp-action="Delete" method="post" style="display:inline">
                                     <input type="hidden" name="id" value="@doc.Id" />
-                                    <button type="submit" class="btn-icon danger" title="Удалить">
+                                    <button type="submit" class="btn-icon danger" title="В корзину">
                                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="3 6 5 6 21 6"/>
                                             <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
@@ -745,3 +995,110 @@
         }
     }
 </div>
+
+<script>
+
+
+let selectedTagIds = new Set(@Html.Raw("[" + string.Join(",", currentTagIds) + "]"));
+
+function toggleTagPicker(e) {
+    e.stopPropagation();
+    const trigger = document.getElementById('tagPickerTrigger');
+    const dropdown = document.getElementById('tagPickerDropdown');
+    const isOpen = dropdown.classList.contains('open');
+    closeTagPicker();
+    if (!isOpen) {
+        trigger.classList.add('open');
+        dropdown.classList.add('open');
+    }
+}
+
+function closeTagPicker() {
+    document.getElementById('tagPickerTrigger').classList.remove('open');
+    document.getElementById('tagPickerDropdown').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('tagPickerWrap').contains(e.target)) {
+        closeTagPicker();
+    }
+});
+
+function toggleTag(el) {
+    const id   = parseInt(el.dataset.id);
+    const name = el.dataset.name;
+    if (selectedTagIds.has(id)) {
+        selectedTagIds.delete(id);
+        el.classList.remove('selected');
+    } else {
+        selectedTagIds.add(id);
+        el.classList.add('selected');
+    }
+    renderChips();
+    syncHiddenInputs();
+}
+
+function removeTag(e, id) {
+    e.stopPropagation();
+    selectedTagIds.delete(id);
+   
+    const opt = document.querySelector('.tag-option[data-id="' + id + '"]');
+    if (opt) opt.classList.remove('selected');
+    renderChips();
+    syncHiddenInputs();
+}
+
+function clearAllTags() {
+    selectedTagIds.clear();
+    document.querySelectorAll('.tag-option').forEach(el => el.classList.remove('selected'));
+    renderChips();
+    syncHiddenInputs();
+}
+
+function renderChips() {
+    const container = document.getElementById('tagPickerChips');
+    const placeholder = document.getElementById('tagPickerPlaceholder');
+    const countEl = document.getElementById('tagPickerCount');
+
+    
+    container.querySelectorAll('.tag-picker-chip').forEach(c => c.remove());
+
+    if (selectedTagIds.size === 0) {
+        if (placeholder) placeholder.style.display = '';
+    } else {
+        if (placeholder) placeholder.style.display = 'none';
+        selectedTagIds.forEach(id => {
+            const opt = document.querySelector('.tag-option[data-id="' + id + '"]');
+            if (!opt) return;
+            const chip = document.createElement('span');
+            chip.className = 'tag-picker-chip';
+            chip.dataset.id = id;
+            chip.innerHTML = opt.dataset.name +
+                '<span class="tag-picker-chip-remove" onclick="removeTag(event,' + id + ')">×</span>';
+            container.appendChild(chip);
+        });
+    }
+    countEl.textContent = 'Выбрано: ' + selectedTagIds.size;
+}
+
+function syncHiddenInputs() {
+    const container = document.getElementById('tagHiddenInputs');
+    container.innerHTML = '';
+    selectedTagIds.forEach(id => {
+        const inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'selectedTags';
+        inp.value = id;
+        container.appendChild(inp);
+    });
+}
+
+function filterTagCat(btn) {
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.tag-picker-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tag-picker-group').forEach(g => {
+        g.style.display = (!cat || g.dataset.cat == cat) ? '' : 'none';
+    });
+}
+</script>
