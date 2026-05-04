@@ -1,1 +1,59 @@
-[]
+[
+  {
+    "ContainingType": "AuthApp.Controllers.KatoController",
+    "Method": "Districts",
+    "RelativePath": "api/kato/districts",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.KatoController",
+    "Method": "Ping",
+    "RelativePath": "api/kato/ping",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.KatoController",
+    "Method": "Rural",
+    "RelativePath": "api/kato/rural/{districtCd}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "districtCd",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.KatoController",
+    "Method": "Settlements",
+    "RelativePath": "api/kato/settlements/{districtCd}/{ruralCd}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "districtCd",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "ruralCd",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

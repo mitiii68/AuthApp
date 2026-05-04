@@ -149,3 +149,4 @@ C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.
 C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
+C:\MyProject\AuthApp\AuthApp\AuthApp\bin\Debug\net8.0\Data\КАТО_18.02.2026.csv

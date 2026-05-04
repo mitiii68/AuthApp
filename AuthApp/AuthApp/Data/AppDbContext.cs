@@ -19,6 +19,7 @@ namespace AuthApp.Data
         public DbSet<TagCategory> TagCategories { get; set; }
         public DbSet<TagCategoryTag> TagCategoryTags { get; set; }
         public DbSet<FavoriteDocument> FavoriteDocuments { get; set; }
+        public DbSet<AuthApp.Models.KatoEntry> KatoEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

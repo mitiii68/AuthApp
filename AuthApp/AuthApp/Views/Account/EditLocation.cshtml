@@ -36,19 +36,17 @@
     .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     .form-group  { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 13px; font-weight: 600; color: #374151; }
-    .form-group label .req { color: #ef4444; }
     .fc {
         height: 40px; padding: 0 12px;
         border: 1px solid #d1d5db; border-radius: 10px;
         font-size: 14px; color: #1f2937; background: #fff;
-        outline: none; transition: border-color .15s; font-family: inherit; width: 100%; box-sizing: border-box;
+        outline: none; transition: border-color .15s;
+        font-family: inherit; width: 100%; box-sizing: border-box;
     }
     .fc:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+    .fc:disabled { background: #f9fafb; color: #9ca3af; cursor: not-allowed; }
     hr.div { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
-    #map {
-        height: 280px; border-radius: 12px;
-        border: 1px solid #d1d5db; margin-top: 16px;
-    }
+    #map { height: 280px; border-radius: 12px; border: 1px solid #d1d5db; margin-top: 16px; }
     .map-hint { font-size: 12px; color: #9ca3af; margin-top: 8px; }
     .btn-row { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
     .btn-save {
@@ -74,8 +72,10 @@
 <div class="edit-page">
     <div class="edit-card">
         <div class="edit-header">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d6fd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d6fd6"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
             </svg>
             <h2>Редактирование местоположения</h2>
         </div>
@@ -83,26 +83,19 @@
         <div class="edit-body">
             <form method="post" asp-action="EditLocation" asp-controller="Account">
 
-                <p class="section-label">Административное деление</p>
+                <p class="section-label">Административное деление (КАТО)</p>
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Район</label>
-                        <select name="district" class="fc">
-                            <option value="">— Выберите район —</option>
-                            <option value="Октябрьский"   selected="@(Model.District=="Октябрьский")">Октябрьский</option>
-                            <option value="Ульбинский"    selected="@(Model.District=="Ульбинский")">Ульбинский</option>
-                            <option value="Аблакетский"   selected="@(Model.District=="Аблакетский")">Аблакетский</option>
-                            <option value="Новопокровский" selected="@(Model.District=="Новопокровский")">Новопокровский</option>
+                        <label>Район / Г.А.</label>
+                        <select id="selDistrict" name="district" class="fc">
+                            <option value="">⏳ Загрузка...</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Сельский округ</label>
-                        <select name="ruralDistrict" class="fc">
-                            <option value="">— Выберите округ —</option>
-                            <option value="Согринский"      selected="@(Model.RuralDistrict=="Согринский")">Согринский</option>
-                            <option value="Предгорненский"  selected="@(Model.RuralDistrict=="Предгорненский")">Предгорненский</option>
-                            <option value="Меновновский"    selected="@(Model.RuralDistrict=="Меновновский")">Меновновский</option>
+                        <select id="selRural" name="ruralDistrict" class="fc" disabled>
+                            <option value="">— Выберите район —</option>
                         </select>
                     </div>
                 </div>
@@ -113,12 +106,8 @@
                 <div class="form-grid" style="margin-bottom:16px;">
                     <div class="form-group">
                         <label>Населённый пункт</label>
-                        <select name="settlement" class="fc">
-                            <option value="">— Выберите —</option>
-                            <option value="Усть-Каменогорск" selected="@(Model.Settlement=="Усть-Каменогорск")">Усть-Каменогорск</option>
-                            <option value="Согра"            selected="@(Model.Settlement=="Согра")">Согра</option>
-                            <option value="Предгорное"       selected="@(Model.Settlement=="Предгорное")">Предгорное</option>
-                            <option value="Меновное"         selected="@(Model.Settlement=="Меновное")">Меновное</option>
+                        <select id="selSettlement" name="settlement" class="fc" disabled>
+                            <option value="">— Выберите округ —</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -154,8 +143,7 @@
                 <div class="btn-row">
                     <button type="submit" class="btn-save">💾 Сохранить</button>
                     <a asp-controller="Account" asp-action="Profile" class="btn-cancel">Отмена</a>
-                    <button type="submit" name="clear" value="true" class="btn-clear"
-                            onclick="clearCoords()">🗑 Очистить</button>
+                    <button type="button" class="btn-clear" onclick="clearAll()">🗑 Очистить</button>
                 </div>
 
             </form>
@@ -164,6 +152,142 @@
 </div>
 
 <script>
+    
+    const savedDistrict   = '@Html.Raw(Model.District?.Replace("'", "\\'") ?? "")';
+    const savedRural      = '@Html.Raw(Model.RuralDistrict?.Replace("'", "\\'") ?? "")';
+    const savedSettlement = '@Html.Raw(Model.Settlement?.Replace("'", "\\'") ?? "")';
+
+    const selDistrict   = document.getElementById('selDistrict');
+    const selRural      = document.getElementById('selRural');
+    const selSettlement = document.getElementById('selSettlement');
+
+    function resetSelect(sel, placeholder) {
+        sel.innerHTML = `<option value="">${placeholder}</option>`;
+        sel.disabled = true;
+    }
+
+    async function apiFetch(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+    }
+
+    
+    async function loadDistricts() {
+        try {
+            const data = await apiFetch('/api/kato/districts');
+            selDistrict.innerHTML = '<option value="">— Выберите район / Г.А. —</option>';
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.name;          
+                opt.dataset.code = item.code;   
+                opt.textContent = item.name;
+                if (item.name === savedDistrict) opt.selected = true;
+                selDistrict.appendChild(opt);
+            });
+            selDistrict.disabled = false;
+
+           
+            const opt = selDistrict.options[selDistrict.selectedIndex];
+            if (opt && opt.dataset.code) {
+                await loadRural(opt.dataset.code);
+            }
+        } catch (e) {
+            selDistrict.innerHTML = '<option value="">⚠️ Ошибка загрузки КАТО</option>';
+            console.error('КАТО districts:', e);
+        }
+    }
+
+    
+    async function loadRural(districtCd) {
+        resetSelect(selRural, '⏳ Загрузка...');
+        resetSelect(selSettlement, '— Выберите округ —');
+
+        try {
+            const data = await apiFetch('/api/kato/rural/' + districtCd);
+
+            if (data.length === 0) {
+                
+                selRural.innerHTML = '<option value="__none__">— Нет сельских округов —</option>';
+                selRural.disabled = false;
+                await loadSettlements(districtCd, '00');
+            } else {
+                selRural.innerHTML = '<option value="">— Выберите сельский округ —</option>';
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.name;
+                    opt.dataset.code = item.code;
+                    opt.textContent = item.name;
+                    if (item.name === savedRural) opt.selected = true;
+                    selRural.appendChild(opt);
+                });
+                selRural.disabled = false;
+
+                const opt = selRural.options[selRural.selectedIndex];
+                if (opt && opt.dataset.code) {
+                    await loadSettlements(districtCd, opt.dataset.code);
+                }
+            }
+        } catch (e) {
+            selRural.innerHTML = '<option value="">⚠️ Ошибка</option>';
+            selRural.disabled = false;
+            console.error('КАТО rural:', e);
+        }
+    }
+
+    
+    async function loadSettlements(districtCd, ruralCd) {
+        resetSelect(selSettlement, '⏳ Загрузка...');
+
+        try {
+            const data = await apiFetch('/api/kato/settlements/' + districtCd + '/' + ruralCd);
+
+            selSettlement.innerHTML = '<option value="">— Выберите населённый пункт —</option>';
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.name;
+                if (item.name === savedSettlement) opt.selected = true;
+                selSettlement.appendChild(opt);
+            });
+            selSettlement.disabled = false;
+        } catch (e) {
+            selSettlement.innerHTML = '<option value="">⚠️ Ошибка</option>';
+            selSettlement.disabled = false;
+            console.error('КАТО settlements:', e);
+        }
+    }
+
+    
+    selDistrict.addEventListener('change', function () {
+        resetSelect(selRural, '— Выберите округ —');
+        resetSelect(selSettlement, '— Выберите нас. пункт —');
+        const opt = this.options[this.selectedIndex];
+        if (opt && opt.dataset.code) loadRural(opt.dataset.code);
+    });
+
+   
+    selRural.addEventListener('change', function () {
+        resetSelect(selSettlement, '— Выберите нас. пункт —');
+        const distOpt = selDistrict.options[selDistrict.selectedIndex];
+        if (!distOpt || !distOpt.dataset.code) return;
+        const ruralOpt = this.options[this.selectedIndex];
+        const ruralCd = (ruralOpt && ruralOpt.dataset.code) ? ruralOpt.dataset.code : '00';
+        loadSettlements(distOpt.dataset.code, ruralCd);
+    });
+
+    
+    function clearAll() {
+        selDistrict.value = '';
+        resetSelect(selRural, '— Выберите округ —');
+        resetSelect(selSettlement, '— Выберите нас. пункт —');
+        document.getElementById('latInput').value = '';
+        document.getElementById('lngInput').value = '';
+        marker.setLatLng([49.9483, 82.6170]);
+        map.setView([49.9483, 82.6170], 13);
+    }
+
+    
     var initLat = @lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
     var initLng = @lng.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
@@ -179,7 +303,7 @@
         document.getElementById('lngInput').value = lng.toFixed(6);
     }
 
-    marker.on('dragend', function (e) {
+    marker.on('dragend', function () {
         var p = marker.getLatLng();
         setCoords(p.lat, p.lng);
     });
@@ -189,8 +313,6 @@
         setCoords(e.latlng.lat, e.latlng.lng);
     });
 
-    function clearCoords() {
-        document.getElementById('latInput').value = '';
-        document.getElementById('lngInput').value = '';
-    }
+   
+    loadDistricts();
 </script>
