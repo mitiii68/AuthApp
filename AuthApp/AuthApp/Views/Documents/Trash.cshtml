@@ -74,7 +74,7 @@
     .btn-danger  { background: var(--danger); color: #fff; }
     .btn-danger:hover { background: #c92a2a; }
 
-    /* Info banner */
+    
     .trash-banner {
         display: flex;
         align-items: center;
@@ -89,7 +89,7 @@
         margin-bottom: 18px;
     }
 
-    /* Search panel */
+   
     .search-panel {
         background: var(--surface);
         border: 1.5px solid var(--border);
@@ -152,7 +152,7 @@
         border-top: 5px solid var(--text-sub);
     }
 
-    /* Card */
+    
     .card {
         background: var(--surface);
         border: 1.5px solid var(--border);
@@ -173,7 +173,7 @@
     }
     .card-header strong { color: var(--text); font-weight: 800; }
 
-    /* Empty */
+   
     .empty-state {
         display: flex; flex-direction: column; align-items: center;
         justify-content: center; padding: 64px 20px;
@@ -183,7 +183,7 @@
     .empty-state p   { font-size: 16px; font-weight: 700; color: var(--text); }
     .empty-state span { font-size: 14px; }
 
-    /* Table */
+   
     .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .data-table thead th {
         padding: 11px 16px; background: var(--surface-2);
@@ -200,7 +200,7 @@
     .data-table td { padding: 13px 16px; vertical-align: middle; }
     .td-right { text-align: right; }
 
-    /* File icon */
+   
     .file-icon {
         display: inline-flex; align-items: center; justify-content: center;
         width: 36px; height: 36px; border-radius: 8px;
@@ -231,7 +231,7 @@
     .date-main { display: block; font-size: 13.5px; font-weight: 600; color: var(--text); }
     .date-sub  { display: block; font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 1px; }
 
-    /* Actions */
+   
     .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
     .btn-icon {
         display: inline-flex; align-items: center; justify-content: center;
@@ -244,7 +244,7 @@
     .btn-icon.restore:hover { background: var(--success-light); border-color: var(--success); color: var(--success); }
     .btn-icon.danger:hover  { background: var(--danger-light);  border-color: var(--danger);  color: var(--danger);  }
 
-    /* Pagination */
+    
     .pagination {
         display: flex; align-items: center; justify-content: center;
         gap: 4px; padding: 16px 20px;
@@ -265,7 +265,7 @@
     .page-dots         { font-size: 13px; color: var(--text-sub); padding: 0 4px; align-self: flex-end; line-height: 36px; }
     .pagination-info   { font-size: 12.5px; color: var(--text-sub); font-weight: 600; margin-left: 8px; }
 
-    /* Confirm modal */
+    
     .modal-overlay {
         display: none;
         position: fixed; inset: 0;
@@ -299,7 +299,7 @@
     .modal-actions { display: flex; gap: 10px; justify-content: center; }
 </style>
 
-<!-- Confirm purge modal -->
+
 <div class="modal-overlay" id="purgeModal">
     <div class="modal">
         <div class="modal-icon">
@@ -320,7 +320,7 @@
     </div>
 </div>
 
-<!-- Header -->
+
 <div class="docs-header">
     <div>
         <h1>
@@ -342,7 +342,7 @@
     </a>
 </div>
 
-<!-- Banner -->
+
 <div class="trash-banner">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0">
         <circle cx="12" cy="12" r="10"/>
@@ -352,7 +352,7 @@
     Документы в корзине не отображаются в общем списке. Восстановите их или удалите навсегда.
 </div>
 
-<!-- Search & sort -->
+
 <div class="search-panel">
     <form method="get" id="searchForm">
         <div class="search-row">
@@ -414,7 +414,7 @@
     </form>
 </div>
 
-<!-- Table -->
+
 <div class="card">
     <div class="card-header">
         <span>В корзине: <strong>@totalCount</strong></span>
@@ -502,7 +502,7 @@
                         </td>
                         <td class="td-right">
                             <div class="actions">
-                                <!-- Restore -->
+                               
                                 <form asp-action="Restore" method="post" style="display:inline">
                                     <input type="hidden" name="id" value="@doc.Id" />
                                     <button type="submit" class="btn-icon restore" title="Восстановить">
@@ -512,7 +512,7 @@
                                         </svg>
                                     </button>
                                 </form>
-                                <!-- Purge -->
+                               
                                 <button type="button" class="btn-icon danger" title="Удалить навсегда"
                                         onclick="openPurgeModal(@doc.Id, '@Html.Raw(doc.FileName?.Replace("'", "\\'") ?? "")')">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -592,7 +592,7 @@ function openPurgeModal(id, name) {
     document.getElementById('purgeFileName').textContent = '«' + name + '»';
     document.getElementById('purgeForm').action = '/Documents/Purge';
 
-    // inject hidden id into form
+    
     let existing = document.getElementById('purgeIdInput');
     if (!existing) {
         existing = document.createElement('input');
@@ -610,7 +610,7 @@ function closePurgeModal() {
     document.getElementById('purgeModal').classList.remove('active');
 }
 
-// Close on overlay click
+
 document.getElementById('purgeModal').addEventListener('click', function(e) {
     if (e.target === this) closePurgeModal();
 });

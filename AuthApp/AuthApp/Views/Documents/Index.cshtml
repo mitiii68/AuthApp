@@ -19,6 +19,8 @@
     int totalCount  = ViewBag.TotalCount is int tc
                         ? tc
                         : (totalPages > 1 ? (totalPages - 1) * pageSize + Model.Count : Model.Count);
+
+    var favoriteIds = ViewBag.FavoriteIds as HashSet<int> ?? new HashSet<int>();
 }
 
 <style>
@@ -159,7 +161,7 @@
         box-shadow: 0 0 0 3px var(--accent-light);
     }
     
-    /* Tag dropdown picker */
+    
     .tag-picker-wrap {
         position: relative;
     }
@@ -529,6 +531,9 @@
     }
     .btn-icon:hover        { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
     .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+    .btn-icon.star         { color: #adb5bd; }
+    .btn-icon.star.active  { color: #e67700; border-color: #fcd5a0; background: #fff4e5; }
+    .btn-icon.star:hover   { background: #fff4e5; border-color: #fcd5a0; color: #e67700; }
 
     
     .pagination {
@@ -575,6 +580,16 @@
         <p>Хранилище файлов и документов</p>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <a asp-action="Favorites" class="btn btn-ghost" style="position:relative;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            Избранное
+            @if (ViewBag.FavoritesCount is int fc && fc > 0)
+            {
+                <span style="position:absolute;top:-7px;right:-7px;background:#e67700;color:#fff;font-size:10px;font-weight:800;border-radius:20px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;">@fc</span>
+            }
+        </a>
         <a asp-action="Trash" class="btn btn-ghost" style="position:relative;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="3 6 5 6 21 6"/>
@@ -646,7 +661,7 @@
                         .ToList();
                 }
 
-                <!-- Hidden inputs for selected tags (submitted with form) -->
+                
                 <div id="tagHiddenInputs">
                     @foreach (var tid in currentTagIds)
                     {
@@ -680,7 +695,7 @@
                     </button>
 
                     <div class="tag-picker-dropdown" id="tagPickerDropdown">
-                        <!-- Category filter -->
+                        
                         @if (groupedTags.Count > 1)
                         {
                             <div class="tag-picker-cats">
@@ -894,6 +909,24 @@
                         </td>
                         <td class="td-right">
                             <div class="actions">
+                                @{
+                                    var isFav = favoriteIds.Contains(doc.Id);
+                                    var returnUrl = Context.Request.QueryString.HasValue
+                                        ? "/Documents/Index" + Context.Request.QueryString
+                                        : "/Documents/Index";
+                                }
+                                <form asp-action="ToggleFavorite" method="post" style="display:inline">
+                                    <input type="hidden" name="id" value="@doc.Id" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button type="submit" class="btn-icon star @(isFav ? "active" : "")"
+                                            title="@(isFav ? "Убрать из избранного" : "В избранное")">
+                                        <svg width="15" height="15" viewBox="0 0 24 24"
+                                             fill="@(isFav ? "currentColor" : "none")"
+                                             stroke="currentColor" stroke-width="2">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                        </svg>
+                                    </button>
+                                </form>
                                 <a asp-action="Download" asp-route-id="@doc.Id" class="btn-icon" title="Скачать">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>

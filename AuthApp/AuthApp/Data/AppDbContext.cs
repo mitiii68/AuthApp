@@ -17,7 +17,8 @@ namespace AuthApp.Data
         public DbSet<Tag> Tags { get; set; }
         public DbSet<FileTag> FileTags { get; set; }
         public DbSet<TagCategory> TagCategories { get; set; }
-        public DbSet<TagCategoryTag> TagCategoryTags { get; set; }  
+        public DbSet<TagCategoryTag> TagCategoryTags { get; set; }
+        public DbSet<FavoriteDocument> FavoriteDocuments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

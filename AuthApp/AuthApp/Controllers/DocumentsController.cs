@@ -30,7 +30,10 @@ namespace AuthApp.Controllers
             await _context.SaveChangesAsync();
         }
 
-       
+        // ──────────────────────────────────────────────
+        // UPLOAD
+        // ──────────────────────────────────────────────
+
         public async Task<IActionResult> Upload()
         {
             ViewBag.Tags = await _context.Tags
@@ -98,7 +101,10 @@ namespace AuthApp.Controllers
             return RedirectToAction("Index");
         }
 
-       
+        // ──────────────────────────────────────────────
+        // MOVE TO TRASH  (бывший Delete — теперь мягкое удаление)
+        // ──────────────────────────────────────────────
+
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -115,7 +121,9 @@ namespace AuthApp.Controllers
             return RedirectToAction("Index");
         }
 
-    
+        // ──────────────────────────────────────────────
+        // RESTORE
+        // ──────────────────────────────────────────────
 
         [HttpPost]
         public async Task<IActionResult> Restore(int id)
@@ -133,7 +141,10 @@ namespace AuthApp.Controllers
             return RedirectToAction("Trash");
         }
 
-    
+        // ──────────────────────────────────────────────
+        // PURGE (безвозвратное удаление из корзины)
+        // ──────────────────────────────────────────────
+
         [HttpPost]
         public async Task<IActionResult> Purge(int id)
         {
@@ -158,7 +169,9 @@ namespace AuthApp.Controllers
             return RedirectToAction("Trash");
         }
 
-      
+        // ──────────────────────────────────────────────
+        // DOWNLOAD
+        // ──────────────────────────────────────────────
 
         public async Task<IActionResult> Download(int id)
         {
@@ -192,7 +205,9 @@ namespace AuthApp.Controllers
             return File(fileBytes, contentType, document.FileName);
         }
 
-    
+        // ──────────────────────────────────────────────
+        // INDEX  (только НЕ удалённые)
+        // ──────────────────────────────────────────────
 
         public async Task<IActionResult> Index(
             string search,
@@ -206,11 +221,20 @@ namespace AuthApp.Controllers
                     .ThenInclude(tct => tct.TagCategory)
                 .ToListAsync();
 
-            
+            // Считаем сколько документов в корзине — для badge на кнопке
             ViewBag.TrashCount = await _context.FileDocuments.CountAsync(d => d.IsDeleted);
 
+            // Избранное текущего пользователя
+            var userEmail = CurrentUserEmail();
+            var favoriteIds = await _context.FavoriteDocuments
+                .Where(f => f.UserEmail == userEmail)
+                .Select(f => f.FileDocumentsId)
+                .ToHashSetAsync();
+            ViewBag.FavoriteIds = favoriteIds;
+            ViewBag.FavoritesCount = favoriteIds.Count;
+
             var documentsQuery = _context.FileDocuments
-                .Where(d => !d.IsDeleted)                   
+                .Where(d => !d.IsDeleted)                   // ← только активные
                 .Include(d => d.FileTags)
                     .ThenInclude(ft => ft.Tag)
                 .AsQueryable();
@@ -253,7 +277,7 @@ namespace AuthApp.Controllers
             return View(documents);
         }
 
-      
+       
 
         public async Task<IActionResult> Trash(
             string search,
@@ -275,7 +299,7 @@ namespace AuthApp.Controllers
                 "old" => query.OrderBy(d => d.DeletedAt),
                 "az"  => query.OrderBy(d => d.FileName),
                 "za"  => query.OrderByDescending(d => d.FileName),
-                _     => query.OrderByDescending(d => d.DeletedAt)  
+                _     => query.OrderByDescending(d => d.DeletedAt)  // новые удалённые — первые
             };
 
             var totalItems = await query.CountAsync();
@@ -298,7 +322,99 @@ namespace AuthApp.Controllers
             return View(documents);
         }
 
-       
+        // ──────────────────────────────────────────────
+        // TOGGLE FAVORITE
+        // ──────────────────────────────────────────────
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleFavorite(int id, string? returnUrl)
+        {
+            var userEmail = CurrentUserEmail();
+            var existing  = await _context.FavoriteDocuments
+                .FirstOrDefaultAsync(f => f.UserEmail == userEmail && f.FileDocumentsId == id);
+
+            if (existing != null)
+            {
+                _context.FavoriteDocuments.Remove(existing);
+                await _context.SaveChangesAsync();
+                await LogActionAsync($"Убрал документ (Id={id}) из избранного");
+            }
+            else
+            {
+                // Проверяем что документ существует
+                var doc = await _context.FileDocuments.FindAsync(id);
+                if (doc != null)
+                {
+                    _context.FavoriteDocuments.Add(new FavoriteDocument
+                    {
+                        UserEmail       = userEmail,
+                        FileDocumentsId = id,
+                        AddedAt         = DateTime.Now
+                    });
+                    await _context.SaveChangesAsync();
+                    await LogActionAsync($"Добавил документ «{doc.FileName}» в избранное");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
+            return RedirectToAction("Index");
+        }
+
+        // ──────────────────────────────────────────────
+        // FAVORITES PAGE
+        // ──────────────────────────────────────────────
+
+        public async Task<IActionResult> Favorites(
+            string search,
+            string sortOrder,
+            int page = 1,
+            int pageSize = 10)
+        {
+            var userEmail = CurrentUserEmail();
+
+            var query = _context.FavoriteDocuments
+                .Where(f => f.UserEmail == userEmail)
+                .Include(f => f.FileDocument)
+                    .ThenInclude(d => d!.FileTags)
+                        .ThenInclude(ft => ft.Tag)
+                .Where(f => f.FileDocument != null && !f.FileDocument.IsDeleted)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(f =>
+                    f.FileDocument!.FileName != null &&
+                    f.FileDocument.FileName.Contains(search));
+
+            query = sortOrder switch
+            {
+                "old"  => query.OrderBy(f => f.AddedAt),
+                "az"   => query.OrderBy(f => f.FileDocument!.FileName),
+                "za"   => query.OrderByDescending(f => f.FileDocument!.FileName),
+                "date_new" => query.OrderByDescending(f => f.FileDocument!.UploadDate),
+                "date_old" => query.OrderBy(f => f.FileDocument!.UploadDate),
+                _      => query.OrderByDescending(f => f.AddedAt)
+            };
+
+            var totalItems = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            page = Math.Clamp(page, 1, Math.Max(1, totalPages));
+
+            var favorites = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.Page       = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalItems;
+            ViewBag.SortOrder  = sortOrder;
+            ViewBag.Search     = search;
+            ViewBag.PageSize   = pageSize;
+
+            return View(favorites);
+        }
 
         private async Task FillUploadViewBag()
         {
