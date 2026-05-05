@@ -52,6 +52,7 @@
         align-items: flex-start;
         justify-content: space-between;
         margin-bottom: 20px;
+        margin-top: 24px;
         flex-wrap: wrap;
         gap: 12px;
     }
@@ -1057,19 +1058,24 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function toggleTag(el) {
-    const id   = parseInt(el.dataset.id);
-    const name = el.dataset.name;
-    if (selectedTagIds.has(id)) {
-        selectedTagIds.delete(id);
-        el.classList.remove('selected');
-    } else {
-        selectedTagIds.add(id);
-        el.classList.add('selected');
+    function toggleTag(el) {
+        const id   = parseInt(el.dataset.id);
+        const name = el.dataset.name;
+        if (selectedTagIds.has(id)) {
+            selectedTagIds.delete(id);
+            el.classList.remove('selected');
+        } else {
+            selectedTagIds.add(id);
+            el.classList.add('selected');
+        }
+        renderChips();
+        syncHiddenInputs();
+        
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            document.getElementById('searchForm').submit();
+        }, 300);
     }
-    renderChips();
-    syncHiddenInputs();
-}
 
 function removeTag(e, id) {
     e.stopPropagation();
@@ -1134,4 +1140,17 @@ function filterTagCat(btn) {
         g.style.display = (!cat || g.dataset.cat == cat) ? '' : 'none';
     });
 }
+
+    let searchTimer = null;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            document.getElementById('searchForm').submit();
+        }, 200); 
+    });
+
+    
+    document.getElementById('sortSelect').addEventListener('change', function() {
+        document.getElementById('searchForm').submit();
+    });
 </script>

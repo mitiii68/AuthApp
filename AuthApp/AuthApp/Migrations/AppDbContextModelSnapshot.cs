@@ -49,7 +49,7 @@ namespace AuthApp.Migrations
 
                     b.HasIndex("FileDocumentsId");
 
-                    b.ToTable("FavoriteDocuments");
+                    b.ToTable("FavoriteDocuments", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.FileDocuments", b =>
@@ -80,7 +80,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FileDocuments");
+                    b.ToTable("FileDocuments", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.FileTag", b =>
@@ -103,7 +103,7 @@ namespace AuthApp.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("FileTags");
+                    b.ToTable("FileTags", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.KatoEntry", b =>
@@ -148,7 +148,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("KatoEntries");
+                    b.ToTable("KatoEntries", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.LoginHistory", b =>
@@ -170,7 +170,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LoginHistories");
+                    b.ToTable("LoginHistories", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.Role", b =>
@@ -187,7 +187,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.User", b =>
@@ -262,7 +262,7 @@ namespace AuthApp.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.UserActionLog", b =>
@@ -284,7 +284,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserActionLog");
+                    b.ToTable("UserActionLog", (string)null);
                 });
 
             modelBuilder.Entity("Tag", b =>
@@ -300,7 +300,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("TagCategory", b =>
@@ -316,7 +316,7 @@ namespace AuthApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TagCategories");
+                    b.ToTable("TagCategories", (string)null);
                 });
 
             modelBuilder.Entity("TagCategoryTag", b =>
@@ -340,7 +340,7 @@ namespace AuthApp.Migrations
                     b.HasIndex("TagId", "TagCategoryId")
                         .IsUnique();
 
-                    b.ToTable("TagCategoryTags");
+                    b.ToTable("TagCategoryTags", (string)null);
                 });
 
             modelBuilder.Entity("AuthApp.Models.FavoriteDocument", b =>

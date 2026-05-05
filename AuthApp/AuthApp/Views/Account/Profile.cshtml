@@ -161,15 +161,18 @@
 @if (hasLocation)
 {
     <script>
-               document.addEventListener('DOMContentLoaded', function () {
-            var map = L.map('profileMap').setView([@lat, @lng], 14);
+                document.addEventListener('DOMContentLoaded', function () {
+            var map = L.map('profileMap').setView([@lat.ToString(System.Globalization.CultureInfo.InvariantCulture), @lng.ToString(System.Globalization.CultureInfo.InvariantCulture)], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
-            L.marker([@lat, @lng]).addTo(map)
+            L.marker([@lat.ToString(System.Globalization.CultureInfo.InvariantCulture), @lng.ToString(System.Globalization.CultureInfo.InvariantCulture)]).addTo(map)
                 .bindPopup('@(Model.Settlement ?? "") @(Model.Street ?? "") @(Model.House ?? "")'.trim())
                 .openPopup();
-            setTimeout(function() { map.invalidateSize(); }, 100);
+            setTimeout(function() {
+                map.invalidateSize();
+                map.setView([@lat.ToString(System.Globalization.CultureInfo.InvariantCulture), @lng.ToString(System.Globalization.CultureInfo.InvariantCulture)], 14);
+            }, 500);
         });
     </script>
 }

@@ -13,7 +13,7 @@ namespace AuthApp.Controllers
 
         public KatoController(AppDbContext db) => _db = db;
 
-        // Тестовый endpoint — откройте в браузере /api/kato/ping
+        
         [HttpGet("ping")]
         public async Task<IActionResult> Ping()
         {
@@ -81,5 +81,7 @@ namespace AuthApp.Controllers
 
             return Ok(rows);
         }
+
+        
     }
 }

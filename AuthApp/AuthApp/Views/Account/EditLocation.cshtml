@@ -258,13 +258,16 @@
         }
     }
 
-    
-    selDistrict.addEventListener('change', function () {
+        selDistrict.addEventListener('change', function () {
         resetSelect(selRural, '— Выберите округ —');
         resetSelect(selSettlement, '— Выберите нас. пункт —');
         const opt = this.options[this.selectedIndex];
-        if (opt && opt.dataset.code) loadRural(opt.dataset.code);
+        if (opt && opt.dataset.code) {
+            loadRural(opt.dataset.code);
+            flyToDistrict(opt.value);
+        }
     });
+
 
    
     selRural.addEventListener('change', function () {
@@ -312,6 +315,25 @@
         marker.setLatLng(e.latlng);
         setCoords(e.latlng.lat, e.latlng.lng);
     });
+
+        async function flyToDistrict(districtName) {
+        try {
+            const res = await fetch(
+                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(districtName + ', Восточно-Казахстанская область, Казахстан')}&format=json&limit=1`
+            );
+            const data = await res.json();
+            if (data && data.length > 0) {
+                const lt = parseFloat(data[0].lat);
+                const ln = parseFloat(data[0].lon);
+                map.flyTo([lt, ln], 10);
+                marker.setLatLng([lt, ln]);
+                setCoords(lt, ln);
+            }
+        } catch (e) {
+            console.error('Геокодирование:', e);
+        }
+    }
+
 
    
     loadDistricts();
