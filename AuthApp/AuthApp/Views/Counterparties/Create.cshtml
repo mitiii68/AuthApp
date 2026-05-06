@@ -154,7 +154,8 @@
                     </div>
                     <div class="form-group">
                         <label>ИИН/БИН <span>*</span></label>
-                        <input asp-for="IinBin" class="form-control-custom" placeholder="000000000000" />
+                        <input asp-for="IinBin" class="form-control-custom" />
+                        <span asp-validation-for="IinBin" style="color:#dc2626; font-size:12px;"></span>
                     </div>
                     <div class="form-group">
                         <label>Тип</label>
@@ -331,3 +332,9 @@
         document.querySelectorAll('input[name="IinBin"]')
             .forEach(iinMask);
     </script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

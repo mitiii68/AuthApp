@@ -1,4 +1,6 @@
 ﻿using AuthApp.Enums;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace AuthApp.Models;
 
@@ -19,7 +21,8 @@ public class Counterparty
     public Industry? Industry { get; set; }
     public OrganizationType? OrganizationType { get; set; }
 
-    public string? IinBin { get; set; }
+    [Required(ErrorMessage = "ИИН/БИН обязателен для заполнения")]
+    public string IinBin { get; set; } = string.Empty;
     public bool DoNotSendEmail { get; set; }
 
     public string? FacebookUrl { get; set; }
@@ -35,4 +38,7 @@ public class Counterparty
     public string? ActualCountry { get; set; }
     public string? ActualRegion { get; set; }
     public string? ActualCity { get; set; }
+    
+
+
 }
