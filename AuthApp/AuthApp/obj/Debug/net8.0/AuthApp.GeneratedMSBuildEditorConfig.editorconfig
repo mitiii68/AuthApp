@@ -66,6 +66,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxWZXJpZnlSZXNldENvZGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/MyProject/AuthApp/AuthApp/AuthApp/Views/Counterparties/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291bnRlcnBhcnRpZXNcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/MyProject/AuthApp/AuthApp/AuthApp/Views/Counterparties/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291bnRlcnBhcnRpZXNcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/MyProject/AuthApp/AuthApp/AuthApp/Views/Counterparties/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ291bnRlcnBhcnRpZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/MyProject/AuthApp/AuthApp/AuthApp/Views/Documents/Favorites.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRzXEZhdm9yaXRlcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,213 @@
+@model IEnumerable<AuthApp.Models.Counterparty>
+@{
+    ViewData["Title"] = "Контрагенты";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+    .page-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .btn-primary-custom {
+        background: var(--blue);
+        color: white;
+        border: none;
+        padding: 8px 18px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.15s;
+    }
+    .btn-primary-custom:hover {
+        background: var(--blue-dark);
+        color: white;
+    }
+    .card-table {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+    .card-table table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+    .card-table thead {
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+    .card-table thead th {
+        padding: 12px 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+    }
+    .card-table tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.1s;
+    }
+    .card-table tbody tr:last-child {
+        border-bottom: none;
+    }
+    .card-table tbody tr:hover {
+        background: var(--bg);
+    }
+    .card-table tbody td {
+        padding: 14px 16px;
+        font-size: 14px;
+        color: var(--text);
+        vertical-align: middle;
+    }
+    .counterparty-name {
+        font-weight: 600;
+        color: var(--text);
+    }
+    .text-muted-sm {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .badge-type {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        background: var(--blue-light);
+        color: var(--blue);
+    }
+    .actions-cell {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+    }
+    .btn-edit {
+        padding: 5px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        background: var(--blue-light);
+        color: var(--blue);
+        border: none;
+        transition: background 0.15s;
+    }
+    .btn-edit:hover {
+        background: #d0e4f9;
+        color: var(--blue-dark);
+    }
+    .btn-delete {
+        padding: 5px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        background: #fef2f2;
+        color: #dc2626;
+        border: none;
+        transition: background 0.15s;
+    }
+    .btn-delete:hover {
+        background: #fecaca;
+        color: #dc2626;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+    }
+    .empty-state-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+    .empty-state p {
+        font-size: 15px;
+    }
+</style>
+
+<div style="padding: 32px;">
+    <div class="page-header">
+        <h1 class="page-title">Контрагенты</h1>
+        <a asp-action="Create" class="btn-primary-custom">+ Добавить контрагента</a>
+    </div>
+
+    <div class="card-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Контрагент</th>
+                    <th>Телефон</th>
+                    <th>Email</th>
+                    <th>Тип</th>
+                    <th>ИИН/БИН</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🏢</div>
+                                <p>Контрагенты не найдены. <a asp-action="Create" style="color:var(--blue)">Добавить первого?</a></p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="counterparty-name">@item.Name</div>
+                                @if (!string.IsNullOrEmpty(item.ShortName))
+                                {
+                                    <div class="text-muted-sm">@item.ShortName</div>
+                                }
+                            </td>
+                            <td>@item.MainPhone</td>
+                            <td>@item.MainEmail</td>
+                            <td>
+                                @if (item.Type.HasValue)
+                                {
+                                    <span class="badge-type">
+                                        @(item.Type switch {
+                                            AuthApp.Enums.CounterpartyType.Competitor  => "Конкурент",
+                                            AuthApp.Enums.CounterpartyType.Client      => "Клиент",
+                                            AuthApp.Enums.CounterpartyType.Integrator  => "Интегратор",
+                                            AuthApp.Enums.CounterpartyType.Partner     => "Партнёр",
+                                            AuthApp.Enums.CounterpartyType.Press       => "Пресса",
+                                            AuthApp.Enums.CounterpartyType.Other       => "Другое",
+                                            _ => ""
+                                        })
+                                    </span>
+                                }
+                            </td>
+                            <td>@item.IinBin</td>
+                            <td>
+                                <div class="actions-cell">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-edit">Изменить</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id"
+                                       onclick="return confirm('Удалить контрагента @item.Name?')"
+                                       class="btn-delete">Удалить</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
