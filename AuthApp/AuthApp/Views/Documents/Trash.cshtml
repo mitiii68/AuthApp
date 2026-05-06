@@ -314,6 +314,8 @@
         <div class="modal-actions">
             <button type="button" class="btn btn-ghost" onclick="closePurgeModal()">Отмена</button>
             <form id="purgeForm" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="purgeIdInput" value="" />
                 <button type="submit" class="btn btn-danger">Удалить навсегда</button>
             </form>
         </div>
@@ -513,14 +515,17 @@
                                     </button>
                                 </form>
                                
-                                <button type="button" class="btn-icon danger" title="Удалить навсегда"
-                                        onclick="openPurgeModal(@doc.Id, '@Html.Raw(doc.FileName?.Replace("'", "\\'") ?? "")')">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6"/>
-                                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                                        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-                                    </svg>
-                                </button>
+                                <form asp-action="Purge" method="post" style="display:inline"
+                                      onsubmit="return confirm('Удалить «@Html.Raw(doc.FileName?.Replace("'", "\\'") ?? "")» навсегда? Это действие необратимо.')">
+                                    <input type="hidden" name="id" value="@doc.Id" />
+                                    <button type="submit" class="btn-icon danger" title="Удалить навсегда">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                                            <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                                        </svg>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -592,16 +597,7 @@ function openPurgeModal(id, name) {
     document.getElementById('purgeFileName').textContent = '«' + name + '»';
     document.getElementById('purgeForm').action = '/Documents/Purge';
 
-    
-    let existing = document.getElementById('purgeIdInput');
-    if (!existing) {
-        existing = document.createElement('input');
-        existing.type = 'hidden';
-        existing.name = 'id';
-        existing.id   = 'purgeIdInput';
-        document.getElementById('purgeForm').prepend(existing);
-    }
-    existing.value = id;
+    document.getElementById('purgeIdInput').value = id;
 
     document.getElementById('purgeModal').classList.add('active');
 }

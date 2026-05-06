@@ -169,9 +169,7 @@ namespace AuthApp.Controllers
             return RedirectToAction("Trash");
         }
 
-        // ──────────────────────────────────────────────
-        // DOWNLOAD
-        // ──────────────────────────────────────────────
+        
 
         public async Task<IActionResult> Download(int id)
         {
@@ -205,10 +203,7 @@ namespace AuthApp.Controllers
             return File(fileBytes, contentType, document.FileName);
         }
 
-        // ──────────────────────────────────────────────
-        // INDEX  (только НЕ удалённые)
-        // ──────────────────────────────────────────────
-
+       
         public async Task<IActionResult> Index(
             string search,
             List<int> selectedTags,
@@ -221,10 +216,10 @@ namespace AuthApp.Controllers
                     .ThenInclude(tct => tct.TagCategory)
                 .ToListAsync();
 
-            // Считаем сколько документов в корзине — для badge на кнопке
+           
             ViewBag.TrashCount = await _context.FileDocuments.CountAsync(d => d.IsDeleted);
 
-            // Избранное текущего пользователя
+            
             var userEmail = CurrentUserEmail();
             var favoriteIds = await _context.FavoriteDocuments
                 .Where(f => f.UserEmail == userEmail)
@@ -234,7 +229,7 @@ namespace AuthApp.Controllers
             ViewBag.FavoritesCount = favoriteIds.Count;
 
             var documentsQuery = _context.FileDocuments
-                .Where(d => !d.IsDeleted)                   // ← только активные
+                .Where(d => !d.IsDeleted)                   
                 .Include(d => d.FileTags)
                     .ThenInclude(ft => ft.Tag)
                 .AsQueryable();
