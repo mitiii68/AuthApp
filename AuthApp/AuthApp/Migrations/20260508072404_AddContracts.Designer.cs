@@ -4,6 +4,7 @@ using AuthApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508072404_AddContracts")]
+    partial class AddContracts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,6 +44,9 @@ namespace AuthApp.Migrations
 
                     b.Property<string>("ContractNumber")
                         .HasColumnType("longtext");
+
+                    b.Property<int?>("ContractType")
+                        .HasColumnType("int");
 
                     b.Property<int?>("CounterpartyId")
                         .HasColumnType("int");
@@ -72,9 +78,6 @@ namespace AuthApp.Migrations
                     b.Property<int?>("Stage")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Type")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CounterpartyId");
@@ -83,7 +86,7 @@ namespace AuthApp.Migrations
 
                     b.HasIndex("SourceContractId");
 
-                    b.ToTable("Contracts");
+                    b.ToTable("Contract");
                 });
 
             modelBuilder.Entity("AuthApp.Models.ContractParticipant", b =>
@@ -107,7 +110,7 @@ namespace AuthApp.Migrations
                     b.HasIndex("ContractId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ContractParticipants");
+                    b.ToTable("ContractParticipant");
                 });
 
             modelBuilder.Entity("AuthApp.Models.Counterparty", b =>

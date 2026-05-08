@@ -4,6 +4,7 @@ using AuthApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508024335_FixMissingTables")]
+    partial class FixMissingTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,94 +24,6 @@ namespace AuthApp.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("AuthApp.Models.Contract", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("AmountWithVat")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<DateTime?>("ClosingDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("ConclusionDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("ContractNumber")
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("CounterpartyId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("ExecutionStartDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ProjectId")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ResponsibleFromCustomer")
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("ResponsibleUserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ShortName")
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("SourceContractId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Stage")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CounterpartyId");
-
-                    b.HasIndex("ResponsibleUserId");
-
-                    b.HasIndex("SourceContractId");
-
-                    b.ToTable("Contracts");
-                });
-
-            modelBuilder.Entity("AuthApp.Models.ContractParticipant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ContractId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("ContractId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("ContractParticipants");
-                });
 
             modelBuilder.Entity("AuthApp.Models.Counterparty", b =>
                 {
@@ -521,47 +436,6 @@ namespace AuthApp.Migrations
                     b.ToTable("TagCategoryTags");
                 });
 
-            modelBuilder.Entity("AuthApp.Models.Contract", b =>
-                {
-                    b.HasOne("AuthApp.Models.Counterparty", "Counterparty")
-                        .WithMany()
-                        .HasForeignKey("CounterpartyId");
-
-                    b.HasOne("AuthApp.Models.User", "ResponsibleUser")
-                        .WithMany()
-                        .HasForeignKey("ResponsibleUserId");
-
-                    b.HasOne("AuthApp.Models.Contract", "SourceContract")
-                        .WithMany()
-                        .HasForeignKey("SourceContractId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Counterparty");
-
-                    b.Navigation("ResponsibleUser");
-
-                    b.Navigation("SourceContract");
-                });
-
-            modelBuilder.Entity("AuthApp.Models.ContractParticipant", b =>
-                {
-                    b.HasOne("AuthApp.Models.Contract", "Contract")
-                        .WithMany("Participants")
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuthApp.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contract");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AuthApp.Models.FavoriteDocument", b =>
                 {
                     b.HasOne("AuthApp.Models.FavoriteDocument", null)
@@ -624,11 +498,6 @@ namespace AuthApp.Migrations
                     b.Navigation("Tag");
 
                     b.Navigation("TagCategory");
-                });
-
-            modelBuilder.Entity("AuthApp.Models.Contract", b =>
-                {
-                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("AuthApp.Models.FavoriteDocument", b =>

@@ -20,7 +20,7 @@ namespace AuthApp.Models
         public string? District { get; set;  }
         public string? RuralDistrict { get; set; }   
         public string? Settlement { get; set; }      
-        public string? Street { get; set; }          
+        public string? Street { get; set; }  
         public string? House { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }

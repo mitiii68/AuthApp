@@ -21,6 +21,8 @@ namespace AuthApp.Data
         public DbSet<FavoriteDocument> FavoriteDocuments { get; set; }
         public DbSet<AuthApp.Models.KatoEntry> KatoEntries { get; set; }
         public DbSet<Counterparty> Counterparties => Set<Counterparty>();
+        public DbSet<Contract> Contracts { get; set; }
+        public DbSet<ContractParticipant> ContractParticipants { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +42,16 @@ namespace AuthApp.Data
             modelBuilder.Entity<TagCategoryTag>()
                 .HasIndex(tct => new { tct.TagId, tct.TagCategoryId })
                 .IsUnique();
+
+            modelBuilder.Entity<ContractParticipant>()
+    .HasIndex(cp => new { cp.ContractId, cp.UserId })
+    .IsUnique();
+
+            modelBuilder.Entity<Contract>()
+                .HasOne(c => c.SourceContract)
+                .WithMany()
+                .HasForeignKey(c => c.SourceContractId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

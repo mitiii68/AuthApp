@@ -1,0 +1,316 @@
+@model AuthApp.Models.Contract
+@{
+    ViewData["Title"] = "Создать договор";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var counterparties = ViewBag.Counterparties as List<AuthApp.Models.Counterparty> ?? new();
+    var users          = ViewBag.Users as List<AuthApp.Models.User> ?? new();
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+    :root {
+        --accent:       #3b5bdb;
+        --accent-light: #e7ecfd;
+        --accent-hover: #2f4ac7;
+        --surface:      #ffffff;
+        --surface-2:    #f8f9fc;
+        --border:       #e3e8f0;
+        --text:         #1a1d2e;
+        --text-sub:     #6b7280;
+        --danger:       #e03131;
+        --danger-light: #fff0f0;
+        --shadow-sm:    0 1px 4px rgba(59,91,219,.08);
+        --radius:       12px;
+        --font:         'Nunito', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
+
+    .page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; margin-top: 24px; }
+    .page-header h1 { font-size: 24px; font-weight: 800; letter-spacing: -.4px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: var(--surface); border: 1.5px solid var(--border); color: var(--text-sub); font-family: var(--font); font-size: 13.5px; font-weight: 700; text-decoration: none; transition: background .15s, color .15s; }
+    .back-btn:hover { background: var(--surface-2); color: var(--text); }
+
+    .form-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 28px 32px; margin-bottom: 20px; }
+    .form-card h2 { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(--border); text-transform: uppercase; letter-spacing: .06em; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .06em; }
+    .required::after { content: ' *'; color: var(--danger); }
+
+    .form-input, .form-select {
+        width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+        font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text);
+        background: var(--surface-2); outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-light); }
+    .form-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+    /* Мультиселект участников */
+    .multi-picker-wrap { position: relative; }
+    .multi-picker-trigger {
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        width: 100%; min-height: 44px; padding: 6px 10px 6px 12px;
+        border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface-2);
+        font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text);
+        cursor: pointer; transition: border-color .15s, box-shadow .15s; text-align: left; flex-wrap: wrap;
+    }
+    .multi-picker-trigger:focus, .multi-picker-trigger.open { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-light); outline: none; }
+    .multi-picker-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+    .multi-picker-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; background: var(--accent); color: #fff; }
+    .chip-remove { cursor: pointer; opacity: .8; font-size: 14px; transition: opacity .1s; line-height: 1; }
+    .chip-remove:hover { opacity: 1; }
+    .multi-picker-placeholder { color: var(--text-sub); }
+    .multi-picker-arrow { flex-shrink: 0; color: var(--text-sub); transition: transform .2s; }
+    .multi-picker-trigger.open .multi-picker-arrow { transform: rotate(180deg); }
+
+    .multi-picker-dropdown {
+        display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200;
+        background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(59,91,219,.12); overflow: hidden;
+    }
+    .multi-picker-dropdown.open { display: block; }
+    .multi-picker-search { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .multi-picker-search input { width: 100%; padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font); font-size: 13.5px; outline: none; }
+    .multi-picker-search input:focus { border-color: var(--accent); }
+    .multi-picker-list { max-height: 220px; overflow-y: auto; padding: 6px 0; }
+    .multi-picker-option { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; font-size: 13.5px; font-weight: 600; transition: background .1s; }
+    .multi-picker-option:hover { background: var(--surface-2); }
+    .multi-picker-option.selected { background: var(--accent-light); color: var(--accent); }
+    .multi-picker-option input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
+    .multi-picker-empty { padding: 16px; text-align: center; color: var(--text-sub); font-size: 13px; }
+
+    .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 22px; border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; border: none; text-decoration: none; transition: background .15s, transform .1s; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.25); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+
+    @@media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } .form-card { padding: 18px; } }
+</style>
+
+<div class="page-header">
+    <a asp-action="Index" class="back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Назад
+    </a>
+    <h1>Создать договор</h1>
+</div>
+
+<form asp-action="Create" method="post">
+
+    <div class="form-card">
+        <h2>Основная информация</h2>
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label class="required">Полное наименование</label>
+                <input name="FullName" class="form-input" placeholder="Введите полное наименование..." />
+            </div>
+
+            <div class="form-group">
+                <label>Краткое наименование</label>
+                <input name="ShortName" class="form-input" placeholder="Краткое название..." />
+            </div>
+
+            <div class="form-group">
+                <label>Номер договора</label>
+                <input name="ContractNumber" class="form-input" placeholder="№ договора..." />
+            </div>
+
+            <div class="form-group">
+                <label>Контрагент</label>
+                <select name="CounterpartyId" class="form-select">
+                    <option value="">— Выберите контрагента —</option>
+                    @foreach (var cp in counterparties)
+                    {
+                        <option value="@cp.Id">@cp.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Стадия</label>
+                <select name="Stage" class="form-select">
+                    <option value="">— Выберите стадию —</option>
+                    <option value="0">Выполняется</option>
+                    <option value="1">Завершён</option>
+                    <option value="2">Расторгнут</option>
+                    <option value="3">На согласовании</option>
+                    <option value="4">На регистрации в Казначействе</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Тип договора</label>
+                <select name="Type" class="form-select">
+                    <option value="">— Выберите тип —</option>
+                    <option value="0">Исходящий</option>
+                    <option value="1">Входящий</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Ответственный</label>
+                <select name="ResponsibleUserId" class="form-select">
+                    <option value="">— Выберите ответственного —</option>
+                    @foreach (var u in users)
+                    {
+                        <option value="@u.UserId">@(u.FullName ?? u.Email)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Сумма с НДС</label>
+                <input name="AmountWithVat" type="number" step="0.01" class="form-input" placeholder="0.00" />
+            </div>
+
+            <div class="form-group">
+                <label>Дата заключения</label>
+                <input name="ConclusionDate" type="date" class="form-input" />
+            </div>
+
+            <div class="form-group">
+                <label>Дата начала исполнения</label>
+                <input name="ExecutionStartDate" type="date" class="form-input" />
+            </div>
+
+            <div class="form-group">
+                <label>Дата закрытия</label>
+                <input name="ClosingDate" type="date" class="form-input" />
+            </div>
+
+            <div class="form-group">
+                <label>Ответственный со стороны заказчика</label>
+                <input name="ResponsibleFromCustomer" class="form-input" placeholder="ФИО..." />
+            </div>
+
+            <div class="form-group full">
+                <label>Участники</label>
+                <div class="multi-picker-wrap" id="participantWrap">
+                    <div class="multi-picker-trigger" id="participantTrigger" onclick="togglePicker()">
+                        <div class="multi-picker-chips" id="participantChips">
+                            <span class="multi-picker-placeholder" id="participantPlaceholder">Выберите участников...</span>
+                        </div>
+                        <svg class="multi-picker-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="multi-picker-dropdown" id="participantDropdown">
+                        <div class="multi-picker-search">
+                            <input type="text" id="participantSearch" placeholder="Поиск..." oninput="filterOptions(this.value)" />
+                        </div>
+                        <div class="multi-picker-list" id="participantList">
+                            @foreach (var u in users)
+                            {
+                                <div class="multi-picker-option" data-id="@u.UserId" data-name="@(u.FullName ?? u.Email)" onclick="toggleOption(this)">
+                                    <input type="checkbox" tabindex="-1" />
+                                    <span>@(u.FullName ?? u.Email)</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div id="participantHidden"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <a asp-action="Index" class="btn btn-ghost">Отмена</a>
+        <button type="submit" class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Сохранить
+        </button>
+    </div>
+
+</form>
+
+<script>
+const selectedIds = new Set();
+
+function togglePicker() {
+    const trigger  = document.getElementById('participantTrigger');
+    const dropdown = document.getElementById('participantDropdown');
+    const isOpen   = dropdown.classList.contains('open');
+    if (isOpen) { trigger.classList.remove('open'); dropdown.classList.remove('open'); }
+    else        { trigger.classList.add('open');    dropdown.classList.add('open'); document.getElementById('participantSearch').focus(); }
+}
+
+document.addEventListener('click', function(e) {
+    if (!document.getElementById('participantWrap').contains(e.target)) {
+        document.getElementById('participantTrigger').classList.remove('open');
+        document.getElementById('participantDropdown').classList.remove('open');
+    }
+});
+
+function toggleOption(el) {
+    const id   = parseInt(el.dataset.id);
+    const name = el.dataset.name;
+    const cb   = el.querySelector('input[type=checkbox]');
+    if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+        el.classList.remove('selected');
+        cb.checked = false;
+    } else {
+        selectedIds.add(id);
+        el.classList.add('selected');
+        cb.checked = true;
+    }
+    renderChips();
+    syncHidden();
+}
+
+function removeChip(e, id) {
+    e.stopPropagation();
+    selectedIds.delete(id);
+    const opt = document.querySelector('.multi-picker-option[data-id="' + id + '"]');
+    if (opt) { opt.classList.remove('selected'); opt.querySelector('input[type=checkbox]').checked = false; }
+    renderChips();
+    syncHidden();
+}
+
+function renderChips() {
+    const container   = document.getElementById('participantChips');
+    const placeholder = document.getElementById('participantPlaceholder');
+    container.querySelectorAll('.multi-picker-chip').forEach(c => c.remove());
+    if (selectedIds.size === 0) {
+        placeholder.style.display = '';
+    } else {
+        placeholder.style.display = 'none';
+        selectedIds.forEach(id => {
+            const opt  = document.querySelector('.multi-picker-option[data-id="' + id + '"]');
+            if (!opt) return;
+            const chip = document.createElement('span');
+            chip.className = 'multi-picker-chip';
+            chip.innerHTML = opt.dataset.name + '<span class="chip-remove" onclick="removeChip(event,' + id + ')">×</span>';
+            container.appendChild(chip);
+        });
+    }
+}
+
+function syncHidden() {
+    const container = document.getElementById('participantHidden');
+    container.innerHTML = '';
+    selectedIds.forEach(id => {
+        const inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'participantIds';
+        inp.value = id;
+        container.appendChild(inp);
+    });
+}
+
+function filterOptions(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('.multi-picker-option').forEach(el => {
+        el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
