@@ -1,0 +1,274 @@
+@model List<AuthApp.Models.Contract>
+@{
+    ViewData["Title"] = "Договоры";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var currentSearch = Context.Request.Query["search"].ToString();
+    int currentPage = ViewBag.Page is int vbp ? vbp : 1;
+    int totalPages  = ViewBag.TotalPages is int vbtp ? vbtp : 1;
+    int pageSize    = ViewBag.PageSize is int vbs ? vbs : 10;
+    int totalCount  = ViewBag.TotalCount is int tc ? tc : Model.Count;
+
+    string StageLabel(AuthApp.Enums.ContractStage? s) => s switch {
+        AuthApp.Enums.ContractStage.InProgress     => "Выполняется",
+        AuthApp.Enums.ContractStage.Completed      => "Завершён",
+        AuthApp.Enums.ContractStage.Terminated     => "Расторгнут",
+        AuthApp.Enums.ContractStage.OnApproval     => "На согласовании",
+        AuthApp.Enums.ContractStage.OnRegistration => "На регистрации",
+        _ => "—"
+    };
+    string StageColor(AuthApp.Enums.ContractStage? s) => s switch {
+        AuthApp.Enums.ContractStage.InProgress     => "#2f9e44",
+        AuthApp.Enums.ContractStage.Completed      => "#1971c2",
+        AuthApp.Enums.ContractStage.Terminated     => "#e03131",
+        AuthApp.Enums.ContractStage.OnApproval     => "#e67700",
+        AuthApp.Enums.ContractStage.OnRegistration => "#7048e8",
+        _ => "#868e96"
+    };
+    string TypeLabel(AuthApp.Enums.ContractType? t) => t switch {
+        AuthApp.Enums.ContractType.Outgoing => "Исходящий",
+        AuthApp.Enums.ContractType.Incoming => "Входящий",
+        _ => "—"
+    };
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+    :root {
+        --accent:       #3b5bdb;
+        --accent-light: #e7ecfd;
+        --accent-hover: #2f4ac7;
+        --surface:      #ffffff;
+        --surface-2:    #f8f9fc;
+        --border:       #e3e8f0;
+        --text:         #1a1d2e;
+        --text-sub:     #6b7280;
+        --danger:       #e03131;
+        --danger-light: #fff0f0;
+        --shadow-sm:    0 1px 4px rgba(59,91,219,.08);
+        --shadow-md:    0 4px 20px rgba(59,91,219,.10);
+        --radius:       12px;
+        --font:         'Nunito', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
+
+    .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; margin-top: 24px; flex-wrap: wrap; gap: 12px; }
+    .page-header h1 { font-size: 26px; font-weight: 800; letter-spacing: -.4px; }
+    .page-header p  { font-size: 14px; color: var(--text-sub); margin-top: 3px; font-weight: 500; }
+
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; border: none; text-decoration: none; transition: background .15s, transform .1s; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.25); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+
+    .search-panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 16px 20px; margin-bottom: 18px; }
+    .search-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+    .search-label { display: block; font-size: 11.5px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .search-input-wrap { position: relative; flex: 1 1 260px; }
+    .search-input-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none; }
+    .form-input { width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text); background: var(--surface-2); outline: none; transition: border-color .15s, box-shadow .15s; }
+    .form-input:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-light); }
+
+    .card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1.5px solid var(--border); font-size: 13.5px; font-weight: 600; color: var(--text-sub); background: var(--surface-2); }
+    .card-header strong { color: var(--text); font-weight: 800; }
+
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 64px 20px; color: var(--text-sub); gap: 12px; text-align: center; }
+    .empty-state svg { opacity: .35; }
+    .empty-state p   { font-size: 16px; font-weight: 700; color: var(--text); }
+    .empty-state span { font-size: 14px; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table thead th { padding: 11px 16px; background: var(--surface-2); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text-sub); border-bottom: 1.5px solid var(--border); text-align: left; white-space: nowrap; }
+    .data-table tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f4f6ff; }
+    .data-table td { padding: 13px 16px; vertical-align: middle; }
+
+    .stage-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; color: #fff; }
+    .type-badge  { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; background: var(--accent-light); color: var(--accent); border: 1.5px solid rgba(59,91,219,.18); }
+
+    .contract-name { font-weight: 700; font-size: 14px; color: var(--text); }
+    .contract-num  { font-size: 12px; color: var(--text-sub); font-weight: 500; margin-top: 2px; }
+
+    .participants { display: flex; flex-wrap: wrap; gap: 4px; }
+    .participant-chip { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11.5px; font-weight: 600; background: var(--surface-2); border: 1.5px solid var(--border); color: var(--text); }
+
+    .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+    .btn-icon { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-sub); cursor: pointer; transition: background .12s, border-color .12s, color .12s; text-decoration: none; flex-shrink: 0; }
+    .btn-icon:hover        { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .btn-icon.danger:hover { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px 20px; border-top: 1.5px solid var(--border); background: var(--surface-2); flex-wrap: wrap; }
+    .page-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-family: var(--font); font-size: 13.5px; font-weight: 700; border: 1.5px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; transition: background .12s, border-color .12s, color .12s; }
+    .page-btn:hover    { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .page-btn.active   { background: var(--accent); border-color: var(--accent); color: #fff; pointer-events: none; }
+    .page-btn.disabled { opacity: .38; pointer-events: none; }
+    .page-dots         { font-size: 13px; color: var(--text-sub); padding: 0 4px; }
+    .pagination-info   { font-size: 12.5px; color: var(--text-sub); font-weight: 600; margin-left: 8px; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>Договоры</h1>
+        <p>Управление договорами организации</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Создать договор
+    </a>
+</div>
+
+<div class="search-panel">
+    <form id="searchForm" method="get">
+        <div class="search-row">
+            <div class="search-input-wrap">
+                <label class="search-label">Поиск</label>
+                <div style="position:relative;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-sub);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input id="searchInput" name="search" class="form-input" placeholder="Поиск по названию или номеру..." value="@currentSearch" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span>Всего договоров: <strong>@totalCount</strong></span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Договоры не найдены</p>
+            <span>Создайте первый договор, нажав кнопку выше</span>
+        </div>
+    }
+    else
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Договор</th>
+                    <th>Контрагент</th>
+                    <th>Стадия</th>
+                    <th>Тип</th>
+                    <th>Сумма с НДС</th>
+                    <th>Дата заключения</th>
+                    <th>Участники</th>
+                    <th class="th-right">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="contract-name">@(c.FullName ?? "—")</div>
+                            @if (!string.IsNullOrWhiteSpace(c.ContractNumber))
+                            {
+                                <div class="contract-num">№ @c.ContractNumber</div>
+                            }
+                        </td>
+                        <td>@(c.Counterparty?.Name ?? "—")</td>
+                        <td>
+                            <span class="stage-badge" style="background:@StageColor(c.Stage)">
+                                @StageLabel(c.Stage)
+                            </span>
+                        </td>
+                        <td>
+                            <span class="type-badge">@TypeLabel(c.Type)</span>
+                        </td>
+                        <td>
+                            @if (c.AmountWithVat.HasValue)
+                            {
+                                @c.AmountWithVat.Value.ToString("N0") <text> ₸</text>
+                            }
+                            else { <text>—</text> }
+                        </td>
+                        <td>@(c.ConclusionDate?.ToString("dd.MM.yyyy") ?? "—")</td>
+                        <td>
+                            <div class="participants">
+                                @foreach (var p in c.Participants.Take(3))
+                                {
+                                    var pName = p.User != null ? (p.User.FullName ?? p.User.Email ?? "—") : "—";
+                                    <span class="participant-chip">@pName</span>
+                                }
+                                @if (c.Participants.Count > 3)
+                                {
+                                    <span class="participant-chip">+@(c.Participants.Count - 3)</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a asp-action="Edit" asp-route-id="@c.Id" class="btn-icon" title="Редактировать">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </a>
+                                <form asp-action="Delete" method="post" style="display:inline" onsubmit="return confirm('Удалить договор «@c.FullName»?')">
+                                    <input type="hidden" name="id" value="@c.Id" />
+                                    <button type="submit" class="btn-icon danger" title="Удалить">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (totalPages > 1)
+        {
+            Func<int, string> PageUrl = p => string.IsNullOrWhiteSpace(currentSearch)
+                ? $"?page={p}"
+                : $"?search={Uri.EscapeDataString(currentSearch)}&page={p}";
+
+            int winStart = Math.Max(1, currentPage - 2);
+            int winEnd   = Math.Min(totalPages, currentPage + 2);
+            while (winEnd - winStart < 4 && winStart > 1) winStart--;
+            while (winEnd - winStart < 4 && winEnd < totalPages) winEnd++;
+
+            <div class="pagination">
+                @if (currentPage <= 1)
+                {
+                    <span class="page-btn disabled"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></span>
+                }
+                else
+                {
+                    <a href="@PageUrl(currentPage - 1)" class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></a>
+                }
+                @if (winStart > 1) { <a href="@PageUrl(1)" class="page-btn">1</a> @if (winStart > 2) { <span class="page-dots">…</span> } }
+                @for (int p = winStart; p <= winEnd; p++)
+                {
+                    <a href="@PageUrl(p)" class="page-btn @(p == currentPage ? "active" : "")">@p</a>
+                }
+                @if (winEnd < totalPages) { @if (winEnd < totalPages - 1) { <span class="page-dots">…</span> } <a href="@PageUrl(totalPages)" class="page-btn">@totalPages</a> }
+                @if (currentPage >= totalPages)
+                {
+                    <span class="page-btn disabled"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+                }
+                else
+                {
+                    <a href="@PageUrl(currentPage + 1)" class="page-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></a>
+                }
+                <span class="pagination-info">Стр. @currentPage из @totalPages</span>
+            </div>
+        }
+    }
+</div>
+
+<script>
+    let searchTimer = null;
+    document.getElementById('searchInput').addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+            document.getElementById('searchForm').submit();
+        }, 300);
+    });
+</script>

@@ -92,15 +92,22 @@ namespace AuthApp.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Create(Contract contract, List<int> participantIds)
+        public async Task<IActionResult> Create(Contract contract, List<int> participantIds, string amountRaw)
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
 
             contract.CreatedAt = DateTime.Now;
 
+            if (!string.IsNullOrWhiteSpace(amountRaw))
+            {
+                var normalized = amountRaw.Replace(",", ".");
+                if (decimal.TryParse(normalized, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var amount))
+                    contract.AmountWithVat = amount;
+            }
+
             _context.Contracts.Add(contract);
             await _context.SaveChangesAsync();
-
 
             foreach (var userId in participantIds)
             {
@@ -136,7 +143,7 @@ namespace AuthApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Contract contract, List<int> participantIds)
+        public async Task<IActionResult> Edit(int id, Contract contract, List<int> participantIds, string amountRaw)
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
 
@@ -153,13 +160,24 @@ namespace AuthApp.Controllers
             existing.Type = contract.Type;
             existing.ResponsibleFromCustomer = contract.ResponsibleFromCustomer;
             existing.ResponsibleUserId = contract.ResponsibleUserId;
-            existing.AmountWithVat = contract.AmountWithVat;
             existing.ConclusionDate = contract.ConclusionDate;
             existing.ClosingDate = contract.ClosingDate;
             existing.ExecutionStartDate = contract.ExecutionStartDate;
             existing.ContractNumber = contract.ContractNumber;
             existing.SourceContractId = contract.SourceContractId;
             existing.ProjectId = contract.ProjectId;
+
+            if (!string.IsNullOrWhiteSpace(amountRaw))
+            {
+                var normalized = amountRaw.Replace(",", ".");
+                if (decimal.TryParse(normalized, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var amount))
+                    existing.AmountWithVat = amount;
+            }
+            else
+            {
+                existing.AmountWithVat = null;
+            }
 
             _context.ContractParticipants.RemoveRange(existing.Participants);
             foreach (var userId in participantIds)

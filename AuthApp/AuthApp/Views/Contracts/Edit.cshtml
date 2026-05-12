@@ -1,10 +1,11 @@
 @model AuthApp.Models.Contract
 @{
-    ViewData["Title"] = "Создать договор";
+    ViewData["Title"] = "Редактировать договор";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var counterparties = ViewBag.Counterparties as List<AuthApp.Models.Counterparty> ?? new();
-    var users          = ViewBag.Users as List<AuthApp.Models.User> ?? new();
+    var counterparties       = ViewBag.Counterparties as List<AuthApp.Models.Counterparty> ?? new();
+    var users                = ViewBag.Users as List<AuthApp.Models.User> ?? new();
+    var selectedParticipants = ViewBag.SelectedParticipants as List<int> ?? new();
 }
 
 <style>
@@ -50,15 +51,8 @@
     .form-input:focus, .form-select:focus { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-light); }
     .form-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
 
-    /* Мультиселект участников */
     .multi-picker-wrap { position: relative; }
-    .multi-picker-trigger {
-        display: flex; align-items: center; justify-content: space-between; gap: 8px;
-        width: 100%; min-height: 44px; padding: 6px 10px 6px 12px;
-        border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface-2);
-        font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text);
-        cursor: pointer; transition: border-color .15s, box-shadow .15s; text-align: left; flex-wrap: wrap;
-    }
+    .multi-picker-trigger { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 44px; padding: 6px 10px 6px 12px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface-2); font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; transition: border-color .15s, box-shadow .15s; text-align: left; flex-wrap: wrap; }
     .multi-picker-trigger:focus, .multi-picker-trigger.open { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-light); outline: none; }
     .multi-picker-chips { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
     .multi-picker-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; background: var(--accent); color: #fff; }
@@ -67,12 +61,7 @@
     .multi-picker-placeholder { color: var(--text-sub); }
     .multi-picker-arrow { flex-shrink: 0; color: var(--text-sub); transition: transform .2s; }
     .multi-picker-trigger.open .multi-picker-arrow { transform: rotate(180deg); }
-
-    .multi-picker-dropdown {
-        display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200;
-        background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(59,91,219,.12); overflow: hidden;
-    }
+    .multi-picker-dropdown { display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; box-shadow: 0 4px 20px rgba(59,91,219,.12); overflow: hidden; }
     .multi-picker-dropdown.open { display: block; }
     .multi-picker-search { padding: 10px 12px; border-bottom: 1px solid var(--border); }
     .multi-picker-search input { width: 100%; padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font); font-size: 13.5px; outline: none; }
@@ -82,7 +71,6 @@
     .multi-picker-option:hover { background: var(--surface-2); }
     .multi-picker-option.selected { background: var(--accent-light); color: var(--accent); }
     .multi-picker-option input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; }
-    .multi-picker-empty { padding: 16px; text-align: center; color: var(--text-sub); font-size: 13px; }
 
     .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
     .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 22px; border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; border: none; text-decoration: none; transition: background .15s, transform .1s; }
@@ -100,10 +88,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         Назад
     </a>
-    <h1>Создать договор</h1>
+    <h1>Редактировать договор</h1>
 </div>
 
-<form asp-action="Create" method="post">
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
 
     <div class="form-card">
         <h2>Основная информация</h2>
@@ -111,17 +99,17 @@
 
             <div class="form-group">
                 <label class="required">Полное наименование</label>
-                <input name="FullName" class="form-input" placeholder="Введите полное наименование..." />
+                <input name="FullName" class="form-input" value="@Model.FullName" placeholder="Введите полное наименование..." />
             </div>
 
             <div class="form-group">
                 <label>Краткое наименование</label>
-                <input name="ShortName" class="form-input" placeholder="Краткое название..." />
+                <input name="ShortName" class="form-input" value="@Model.ShortName" placeholder="Краткое название..." />
             </div>
 
             <div class="form-group">
                 <label>Номер договора</label>
-                <input name="ContractNumber" class="form-input" placeholder="№ договора..." />
+                <input name="ContractNumber" class="form-input" value="@Model.ContractNumber" placeholder="№ договора..." />
             </div>
 
             <div class="form-group">
@@ -130,7 +118,7 @@
                     <option value="">— Выберите контрагента —</option>
                     @foreach (var cp in counterparties)
                     {
-                        <option value="@cp.Id">@cp.Name</option>
+                        <option value="@cp.Id" selected="@(Model.CounterpartyId == cp.Id)">@cp.Name</option>
                     }
                 </select>
             </div>
@@ -139,11 +127,11 @@
                 <label>Стадия</label>
                 <select name="Stage" class="form-select">
                     <option value="">— Выберите стадию —</option>
-                    <option value="0">Выполняется</option>
-                    <option value="1">Завершён</option>
-                    <option value="2">Расторгнут</option>
-                    <option value="3">На согласовании</option>
-                    <option value="4">На регистрации в Казначействе</option>
+                    <option value="0" selected="@(Model.Stage == AuthApp.Enums.ContractStage.InProgress)">Выполняется</option>
+                    <option value="1" selected="@(Model.Stage == AuthApp.Enums.ContractStage.Completed)">Завершён</option>
+                    <option value="2" selected="@(Model.Stage == AuthApp.Enums.ContractStage.Terminated)">Расторгнут</option>
+                   <option value="3" selected="@(Model.Stage == AuthApp.Enums.ContractStage.OnApproval)">На согласовании</option>
+                    <option value="4" selected="@(Model.Stage == AuthApp.Enums.ContractStage.OnRegistration)">На регистрации в Казначействе</option>
                 </select>
             </div>
 
@@ -151,8 +139,8 @@
                 <label>Тип договора</label>
                 <select name="Type" class="form-select">
                     <option value="">— Выберите тип —</option>
-                    <option value="0">Исходящий</option>
-                    <option value="1">Входящий</option>
+                    <option value="0" selected="@(Model.Type == AuthApp.Enums.ContractType.Outgoing)">Исходящий</option>
+                    <option value="1" selected="@(Model.Type == AuthApp.Enums.ContractType.Incoming)">Входящий</option>
                 </select>
             </div>
 
@@ -162,34 +150,34 @@
                     <option value="">— Выберите ответственного —</option>
                     @foreach (var u in users)
                     {
-                        <option value="@u.UserId">@(u.FullName ?? u.Email)</option>
+                        <option value="@u.UserId" selected="@(Model.ResponsibleUserId == u.UserId)">@(u.FullName ?? u.Email)</option>
                     }
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Сумма с НДС</label>
-                <input name="amountRaw" type="text" class="form-input" value="" placeholder="0.00" />
+                <input name="amountRaw" type="text" class="form-input" value="@Model.AmountWithVat?.ToString(System.Globalization.CultureInfo.InvariantCulture)" placeholder="0.00" />
             </div>
 
             <div class="form-group">
                 <label>Дата заключения</label>
-                <input name="ConclusionDate" type="date" class="form-input" />
+                <input name="ConclusionDate" type="date" class="form-input" value="@Model.ConclusionDate?.ToString("yyyy-MM-dd")" />
             </div>
 
             <div class="form-group">
                 <label>Дата начала исполнения</label>
-                <input name="ExecutionStartDate" type="date" class="form-input" />
+                <input name="ExecutionStartDate" type="date" class="form-input" value="@Model.ExecutionStartDate?.ToString("yyyy-MM-dd")" />
             </div>
 
             <div class="form-group">
                 <label>Дата закрытия</label>
-                <input name="ClosingDate" type="date" class="form-input" />
+                <input name="ClosingDate" type="date" class="form-input" value="@Model.ClosingDate?.ToString("yyyy-MM-dd")" />
             </div>
 
             <div class="form-group">
                 <label>Ответственный со стороны заказчика</label>
-                <input name="ResponsibleFromCustomer" class="form-input" placeholder="ФИО..." />
+                <input name="ResponsibleFromCustomer" class="form-input" value="@Model.ResponsibleFromCustomer" placeholder="ФИО..." />
             </div>
 
             <div class="form-group full">
@@ -208,8 +196,9 @@
                         <div class="multi-picker-list" id="participantList">
                             @foreach (var u in users)
                             {
-                                <div class="multi-picker-option" data-id="@u.UserId" data-name="@(u.FullName ?? u.Email)" onclick="toggleOption(this)">
-                                    <input type="checkbox" tabindex="-1" />
+                                var isSelected = selectedParticipants.Contains(u.UserId);
+                                <div class="multi-picker-option @(isSelected ? "selected" : "")" data-id="@u.UserId" data-name="@(u.FullName ?? u.Email)" onclick="toggleOption(this)">
+                                    <input type="checkbox" tabindex="-1" @(isSelected ? "checked" : "") />
                                     <span>@(u.FullName ?? u.Email)</span>
                                 </div>
                             }
@@ -226,14 +215,14 @@
         <a asp-action="Index" class="btn btn-ghost">Отмена</a>
         <button type="submit" class="btn btn-primary">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Сохранить
+            Сохранить изменения
         </button>
     </div>
 
 </form>
 
 <script>
-const selectedIds = new Set();
+const selectedIds = new Set(@Html.Raw("[" + string.Join(",", selectedParticipants) + "]"));
 
 function togglePicker() {
     const trigger  = document.getElementById('participantTrigger');
@@ -251,9 +240,8 @@ document.addEventListener('click', function(e) {
 });
 
 function toggleOption(el) {
-    const id   = parseInt(el.dataset.id);
-    const name = el.dataset.name;
-    const cb   = el.querySelector('input[type=checkbox]');
+    const id = parseInt(el.dataset.id);
+    const cb = el.querySelector('input[type=checkbox]');
     if (selectedIds.has(id)) {
         selectedIds.delete(id);
         el.classList.remove('selected');
@@ -313,4 +301,6 @@ function filterOptions(query) {
         el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
     });
 }
+renderChips();
+syncHidden();
 </script>

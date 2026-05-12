@@ -1,0 +1,155 @@
+@model AuthApp.Models.Contract
+@{
+    ViewData["Title"] = "Удалить договор";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string StageLabel(AuthApp.Enums.ContractStage? s) => s switch {
+        AuthApp.Enums.ContractStage.InProgress     => "Выполняется",
+        AuthApp.Enums.ContractStage.Completed      => "Завершён",
+        AuthApp.Enums.ContractStage.Terminated     => "Расторгнут",
+        AuthApp.Enums.ContractStage.OnApproval     => "На согласовании",
+        AuthApp.Enums.ContractStage.OnRegistration => "На регистрации в Казначействе",
+        _ => "—"
+    };
+    string TypeLabel(AuthApp.Enums.ContractType? t) => t switch {
+        AuthApp.Enums.ContractType.Outgoing => "Исходящий",
+        AuthApp.Enums.ContractType.Incoming => "Входящий",
+        _ => "—"
+    };
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+    :root {
+        --accent:       #3b5bdb;
+        --accent-light: #e7ecfd;
+        --accent-hover: #2f4ac7;
+        --surface:      #ffffff;
+        --surface-2:    #f8f9fc;
+        --border:       #e3e8f0;
+        --text:         #1a1d2e;
+        --text-sub:     #6b7280;
+        --danger:       #e03131;
+        --danger-light: #fff0f0;
+        --shadow-sm:    0 1px 4px rgba(59,91,219,.08);
+        --radius:       12px;
+        --font:         'Nunito', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
+
+    .page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; margin-top: 24px; }
+    .page-header h1 { font-size: 24px; font-weight: 800; letter-spacing: -.4px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; background: var(--surface); border: 1.5px solid var(--border); color: var(--text-sub); font-family: var(--font); font-size: 13.5px; font-weight: 700; text-decoration: none; transition: background .15s, color .15s; }
+    .back-btn:hover { background: var(--surface-2); color: var(--text); }
+
+    .confirm-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 32px; max-width: 560px; }
+
+    .danger-icon { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 16px; background: var(--danger-light); color: var(--danger); margin-bottom: 20px; }
+
+    .confirm-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .confirm-sub   { font-size: 14px; color: var(--text-sub); font-weight: 500; margin-bottom: 24px; line-height: 1.6; }
+
+    .info-block { background: var(--surface-2); border: 1.5px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .info-row   { display: flex; gap: 12px; align-items: flex-start; }
+    .info-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .06em; min-width: 140px; flex-shrink: 0; padding-top: 1px; }
+    .info-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    .stage-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; background: #e03131; }
+    .type-badge  { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; background: var(--accent-light); color: var(--accent); border: 1.5px solid rgba(59,91,219,.18); }
+
+    .warning-box { display: flex; align-items: flex-start; gap: 10px; background: #fff4e5; border: 1.5px solid #fcd5a0; border-radius: 10px; padding: 14px 16px; margin-bottom: 24px; font-size: 13.5px; color: #7c4b00; font-weight: 600; }
+    .warning-box svg { flex-shrink: 0; margin-top: 1px; color: #e67700; }
+
+    .form-actions { display: flex; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 10px 22px; border-radius: 8px; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; border: none; text-decoration: none; transition: background .15s, transform .1s; }
+    .btn:active { transform: scale(.98); }
+    .btn-danger { background: var(--danger); color: #fff; box-shadow: 0 2px 8px rgba(224,49,49,.25); }
+    .btn-danger:hover { background: #c92a2a; }
+    .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+</style>
+
+<div class="page-header">
+    <a asp-action="Index" class="back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Назад
+    </a>
+    <h1>Удалить договор</h1>
+</div>
+
+<div class="confirm-card">
+    <div class="danger-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+        </svg>
+    </div>
+
+    <div class="confirm-title">Подтвердите удаление</div>
+    <div class="confirm-sub">Вы собираетесь удалить следующий договор. Это действие необратимо.</div>
+
+    <div class="info-block">
+        <div class="info-row">
+            <span class="info-label">Наименование</span>
+            <span class="info-value">@(Model.FullName ?? "—")</span>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Model.ShortName))
+        {
+            <div class="info-row">
+                <span class="info-label">Краткое название</span>
+                <span class="info-value">@Model.ShortName</span>
+            </div>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.ContractNumber))
+        {
+            <div class="info-row">
+                <span class="info-label">Номер договора</span>
+                <span class="info-value">№ @Model.ContractNumber</span>
+            </div>
+        }
+        <div class="info-row">
+            <span class="info-label">Стадия</span>
+            <span class="info-value">
+                <span class="stage-badge">@StageLabel(Model.Stage)</span>
+            </span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Тип</span>
+            <span class="info-value">
+                <span class="type-badge">@TypeLabel(Model.Type)</span>
+            </span>
+        </div>
+        @if (Model.ConclusionDate.HasValue)
+        {
+            <div class="info-row">
+                <span class="info-label">Дата заключения</span>
+                <span class="info-value">@Model.ConclusionDate.Value.ToString("dd.MM.yyyy")</span>
+            </div>
+        }
+        @if (Model.AmountWithVat.HasValue)
+        {
+            <div class="info-row">
+                <span class="info-label">Сумма с НДС</span>
+                <span class="info-value">@Model.AmountWithVat.Value.ToString("N0") ₸</span>
+            </div>
+        }
+    </div>
+
+    <div class="warning-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Все участники договора также будут удалены. Восстановить данные будет невозможно.
+    </div>
+
+    <div class="form-actions">
+        <a asp-action="Index" class="btn btn-ghost">Отмена</a>
+        <form asp-action="Delete" method="post" style="display:inline">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="btn btn-danger">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+                Удалить навсегда
+            </button>
+        </form>
+    </div>
+</div>
