@@ -303,4 +303,29 @@ function filterOptions(query) {
 }
 renderChips();
 syncHidden();
+
+document.querySelector('form').addEventListener('submit', function(e) {
+        const start = document.querySelector('input[name="ExecutionStartDate"]').value;
+            const close = document.querySelector('input[name="ClosingDate"]').value;
+            const conclucion = document.querySelector('input[name="ConclusionDate"]').value;
+
+               if (start && close && new Date(start) > new Date(close)) {
+            e.preventDefault();
+            alert('Дата начала исполнения не может быть позже даты закрытия!');
+            return;
+        }
+
+        if (conclucion && close && new Date(conclucion) > new Date(close)) {
+            e.preventDefault();
+            alert('Дата заключения не может быть позже даты закрытия!');
+            return;
+            }
+
+               if (conclusion && start && new Date(conclusion) > new Date(start)) {
+            e.preventDefault();
+            alert('Дата заключения не может быть позже даты начала исполнения!');
+            return;
+        }
+    });
 </script>
+
