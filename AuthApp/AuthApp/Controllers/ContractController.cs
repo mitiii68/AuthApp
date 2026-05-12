@@ -9,10 +9,12 @@ namespace AuthApp.Controllers
     public class ContractsController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public ContractsController(AppDbContext context)
+        public ContractsController(AppDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
 
@@ -87,12 +89,14 @@ namespace AuthApp.Controllers
             ViewBag.Counterparties = await _context.Counterparties.ToListAsync();
             ViewBag.Users = await _context.Users.ToListAsync();
 
+            ViewBag.SelectedDocuments = new List<int>();
+
             return View();
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Create(Contract contract, List<int> participantIds, string amountRaw)
+        public async Task<IActionResult> Create(Contract contract, List<int> participantIds, string amountRaw, List<int> documentIds)
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
 
@@ -117,6 +121,16 @@ namespace AuthApp.Controllers
                     UserId = userId
                 });
             }
+
+            foreach (var docId in documentIds)
+            {
+                _context.ContractDocument.Add(new ContractDocument
+                {
+                    ContractId     = contract.Id,
+                    FileDocumentId = docId
+                });
+            }
+
             await _context.SaveChangesAsync();
 
             await LogActionAsync($"Создал договор «{contract.FullName}»");
@@ -139,11 +153,15 @@ namespace AuthApp.Controllers
             ViewBag.Users = await _context.Users.ToListAsync();
             ViewBag.SelectedParticipants = contract.Participants.Select(p => p.UserId).ToList();
 
+            ViewBag.SelectedDocuments = await _context.ContractDocument
+                 .Where(cd => cd.ContractId == id)
+                 .Select(cd => cd.FileDocumentId)
+                 .ToListAsync();
             return View(contract);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, Contract contract, List<int> participantIds, string amountRaw)
+        public async Task<IActionResult> Edit(int id, Contract contract, List<int> participantIds, string amountRaw, List<int> documentIds)
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
 
@@ -189,6 +207,17 @@ namespace AuthApp.Controllers
                 });
             }
 
+            var oldDocs = _context.ContractDocument.Where(cd => cd.ContractId == id);
+            _context.ContractDocument.RemoveRange(oldDocs);
+            foreach (var docId in documentIds)
+            {
+                _context.ContractDocument.Add(new ContractDocument
+                {
+                    ContractId     = id,
+                    FileDocumentId = docId
+                });
+            }
+
             await _context.SaveChangesAsync();
             await LogActionAsync($"Отредактировал договор «{existing.FullName}»");
 
@@ -213,6 +242,70 @@ namespace AuthApp.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetContractFiles()
+        {
+            var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Name == "Договор");
+            if (tag == null) return Json(new List<object>());
+
+            var files = await _context.FileDocuments
+                .Where(d => !d.IsDeleted && d.FileTags.Any(ft => ft.TagId == tag.Id))
+                .Select(d => new { id = d.Id, name = d.FileName, ext = d.Extension })
+                .ToListAsync();
+
+            return Json(files);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadContractFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return Json(new { success = false, message = "Файл не выбран" });
+
+            var allowedExtensions = new[] { ".doc", ".docx", ".xls", ".xlsx", ".pdf", ".zip", ".rar", ".7z" };
+            var extension = Path.GetExtension(file.FileName).ToLower();
+
+            if (!allowedExtensions.Contains(extension))
+                return Json(new { success = false, message = "Недопустимый формат файла" });
+
+            var uploadsPath = Path.Combine(_environment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsPath))
+                Directory.CreateDirectory(uploadsPath);
+
+            var uniqueFileName = Guid.NewGuid() + extension;
+            var filePath = Path.Combine(uploadsPath, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await file.CopyToAsync(stream);
+
+            var document = new FileDocuments
+            {
+                FileName = file.FileName,
+                FilePath = "/uploads/" + uniqueFileName,
+                Extension = extension,
+                UploadDate = DateTime.Now
+            };
+
+            _context.FileDocuments.Add(document);
+            await _context.SaveChangesAsync();
+
+           
+            var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Name == "Договор");
+            if (tag != null)
+            {
+                _context.FileTags.Add(new FileTag
+                {
+                    FileDocumentsId = document.Id,
+                    TagId = tag.Id
+                });
+                await _context.SaveChangesAsync();
+            }
+
+            await LogActionAsync($"Загрузил документ договора «{file.FileName}»");
+
+            return Json(new { success = true, id = document.Id, name = document.FileName, ext = document.Extension });
         }
     }
 }

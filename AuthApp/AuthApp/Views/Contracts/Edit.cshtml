@@ -211,6 +211,44 @@
         </div>
     </div>
 
+    <div class="form-card">
+        <h2>Документы</h2>
+
+        <div class="form-group">
+            <label>Файлы с тегом "Договор"</label>
+            <div class="multi-picker-wrap" id="docWrap">
+                <div class="multi-picker-trigger" id="docTrigger" onclick="toggleDocPicker()">
+                    <div class="multi-picker-chips" id="docChips">
+                        <span class="multi-picker-placeholder" id="docPlaceholder">Выберите документы...</span>
+                    </div>
+                    <svg class="multi-picker-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                </div>
+                <div class="multi-picker-dropdown" id="docDropdown">
+                    <div class="multi-picker-search">
+                        <input type="text" id="docSearch" placeholder="Поиск файла..." oninput="filterDocs(this.value)" />
+                    </div>
+                    <div class="multi-picker-list" id="docList">
+                        <div class="multi-picker-empty">⏳ Загрузка...</div>
+                    </div>
+                </div>
+                <div id="docHidden"></div>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px;">
+            <label>Загрузить новый файл</label>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <input type="file" id="newDocFile" accept=".doc,.docx,.xls,.xlsx,.pdf,.zip,.rar,.7z"
+                       style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;" />
+                <button type="button" class="btn btn-ghost" onclick="uploadNewDoc()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                    Загрузить и прикрепить
+                </button>
+            </div>
+            <div id="uploadStatus" style="font-size:13px;margin-top:8px;"></div>
+        </div>
+    </div>
+
     <div class="form-actions">
         <a asp-action="Index" class="btn btn-ghost">Отмена</a>
         <button type="submit" class="btn btn-primary">
@@ -258,7 +296,7 @@ function toggleOption(el) {
 function removeChip(e, id) {
     e.stopPropagation();
     selectedIds.delete(id);
-    const opt = document.querySelector('.multi-picker-option[data-id="' + id + '"]');
+    const opt = document.querySelector('#participantList .multi-picker-option[data-id="' + id + '"]');
     if (opt) { opt.classList.remove('selected'); opt.querySelector('input[type=checkbox]').checked = false; }
     renderChips();
     syncHidden();
@@ -273,7 +311,7 @@ function renderChips() {
     } else {
         placeholder.style.display = 'none';
         selectedIds.forEach(id => {
-            const opt  = document.querySelector('.multi-picker-option[data-id="' + id + '"]');
+            const opt  = document.querySelector('#participantList .multi-picker-option[data-id="' + id + '"]');
             if (!opt) return;
             const chip = document.createElement('span');
             chip.className = 'multi-picker-chip';
@@ -297,7 +335,7 @@ function syncHidden() {
 
 function filterOptions(query) {
     const q = query.toLowerCase();
-    document.querySelectorAll('.multi-picker-option').forEach(el => {
+    document.querySelectorAll('#participantList .multi-picker-option').forEach(el => {
         el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
     });
 }
@@ -327,5 +365,133 @@ document.querySelector('form').addEventListener('submit', function(e) {
             return;
         }
     });
+</script>
+<script>
+    const selectedDocIds = new Set(@Html.Raw("[" + string.Join(",", ViewBag.SelectedDocuments as List<int> ?? new List<int>()) + "]"));
+async function loadDocs() {
+            const res = await fetch('/Contracts/GetContractFiles');
+            const data = await res.json();
+                    const list = document.getElementById('docList');
+                       if (data.length === 0) {
+            list.innerHTML = '<div class="multi-picker-empty">Нет файлов с тегом «Договор»</div>';
+            return;
+        }
+        list.innerHTML = '';
+        data.forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'multi-picker-option' + (selectedDocIds.has(f.id) ? ' selected' : '');
+            div.dataset.id   = f.id;
+            div.dataset.name = f.name;
+            div.innerHTML = `<input type="checkbox" tabindex="-1" ${selectedDocIds.has(f.id) ? 'checked' : ''}/><span>${f.name}</span>`;
+            div.onclick = () => toggleDoc(div);
+            list.appendChild(div);
+        });
+        renderDocChips();
+        syncDocHidden();
+    }
+
+    function toggleDocPicker() {
+        const trigger  = document.getElementById('docTrigger');
+        const dropdown = document.getElementById('docDropdown');
+        const isOpen   = dropdown.classList.contains('open');
+        if (isOpen) { trigger.classList.remove('open'); dropdown.classList.remove('open'); }
+        else        { trigger.classList.add('open');    dropdown.classList.add('open'); document.getElementById('docSearch').focus(); }
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('docWrap').contains(e.target)) {
+            document.getElementById('docTrigger').classList.remove('open');
+            document.getElementById('docDropdown').classList.remove('open');
+        }
+    });
+
+    function toggleDoc(el) {
+        const id = parseInt(el.dataset.id);
+        const cb = el.querySelector('input[type=checkbox]');
+        if (selectedDocIds.has(id)) { selectedDocIds.delete(id); el.classList.remove('selected'); cb.checked = false; }
+        else                        { selectedDocIds.add(id);    el.classList.add('selected');    cb.checked = true;  }
+        renderDocChips(); syncDocHidden();
+    }
+
+    function removeDocChip(e, id) {
+        e.stopPropagation();
+        selectedDocIds.delete(id);
+        const opt = document.querySelector('#docList .multi-picker-option[data-id="' + id + '"]');
+        if (opt) { opt.classList.remove('selected'); opt.querySelector('input[type=checkbox]').checked = false; }
+        renderDocChips(); syncDocHidden();
+    }
+
+    function renderDocChips() {
+        const container   = document.getElementById('docChips');
+        const placeholder = document.getElementById('docPlaceholder');
+        container.querySelectorAll('.multi-picker-chip').forEach(c => c.remove());
+        if (selectedDocIds.size === 0) { placeholder.style.display = ''; return; }
+        placeholder.style.display = 'none';
+        selectedDocIds.forEach(id => {
+            const opt = document.querySelector('#docList .multi-picker-option[data-id="' + id + '"]');
+            if (!opt) return;
+            const chip = document.createElement('span');
+            chip.className = 'multi-picker-chip';
+            chip.innerHTML = opt.dataset.name + '<span class="chip-remove" onclick="removeDocChip(event,' + id + ')">×</span>';
+            container.appendChild(chip);
+        });
+    }
+
+    function syncDocHidden() {
+        const container = document.getElementById('docHidden');
+        container.innerHTML = '';
+        selectedDocIds.forEach(id => {
+            const inp = document.createElement('input');
+            inp.type  = 'hidden';
+            inp.name  = 'documentIds';
+            inp.value = id;
+            container.appendChild(inp);
+        });
+    }
+
+    function filterDocs(query) {
+            const q = query.toLowerCase();
+        document.querySelectorAll('#docList .multi-picker-option').forEach(el => {
+            el.style.display = el.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+        });
+        }
+            async function uploadNewDoc() {
+        const fileInput = document.getElementById('newDocFile');
+        const status    = document.getElementById('uploadStatus');
+        if (!fileInput.files[0]) { status.textContent = 'Выберите файл'; status.style.color = 'var(--danger)'; return; }
+
+        status.textContent = 'Загрузка...';
+        status.style.color = 'var(--text-sub)';
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        const res  = await fetch('/Contracts/UploadContractFile', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            status.textContent = 'Файл загружен и прикреплён!';
+            status.style.color = '#2f9e44';
+            fileInput.value = '';
+
+            const list = document.getElementById('docList');
+            const div  = document.createElement('div');
+            div.className    = 'multi-picker-option selected';
+            div.dataset.id   = data.id;
+            div.dataset.name = data.name;
+            div.innerHTML    = `<input type="checkbox" tabindex="-1" checked/><span>${data.name}</span>`;
+            div.onclick      = () => toggleDoc(div);
+            list.appendChild(div);
+
+            selectedDocIds.add(data.id);
+            renderDocChips();
+            syncDocHidden();
+        } else {
+            status.textContent = data.message;
+            status.style.color = 'var(--danger)';
+        }
+    }
+
+    loadDocs();
 </script>
 

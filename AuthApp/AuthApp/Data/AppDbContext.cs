@@ -23,6 +23,7 @@ namespace AuthApp.Data
         public DbSet<Counterparty> Counterparties => Set<Counterparty>();
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<ContractParticipant> ContractParticipants { get; set; }
+        public DbSet<ContractDocument> ContractDocument {  get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
