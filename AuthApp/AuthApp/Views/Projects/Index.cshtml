@@ -1,0 +1,435 @@
+@model List<AuthApp.Models.Project>
+@{
+    ViewData["Title"] = "Проекты";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int currentPage  = ViewBag.Page      is int p  ? p  : 1;
+    int totalPages   = ViewBag.TotalPages is int tp ? tp : 1;
+    int totalCount   = ViewBag.TotalCount is int tc ? tc : 0;
+    string? currentSearch = ViewBag.Search as string;
+    string? currentStatus = ViewBag.Status as string;
+
+    /* Цвета стадий — как на скриншоте */
+    var stageColors = new Dictionary<string, (string bg, string color)>
+    {
+        ["На стадии идеи"]          = ("#e3f2fd","#1565c0"),
+        ["Разработка бюджета и КП"] = ("#e8eaf6","#283593"),
+        ["Бюджет утвержден"]        = ("#e0f7fa","#00695c"),
+        ["Объявлены закупки"]       = ("#fff3e0","#e65100"),
+        ["Договор на согласовании"] = ("#fce4ec","#880e4f"),
+        ["На регистрации"]          = ("#ede7f6","#6200ea"),
+        ["Выполняется"]             = ("#e8f5e9","#1b5e20"),
+        ["Завершен"]                = ("#f1f8e9","#558b2f"),
+    };
+
+    (string bg, string color) StageStyle(string? s) =>
+        s != null && stageColors.TryGetValue(s, out var c) ? c : ("#f5f5f5","#616161");
+}
+
+<style>
+    .projects-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+    .projects-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin: 0 0 4px;
+    }
+    .projects-header .subtitle {
+        color: #888;
+        font-size: 14px;
+    }
+    .btn-create {
+        background: #5c6bc0;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background .2s;
+        white-space: nowrap;
+    }
+    .btn-create:hover { background: #3f51b5; color: #fff; text-decoration: none; }
+
+    .search-block {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e8e8e8;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+    .search-block label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .search-input-wrap {
+        position: relative;
+    }
+    .search-input-wrap i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #bbb;
+        font-size: 14px;
+    }
+    .search-input-wrap input {
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 10px 14px 10px 38px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color .2s;
+    }
+    .search-input-wrap input:focus { border-color: #5c6bc0; }
+
+    .total-line {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 12px;
+    }
+    .total-line strong { color: #1a1a2e; }
+
+    .projects-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e8e8e8;
+    }
+    .projects-table thead th {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #aaa;
+        padding: 14px 16px;
+        background: #fafafa;
+        border-bottom: 1px solid #f0f0f0;
+        white-space: nowrap;
+    }
+    .projects-table tbody tr {
+        border-bottom: 1px solid #f5f5f5;
+        transition: background .15s;
+    }
+    .projects-table tbody tr:last-child { border-bottom: none; }
+    .projects-table tbody tr:hover { background: #fafbff; }
+    .projects-table td {
+        padding: 14px 16px;
+        font-size: 14px;
+        color: #333;
+        vertical-align: middle;
+    }
+
+    .project-name {
+        font-weight: 700;
+        color: #1a1a2e;
+        text-decoration: none;
+        display: block;
+        line-height: 1.3;
+    }
+    .project-name:hover { color: #5c6bc0; text-decoration: none; }
+    .project-number {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 2px;
+    }
+
+    .stage-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .type-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #f0f0f0;
+        color: #555;
+        white-space: nowrap;
+    }
+
+    .amount-cell {
+        font-weight: 600;
+        color: #1a1a2e;
+        white-space: nowrap;
+    }
+    .date-cell { color: #666; white-space: nowrap; }
+
+    .participants-cell {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+    }
+    .participant-chip {
+        background: #f0f0f0;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 12px;
+        color: #444;
+        white-space: nowrap;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        text-decoration: none;
+        transition: all .15s;
+        cursor: pointer;
+    }
+    .action-btn:hover { border-color: #5c6bc0; color: #5c6bc0; background: #f0f2ff; }
+    .action-btn.del:hover { border-color: #e53935; color: #e53935; background: #ffeaea; }
+
+    .pagination-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        border-top: 1px solid #f0f0f0;
+        background: #fff;
+    }
+    .page-info { font-size: 13px; color: #aaa; }
+    .page-links { display: flex; gap: 4px; }
+    .page-link-btn {
+        min-width: 34px;
+        height: 34px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 13px;
+        color: #555;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all .15s;
+    }
+    .page-link-btn:hover { border-color: #5c6bc0; color: #5c6bc0; background: #f0f2ff; text-decoration: none; }
+    .page-link-btn.active { background: #5c6bc0; border-color: #5c6bc0; color: #fff; }
+    .page-link-btn.disabled { pointer-events: none; color: #ccc; }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #bbb;
+    }
+    .empty-state i { font-size: 48px; margin-bottom: 12px; display: block; }
+    .empty-state p { margin: 0; font-size: 15px; }
+</style>
+
+<section class="content">
+    <div class="container-fluid">
+
+        <div class="projects-header">
+            <div>
+                <h1>Проекты</h1>
+                <div class="subtitle">Управление проектами организации</div>
+            </div>
+            <a asp-action="Create" class="btn-create">
+                <i class="fas fa-plus"></i> Создать проект
+            </a>
+        </div>
+
+       
+        <div class="search-block">
+            <label>Поиск</label>
+            <form method="get" id="filterForm">
+                <div class="row align-items-end">
+                    <div class="col-md-6 mb-2 mb-md-0">
+                        <div class="search-input-wrap">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="search" id="searchInput"
+                                   value="@currentSearch"
+                                   placeholder="Поиск по названию или команде..."
+                                   autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <select name="status" id="statusFilter"
+                                style="width:100%;border:1px solid #e0e0e0;border-radius:8px;padding:10px 14px;font-size:14px;outline:none;background:#fff">
+                            <option value="">Все статусы</option>
+                            @foreach (var s in new[] {
+                                "На стадии идеи","Разработка бюджета и КП","Бюджет утвержден",
+                                "Объявлены закупки","Договор на согласовании","На регистрации","Выполняется","Завершен"})
+                            {
+                                if (currentStatus == s)
+                                {
+                                    <option value="@s" selected>@s</option>
+                                }
+                                else
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm" style="border-radius:8px;padding:10px 18px">Применить</button>
+                            @if (!string.IsNullOrWhiteSpace(currentSearch) || !string.IsNullOrWhiteSpace(currentStatus))
+                            {
+                                <a asp-action="Index" class="btn btn-link btn-sm" style="padding:10px 8px">Сбросить</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="total-line">
+            Всего проектов: <strong>@totalCount</strong>
+        </div>
+
+        <div style="border-radius:12px;overflow:hidden;border:1px solid #e8e8e8;">
+            <table class="projects-table">
+                <thead>
+                    <tr>
+                        <th>Проект</th>
+                        <th>Контрагент</th>
+                        <th>Статус</th>
+                        <th>Ответственный</th>
+                        <th>Сумма</th>
+                        <th>Дата начала</th>
+                        <th>Отдел</th>
+                        <th>Документов</th>
+                        <th style="text-align:right">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="9">
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open"></i>
+                                    <p>Проекты не найдены</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var proj in Model)
+                    {
+                        var stStyle = StageStyle(proj.Status);
+                        <tr>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@proj.Id" class="project-name">
+                                    @proj.Name
+                                </a>
+                                @if (!string.IsNullOrEmpty(proj.Department))
+                                {
+                                    <div class="project-number">@proj.Department</div>
+                                }
+                            </td>
+                            <td>@(proj.Contractors ?? "—")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(proj.Status))
+                                {
+                                    <span class="stage-badge"
+                                          style="background:@stStyle.bg;color:@stStyle.color">
+                                        @proj.Status
+                                    </span>
+                                }
+                                else { <span style="color:#ccc">—</span> }
+                            </td>
+                            <td>@(proj.ResponsiblePerson ?? "—")</td>
+                            <td class="amount-cell">—</td>
+                            <td class="date-cell">
+                                @(proj.StartDate.HasValue ? proj.StartDate.Value.ToString("dd.MM.yyyy") : "—")
+                            </td>
+                            <td>@(proj.Department ?? "—")</td>
+                            <td>
+                                <span class="participant-chip">
+                                    <i class="fas fa-paperclip" style="margin-right:4px;font-size:11px"></i>
+                                    @proj.ProjectDocuments.Count
+                                </span>
+                            </td>
+                            <td style="text-align:right">
+                                <div style="display:flex;gap:6px;justify-content:flex-end">
+                                    <a asp-action="Edit" asp-route-id="@proj.Id"
+                                       class="action-btn" title="Редактировать">
+                                        <i class="fas fa-edit" style="font-size:13px"></i>
+                                    </a>
+                                    <form asp-action="Delete" method="post" class="d-inline"
+                                          onsubmit="return confirm('Удалить проект «@proj.Name»?')">
+                                        <input type="hidden" name="id" value="@proj.Id" />
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="action-btn del" title="Удалить">
+                                            <i class="fas fa-trash" style="font-size:13px"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (totalPages > 1)
+            {
+                var qb = new System.Text.StringBuilder("?");
+                if (!string.IsNullOrWhiteSpace(currentSearch)) qb.Append($"search={Uri.EscapeDataString(currentSearch!)}&");
+                if (!string.IsNullOrWhiteSpace(currentStatus)) qb.Append($"status={Uri.EscapeDataString(currentStatus!)}&");
+                var baseQ = qb.ToString().TrimEnd('&');
+                Func<int, string> PageUrl = pg => baseQ.Length > 1 ? $"{baseQ}&page={pg}" : $"?page={pg}";
+
+                <div class="pagination-wrap">
+                    <span class="page-info">Стр. @currentPage из @totalPages</span>
+                    <div class="page-links">
+                        <a href="@PageUrl(currentPage - 1)"
+                           class="page-link-btn @(currentPage == 1 ? "disabled" : "")">«</a>
+                        @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+                        {
+                            <a href="@PageUrl(i)"
+                               class="page-link-btn @(i == currentPage ? "active" : "")">@i</a>
+                        }
+                        <a href="@PageUrl(currentPage + 1)"
+                           class="page-link-btn @(currentPage == totalPages ? "disabled" : "")">»</a>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let timer;
+        document.getElementById('searchInput').addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(() => document.getElementById('filterForm').submit(), 400);
+        });
+        document.getElementById('statusFilter').addEventListener('change', function () {
+            document.getElementById('filterForm').submit();
+        });
+    </script>
+}
