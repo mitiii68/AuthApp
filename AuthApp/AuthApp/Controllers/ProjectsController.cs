@@ -8,18 +8,12 @@ namespace AuthApp.Controllers
     public class ProjectsController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly IWebHostEnvironment _environment;
 
-        private static readonly string[] AllowedExtensions =
-            { ".doc", ".docx", ".xls", ".xlsx", ".pdf", ".zip", ".rar", ".7z" };
-
-        public ProjectsController(AppDbContext context, IWebHostEnvironment environment)
+        public ProjectsController(AppDbContext context)
         {
-            _context     = context;
-            _environment = environment;
+            _context = context;
         }
 
-        
         private void FillFormViewBag()
         {
             ViewBag.Users = GetUserNames();
@@ -67,10 +61,41 @@ namespace AuthApp.Controllers
             return Json(items);
         }
 
+        
+        [HttpGet]
+        public IActionResult SearchContracts(string? q, int projectId)
+        {
+            
+            var attachedIds = _context.ProjectContracts
+                .Where(pc => pc.ProjectId == projectId)
+                .Select(pc => pc.ContractId)
+                .ToHashSet();
+
+            var items = _context.Contracts
+                .Where(c =>
+                    !attachedIds.Contains(c.Id) &&
+                    (string.IsNullOrEmpty(q) ||
+                     c.ContractNumber!.Contains(q) ||
+                     (c.FullName != null && c.FullName.Contains(q))))
+                .OrderByDescending(c => c.ConclusionDate)
+                .Take(20)
+                .Select(c => new {
+                    c.Id,
+                    c.ContractNumber,
+                    subject = c.FullName,
+                    signDate = c.ConclusionDate.HasValue
+                        ? c.ConclusionDate.Value.ToString("dd.MM.yyyy")
+                        : ""
+                })
+                .ToList();
+
+            return Json(items);
+        }
+
         public async Task<IActionResult> Index(string? search, string? status, int page = 1, int pageSize = 10)
         {
             var query = _context.Projects
-                .Include(p => p.ProjectDocuments)
+                .Include(p => p.ProjectContracts)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -110,7 +135,7 @@ namespace AuthApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Project project, List<IFormFile>? documents)
+        public async Task<IActionResult> Create(Project project, [FromForm] List<int> newContractIds)
         {
             ValidateDates(project);
 
@@ -123,8 +148,19 @@ namespace AuthApp.Controllers
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
 
-            if (documents != null && documents.Any())
-                await SaveDocumentsAsync(project.Id, documents);
+            if (newContractIds != null && newContractIds.Count > 0)
+            {
+                foreach (var cid in newContractIds.Distinct())
+                {
+                    _context.ProjectContracts.Add(new ProjectContract
+                    {
+                        ProjectId  = project.Id,
+                        ContractId = cid,
+                        AttachedAt = DateTime.Now
+                    });
+                }
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction(nameof(Index));
         }
@@ -132,7 +168,8 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var project = await _context.Projects
-                .Include(p => p.ProjectDocuments)
+                .Include(p => p.ProjectContracts)
+                    .ThenInclude(pc => pc.Contract)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null) return NotFound();
@@ -142,7 +179,7 @@ namespace AuthApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Project project, List<IFormFile>? documents)
+        public async Task<IActionResult> Edit(int id, Project project)
         {
             if (id != project.Id) return BadRequest();
 
@@ -150,17 +187,16 @@ namespace AuthApp.Controllers
 
             if (!ModelState.IsValid)
             {
-                project.ProjectDocuments = await _context.ProjectDocuments
-                    .Where(d => d.ProjectId == id).ToListAsync();
+                project.ProjectContracts = await _context.ProjectContracts
+                    .Include(pc => pc.Contract)
+                    .Where(pc => pc.ProjectId == id)
+                    .ToListAsync();
                 FillFormViewBag();
                 return View("CreateEdit", project);
             }
 
             _context.Projects.Update(project);
             await _context.SaveChangesAsync();
-
-            if (documents != null && documents.Any())
-                await SaveDocumentsAsync(project.Id, documents);
 
             return RedirectToAction(nameof(Index));
         }
@@ -170,14 +206,10 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var project = await _context.Projects
-                .Include(p => p.ProjectDocuments)
+                .Include(p => p.ProjectContracts)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (project == null) return NotFound();
-
-          
-            foreach (var doc in project.ProjectDocuments)
-                DeletePhysicalFile(doc.FilePath);
 
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
@@ -185,87 +217,42 @@ namespace AuthApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Прикрепить договор к проекту
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteDocument(int docId, int projectId)
+        public async Task<IActionResult> AttachContract(int projectId, int contractId)
         {
-            var doc = await _context.ProjectDocuments.FindAsync(docId);
-            if (doc != null)
+            var alreadyAttached = await _context.ProjectContracts
+                .AnyAsync(pc => pc.ProjectId == projectId && pc.ContractId == contractId);
+
+            if (!alreadyAttached)
             {
-                DeletePhysicalFile(doc.FilePath);
-                _context.ProjectDocuments.Remove(doc);
+                _context.ProjectContracts.Add(new ProjectContract
+                {
+                    ProjectId  = projectId,
+                    ContractId = contractId,
+                    AttachedAt = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Edit), new { id = projectId });
+        }
+
+        // Открепить договор от проекта
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DetachContract(int projectContractId, int projectId)
+        {
+            var link = await _context.ProjectContracts.FindAsync(projectContractId);
+            if (link != null)
+            {
+                _context.ProjectContracts.Remove(link);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Edit), new { id = projectId });
         }
 
-        public async Task<IActionResult> DownloadDocument(int docId)
-        {
-            var doc = await _context.ProjectDocuments.FindAsync(docId);
-            if (doc == null || string.IsNullOrEmpty(doc.FilePath)) return NotFound();
-
-            var fullPath = GetFullPath(doc.FilePath);
-            if (!System.IO.File.Exists(fullPath)) return NotFound();
-
-            var contentType = GetContentType(doc.Extension);
-            var bytes = await System.IO.File.ReadAllBytesAsync(fullPath);
-            return File(bytes, contentType, doc.FileName);
-        }
-
-        private async Task SaveDocumentsAsync(int projectId, List<IFormFile> files)
-        {
-            var uploadsDir = Path.Combine(_environment.WebRootPath, "uploads", "projects");
-            Directory.CreateDirectory(uploadsDir);
-
-            foreach (var file in files)
-            {
-                if (file.Length == 0) continue;
-
-                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (!AllowedExtensions.Contains(ext)) continue;
-
-                var uniqueName = Guid.NewGuid() + ext;
-                var fullPath   = Path.Combine(uploadsDir, uniqueName);
-
-                await using (var stream = new FileStream(fullPath, FileMode.Create))
-                    await file.CopyToAsync(stream);
-
-                _context.ProjectDocuments.Add(new ProjectDocument
-                {
-                    ProjectId  = projectId,
-                    FileName   = file.FileName,
-                    FilePath   = "/uploads/projects/" + uniqueName,
-                    Extension  = ext,
-                    UploadDate = DateTime.Now
-                });
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-        private void DeletePhysicalFile(string? relativePath)
-        {
-            if (string.IsNullOrEmpty(relativePath)) return;
-            var full = GetFullPath(relativePath);
-            if (System.IO.File.Exists(full)) System.IO.File.Delete(full);
-        }
-
-        private string GetFullPath(string relativePath) =>
-            Path.Combine(_environment.WebRootPath,
-                relativePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-
-        private static string GetContentType(string? ext) => ext?.ToLower() switch
-        {
-            ".pdf"  => "application/pdf",
-            ".doc"  => "application/msword",
-            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            ".xls"  => "application/vnd.ms-excel",
-            ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ".zip"  => "application/zip",
-            ".rar"  => "application/x-rar-compressed",
-            ".7z"   => "application/x-7z-compressed",
-            _       => "application/octet-stream"
-        };
         private List<string> GetUserNames() =>
             _context.Users
                 .Where(u => u.IsConfirmed && !u.IsBlocked)
@@ -284,12 +271,6 @@ namespace AuthApp.Controllers
                 if (p.ActualEndDate.HasValue && p.ActualEndDate < p.StartDate)
                     ModelState.AddModelError(nameof(p.ActualEndDate),
                         "Фактическая дата завершения не может быть раньше даты начала.");
-            }
-
-            if (p.PlannedEndDate.HasValue && p.ActualEndDate.HasValue
-                && p.ActualEndDate < p.PlannedEndDate)
-            {
-                
             }
         }
     }

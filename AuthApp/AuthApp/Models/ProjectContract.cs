@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AuthApp.Models
 {
-    public class ProjectDocument
+    public class ProjectContract
     {
         [Key]
         public int Id { get; set; }
@@ -14,10 +14,12 @@ namespace AuthApp.Models
         [ForeignKey(nameof(ProjectId))]
         public Project? Project { get; set; }
 
-        public string? FileName  { get; set; }
-        public string? FilePath  { get; set; }
-        public string? Extension { get; set; }
+        [Required]
+        public int ContractId { get; set; }
 
-        public DateTime UploadDate { get; set; } = DateTime.Now;
+        [ForeignKey(nameof(ContractId))]
+        public Contract? Contract { get; set; }
+
+        public DateTime AttachedAt { get; set; } = DateTime.Now;
     }
 }

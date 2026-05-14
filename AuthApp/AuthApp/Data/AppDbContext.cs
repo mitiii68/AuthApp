@@ -25,7 +25,7 @@ namespace AuthApp.Data
         public DbSet<ContractParticipant> ContractParticipants { get; set; }
         public DbSet<ContractDocument> ContractDocument {  get; set; }
         public DbSet<Project>Projects { get; set; }
-        public DbSet<ProjectDocument> ProjectDocuments { get; set; }
+        public DbSet<ProjectContract> ProjectContracts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,26 +1,12 @@
+@using AuthApp.Models
 @model AuthApp.Models.Project
 @{
     bool isEdit = Model.Id != 0;
     ViewData["Title"] = isEdit ? "Редактирование проекта" : "Создание проекта";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    var extIcons = new Dictionary<string, string>
-    {
-        [".pdf"]  = "fa-file-pdf text-danger",
-        [".doc"]  = "fa-file-word text-primary",
-        [".docx"] = "fa-file-word text-primary",
-        [".xls"]  = "fa-file-excel text-success",
-        [".xlsx"] = "fa-file-excel text-success",
-        [".zip"]  = "fa-file-archive text-warning",
-        [".rar"]  = "fa-file-archive text-warning",
-        [".7z"]   = "fa-file-archive text-warning",
-    };
-    string DocIcon(string? ext) =>
-        ext != null && extIcons.TryGetValue(ext, out var ic) ? ic : "fa-file text-muted";
 }
 
 <style>
-    
     .cs-wrap { position: relative; width: 100%; }
 
     .cs-trigger {
@@ -57,6 +43,43 @@
     .cs-option.cs-placeholder { color: #aaa; }
     .cs-option.cs-no-results { color: #aaa; text-align: center; padding: 16px; cursor: default; }
     .cs-option.cs-loading { color: #aaa; text-align: center; padding: 12px; cursor: default; }
+
+    
+    .contract-search-wrap {
+        position: relative;
+    }
+    .contract-search-input {
+        width: 100%;
+        border: 1px solid #d2d6de;
+        border-radius: 4px 0 0 4px;
+        padding: 8px 12px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color .15s;
+    }
+    .contract-search-input:focus { border-color: #3c8dbc; }
+
+    .contract-results {
+        border: 1px solid #d2d6de;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        max-height: 240px;
+        overflow-y: auto;
+        background: #fff;
+        display: none;
+    }
+    .contract-results.open { display: block; }
+    .contract-result-item {
+        padding: 10px 14px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background .1s;
+        font-size: 13px;
+    }
+    .contract-result-item:last-child { border-bottom: none; }
+    .contract-result-item:hover { background: #f4f6f9; }
+    .contract-result-item .cn { font-weight: 600; color: #1a1a2e; }
+    .contract-result-item .cs { color: #888; font-size: 12px; margin-top: 2px; }
 </style>
 
 <section class="content-header">
@@ -85,15 +108,12 @@
                     <i class="fas fa-info-circle me-1"></i>Общая информация
                 </a>
             </li>
-            @if (isEdit)
-            {
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDocs" href="#" id="docsTabLink">
-                        <i class="fas fa-paperclip me-1"></i>Документы
-                        <span class="badge bg-secondary ms-1" id="docCount">@Model.ProjectDocuments.Count</span>
-                    </a>
-                </li>
-            }
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tabContracts" href="#" id="contractsTabLink">
+                    <i class="fas fa-file-contract me-1"></i>Договоры
+                    <span class="badge bg-secondary ms-1" id="contractCount">@Model.ProjectContracts.Count</span>
+                </a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -104,8 +124,7 @@
                         <h3 class="card-title">Общая информация</h3>
                     </div>
 
-                    <form asp-action="@(isEdit ? "Edit" : "Create")" method="post"
-                          enctype="multipart/form-data" id="projectForm">
+                    <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="projectForm">
                         @Html.AntiForgeryToken()
                         @if (isEdit)
                         {
@@ -195,7 +214,7 @@
                                     <label asp-for="StartDate">Дата начала <span class="text-danger">*</span></label>
                                     <div class="input-group date">
                                         @{ var startVal = Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : ""; }
-                                        <input asp-for="StartDate" type="date" class="form-control" value="@startVal">
+                                        <input asp-for="StartDate" id="StartDate" type="date" class="form-control" value="@startVal">
                                     </div>
                                 </div>
 
@@ -203,17 +222,13 @@
                                     <label asp-for="ActualEndDate">Фактическая дата завершения</label>
                                     <div class="input-group date">
                                         @{ var actualVal = Model.ActualEndDate.HasValue ? Model.ActualEndDate.Value.ToString("yyyy-MM-dd") : ""; }
-                                        <input asp-for="ActualEndDate" type="date" class="form-control" value="@actualVal">
+                                        <input asp-for="ActualEndDate" id="ActualEndDate" type="date" class="form-control" value="@actualVal">
                                     </div>
                                 </div>
 
-                                
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Contractors">Контрагенты <span class="text-danger">*</span></label>
-
-                                    
                                     <input type="hidden" asp-for="Contractors" id="ContractorsHidden" />
-
                                     <div class="cs-wrap" id="cpWrap">
                                         <div class="cs-trigger" id="cpTrigger">
                                             <span class="cs-trigger-text" id="cpDisplay">
@@ -296,7 +311,7 @@
                                     <label asp-for="PlannedEndDate">Плановая дата завершения</label>
                                     <div class="input-group date">
                                         @{ var plannedVal = Model.PlannedEndDate.HasValue ? Model.PlannedEndDate.Value.ToString("yyyy-MM-dd") : ""; }
-                                        <input asp-for="PlannedEndDate" type="date" class="form-control" value="@plannedVal">
+                                        <input asp-for="PlannedEndDate" id="PlannedEndDate" type="date" class="form-control" value="@plannedVal">
                                     </div>
                                 </div>
 
@@ -314,19 +329,6 @@
                                     </div>
                                 </div>
 
-                                @if (!isEdit)
-                                {
-                                    <div class="col-12 form-group">
-                                        <label>Документы</label>
-                                        <div class="custom-file">
-                                            <input type="file" name="documents" multiple class="custom-file-input"
-                                                   id="docsInput" accept=".doc,.docx,.xls,.xlsx,.pdf,.zip,.rar,.7z">
-                                            <label class="custom-file-label" for="docsInput">Выберите файлы...</label>
-                                        </div>
-                                        <small class="text-muted">Допустимые форматы: doc, docx, xls, xlsx, pdf, zip, rar, 7z</small>
-                                    </div>
-                                }
-
                             </div>
                         </div>
 
@@ -342,98 +344,78 @@
                 </div>
             </div>
 
-            @if (isEdit)
-            {
-                <div class="tab-pane fade" id="tabDocs">
-                    <div class="card card-outline card-info" style="border-top-left-radius:0">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-paperclip me-1"></i>Документы проекта</h3>
-                        </div>
-                        <div class="card-body">
+            <div class="tab-pane fade" id="tabContracts">
+                <div class="card card-outline card-info" style="border-top-left-radius:0">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-file-contract me-1"></i>Прикреплённые договоры
+                        </h3>
+                    </div>
+                    <div class="card-body">
 
-                            <form asp-action="Edit" asp-route-id="@Model.Id" method="post"
-                                  enctype="multipart/form-data" class="mb-4">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="Id"               value="@Model.Id" />
-                                <input type="hidden" name="Name"             value="@Model.Name" />
-                                <input type="hidden" name="Team"             value="@Model.Team" />
-                                <input type="hidden" name="Description"      value="@Model.Description" />
-                                <input type="hidden" name="Status"           value="@Model.Status" />
-                                <input type="hidden" name="ResponsiblePerson" value="@Model.ResponsiblePerson" />
-                                <input type="hidden" name="StartDate"        value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
-                                <input type="hidden" name="ActualEndDate"    value="@Model.ActualEndDate?.ToString("yyyy-MM-dd")" />
-                                <input type="hidden" name="PlannedEndDate"   value="@Model.PlannedEndDate?.ToString("yyyy-MM-dd")" />
-                                <input type="hidden" name="Contractors"      value="@Model.Contractors" />
-                                <input type="hidden" name="InterestSource"   value="@Model.InterestSource" />
-                                <input type="hidden" name="Employee"         value="@Model.Employee" />
-                                <input type="hidden" name="Department"       value="@Model.Department" />
-                                <input type="hidden" name="WarrantyPeriod"   value="@Model.WarrantyPeriod" />
-                                <input type="hidden" name="ProjectGroup"     value="@Model.ProjectGroup" />
-                                <input type="hidden" name="IsActive"         value="@Model.IsActive.ToString().ToLower()" />
-                                <input type="hidden" name="CreatedAt"        value="@Model.CreatedAt.ToString("o")" />
-
-                                <div class="input-group">
-                                    <div class="custom-file">
-                                        <input type="file" name="documents" multiple
-                                               class="custom-file-input" id="docsUpload"
-                                               accept=".doc,.docx,.xls,.xlsx,.pdf,.zip,.rar,.7z">
-                                        <label class="custom-file-label" for="docsUpload">Выберите файлы...</label>
-                                    </div>
-                                    <div class="input-group-append">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-upload me-1"></i>Загрузить
-                                        </button>
-                                    </div>
+                        
+                        <div class="mb-4">
+                            <label class="font-weight-bold mb-2 d-block">
+                                <i class="fas fa-search me-1 text-muted"></i>Найти и прикрепить договор
+                            </label>
+                            <div class="input-group">
+                                <input type="text" id="contractSearchInput" class="form-control contract-search-input"
+                                       placeholder="Поиск по номеру или наименованию договора..."
+                                       autocomplete="off">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary" id="btnClearContractSearch"
+                                            title="Очистить">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
-                                <small class="text-muted">Форматы: doc, docx, xls, xlsx, pdf, zip, rar, 7z</small>
-                            </form>
+                            </div>
+                            <div class="contract-results" id="contractResults"></div>
+                        </div>
 
-                            @if (!Model.ProjectDocuments.Any())
+                        @if (isEdit)
+                        {
+                           
+                            @if (!Model.ProjectContracts.Any())
                             {
-                                <div class="text-center text-muted py-4">
-                                    <i class="fas fa-folder-open fa-3x d-block mb-2"></i>
-                                    Нет прикреплённых документов
+                                <div class="text-center text-muted py-4" id="emptyContracts">
+                                    <i class="fas fa-file-contract fa-3x d-block mb-2"></i>
+                                    Нет прикреплённых договоров
                                 </div>
                             }
                             else
                             {
-                                <table class="table table-hover table-sm">
+                                <table class="table table-hover table-sm" id="contractsTable">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width:36px"></th>
-                                            <th>Имя файла</th>
-                                            <th>Дата загрузки</th>
-                                            <th style="width:100px" class="text-right">Действия</th>
+                                            <th>Номер договора</th>
+                                            <th>Наименование</th>
+                                            <th>Дата заключения</th>
+                                            <th style="width:80px" class="text-right">Открепить</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var doc in Model.ProjectDocuments.OrderByDescending(d => d.UploadDate))
+                                        @foreach (var pc in Model.ProjectContracts.OrderByDescending(x => x.AttachedAt))
                                         {
                                             <tr>
-                                                <td class="text-center">
-                                                    <i class="fas @DocIcon(doc.Extension) fa-lg"></i>
-                                                </td>
                                                 <td>
-                                                    <a asp-action="DownloadDocument" asp-route-docId="@doc.Id"
-                                                       class="text-dark font-weight-medium">
-                                                        @doc.FileName
-                                                    </a>
+                                                    <i class="fas fa-file-contract text-info me-1"></i>
+                                                    <strong>@(pc.Contract?.ContractNumber ?? "—")</strong>
                                                 </td>
                                                 <td class="text-muted small">
-                                                    @doc.UploadDate.ToString("dd.MM.yyyy HH:mm")
+                                                    @(pc.Contract?.FullName ?? "—")
+                                                </td>
+                                                <td class="text-muted small">
+                                                    @(pc.Contract?.ConclusionDate.HasValue == true
+                                                        ? pc.Contract.ConclusionDate.Value.ToString("dd.MM.yyyy") : "—")
                                                 </td>
                                                 <td class="text-right">
-                                                    <a asp-action="DownloadDocument" asp-route-docId="@doc.Id"
-                                                       class="btn btn-xs btn-default" title="Скачать">
-                                                        <i class="fas fa-download"></i>
-                                                    </a>
-                                                    <form asp-action="DeleteDocument" method="post" class="d-inline"
-                                                          onsubmit="return confirm('Удалить файл «@doc.FileName»?')">
+                                                    <form asp-action="DetachContract" method="post" class="d-inline"
+                                                          onsubmit="return confirm('Открепить договор «@(pc.Contract?.ContractNumber)» от проекта?')">
                                                         @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="docId"     value="@doc.Id" />
-                                                        <input type="hidden" name="projectId" value="@Model.Id" />
-                                                        <button type="submit" class="btn btn-xs btn-danger" title="Удалить">
-                                                            <i class="fas fa-trash"></i>
+                                                        <input type="hidden" name="projectContractId" value="@pc.Id" />
+                                                        <input type="hidden" name="projectId"         value="@Model.Id" />
+                                                        <button type="submit" class="btn btn-xs btn-danger" title="Открепить">
+                                                            <i class="fas fa-unlink"></i>
                                                         </button>
                                                     </form>
                                                 </td>
@@ -442,11 +424,32 @@
                                     </tbody>
                                 </table>
                             }
+                        }
+                        else
+                        {
+                           
+                            <div id="emptyContracts" class="text-center text-muted py-4">
+                                <i class="fas fa-file-contract fa-3x d-block mb-2"></i>
+                                Договоры не выбраны
+                            </div>
+                            <table class="table table-hover table-sm d-none" id="contractsTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Номер договора</th>
+                                        <th>Наименование</th>
+                                        <th>Дата заключения</th>
+                                        <th style="width:60px" class="text-right">Убрать</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="newContractsTbody"></tbody>
+                            </table>
+                           
+                            <div id="newContractInputs"></div>
+                        }
 
-                        </div>
                     </div>
                 </div>
-            }
+            </div>
 
         </div>
     </div>
@@ -545,13 +548,11 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-   
     function escHtml(str) {
         return String(str)
             .replace(/&/g,'&amp;').replace(/</g,'&lt;')
             .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-
 
     function pickCp(display) {
         $('#ContractorsHidden').val(display);
@@ -563,7 +564,6 @@
         }).addClass('cs-selected');
     }
 
-    
     function openModal(id) {
         var el = document.getElementById(id);
         if (el) bootstrap.Modal.getOrCreateInstance(el).show();
@@ -579,15 +579,10 @@
     }
 
     $(function () {
-     
-        $('input[type=file]').on('change', function () {
-            var names = Array.from(this.files).map(function(f){ return f.name; }).join(', ');
-            $(this).next('.custom-file-label').text(names || 'Выберите файлы...');
-        });
 
-       
-        if (window.location.hash === '#docs') {
-            var tabEl = document.getElementById('docsTabLink');
+        
+        if (window.location.hash === '#contracts') {
+            var tabEl = document.getElementById('contractsTabLink');
             if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
         }
 
@@ -620,7 +615,6 @@
             hideAllModals();
         });
 
-        
         $('#pgNewValue').on('keydown', function(e) {
             if (e.key === 'Enter') { e.preventDefault(); $('#btnAddPg').click(); }
         });
@@ -630,7 +624,7 @@
 
         $('#StartDate, #PlannedEndDate, #ActualEndDate').on('change', validateDates);
 
-      
+        
         var cpLoaded = false;
         var cpTimer;
 
@@ -658,25 +652,15 @@
             }, 300);
         }).on('click', function(e) { e.stopPropagation(); });
 
-       
         $(document).on('click', '#cpList .cs-option[data-cp]', function() {
             pickCp($(this).data('cp'));
         });
 
         function loadCp(q) {
             $('#cpList').html('<div class="cs-option cs-loading"><i class="fas fa-spinner fa-spin me-1"></i> Загрузка...</div>');
-
             var url = '@Url.Action("SearchCounterparties","Projects")' + '?q=' + encodeURIComponent(q || '');
-
-            var controller = new AbortController();
-            var timeout = setTimeout(function() { controller.abort(); }, 8000);
-
-            fetch(url, { signal: controller.signal })
-                .then(function(r) {
-                    clearTimeout(timeout);
-                    if (!r.ok) throw new Error('HTTP ' + r.status);
-                    return r.json();
-                })
+            fetch(url)
+                .then(function(r) { return r.json(); })
                 .then(function(data) {
                     if (!data || !data.length) {
                         $('#cpList').html('<div class="cs-option cs-no-results">Контрагенты не найдены</div>');
@@ -691,13 +675,128 @@
                     });
                     $('#cpList').html(html);
                 })
-                .catch(function(err) {
-                    clearTimeout(timeout);
-                    console.error('loadCp error:', err);
-                    var msg = err.name === 'AbortError' ? 'Превышено время ожидания' : ('Ошибка: ' + err.message);
-                    $('#cpList').html('<div class="cs-option cs-no-results text-danger">' + escHtml(msg) + '</div>');
+                .catch(function() {
+                    $('#cpList').html('<div class="cs-option cs-no-results text-danger">Ошибка загрузки</div>');
                 });
         }
+
+    
+        var contractTimer;
+        var projectId = @(isEdit ? Model.Id.ToString() : "0");
+
+        $('#contractSearchInput').on('input', function () {
+            var q = $(this).val().trim();
+            clearTimeout(contractTimer);
+            if (q.length < 1) {
+                $('#contractResults').removeClass('open').html('');
+                return;
+            }
+            contractTimer = setTimeout(function() { searchContracts(q); }, 300);
+        }).on('focus', function() {
+            var q = $(this).val().trim();
+            if (q.length >= 1) searchContracts(q);
+        });
+
+        $('#btnClearContractSearch').on('click', function() {
+            $('#contractSearchInput').val('');
+            $('#contractResults').removeClass('open').html('');
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#contractSearchInput, #contractResults, #btnClearContractSearch').length)
+                $('#contractResults').removeClass('open');
+        });
+
+        function searchContracts(q) {
+            var url = '@Url.Action("SearchContracts","Projects")'
+                      + '?q=' + encodeURIComponent(q)
+                      + '&projectId=' + projectId;
+
+            $('#contractResults').addClass('open')
+                .html('<div class="contract-result-item text-muted"><i class="fas fa-spinner fa-spin me-1"></i>Поиск...</div>');
+
+            fetch(url)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data || !data.length) {
+                        $('#contractResults').html(
+                            '<div class="contract-result-item text-muted text-center py-2">Договоры не найдены</div>');
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function(c) {
+                        html += '<div class="contract-result-item"' +
+                                ' data-id="' + c.id + '"' +
+                                ' data-num="' + escHtml(c.contractNumber || '') + '"' +
+                                ' data-name="' + escHtml(c.subject || '') + '"' +
+                                ' data-date="' + escHtml(c.signDate || '') + '">' +
+                                '<div class="cn"><i class="fas fa-file-contract text-info me-1"></i>' + escHtml(c.contractNumber || '—') + '</div>' +
+                                '<div class="cs">' + escHtml(c.subject || '—') +
+                                (c.signDate ? ' &nbsp;·&nbsp; ' + escHtml(c.signDate) : '') + '</div>' +
+                                '</div>';
+                    });
+                    $('#contractResults').html(html);
+                })
+                .catch(function() {
+                    $('#contractResults').html(
+                        '<div class="contract-result-item text-danger">Ошибка поиска</div>');
+                });
+        }
+
+        
+        $(document).on('click', '.contract-result-item[data-id]', function() {
+            var contractId   = $(this).data('id');
+            var contractNum  = $(this).data('num');
+            var contractName = $(this).data('name');
+            var contractDate = $(this).data('date');
+
+            if (@(isEdit ? "true" : "false")) {
+                // РЕДАКТИРОВАНИЕ — сразу POST-прикрепление
+                var form = $('<form method="post" style="display:none">' +
+                    '<input name="projectId"  value="' + projectId + '">' +
+                    '<input name="contractId" value="' + contractId + '">' +
+                    '@Html.AntiForgeryToken()' +
+                    '</form>');
+                form.attr('action', '@Url.Action("AttachContract","Projects")');
+                $('body').append(form);
+                form.submit();
+            } else {
+                // СОЗДАНИЕ — добавляем в JS-таблицу и скрытый input
+                if ($('#newContractInputs input[value="' + contractId + '"]').length) return;
+
+                $('#newContractInputs').append(
+                    '<input type="hidden" name="newContractIds" value="' + contractId + '">'
+                );
+
+                var row = '<tr data-cid="' + contractId + '">' +
+                    '<td><i class="fas fa-file-contract text-info me-1"></i><strong>' + escHtml(contractNum || '—') + '</strong></td>' +
+                    '<td class="text-muted small">' + escHtml(contractName || '—') + '</td>' +
+                    '<td class="text-muted small">' + escHtml(contractDate || '—') + '</td>' +
+                    '<td class="text-right"><button type="button" class="btn btn-xs btn-danger btn-remove-contract" title="Убрать"><i class="fas fa-times"></i></button></td>' +
+                    '</tr>';
+                $('#newContractsTbody').append(row);
+
+                $('#emptyContracts').addClass('d-none');
+                $('#contractsTable').removeClass('d-none');
+                $('#contractCount').text(parseInt($('#contractCount').text()) + 1);
+                $('#contractSearchInput').val('');
+                $('#contractResults').removeClass('open').html('');
+            }
+        });
+
+        // Убрать договор из списка при создании
+        $(document).on('click', '.btn-remove-contract', function() {
+            var row = $(this).closest('tr');
+            var cid = row.data('cid');
+            row.remove();
+            $('#newContractInputs input[value="' + cid + '"]').remove();
+            var cnt = parseInt($('#contractCount').text()) - 1;
+            $('#contractCount').text(Math.max(0, cnt));
+            if ($('#newContractsTbody tr').length === 0) {
+                $('#contractsTable').addClass('d-none');
+                $('#emptyContracts').removeClass('d-none');
+            }
+        });
 
         $('#projectForm').on('submit', function (e) {
             validateDates();
