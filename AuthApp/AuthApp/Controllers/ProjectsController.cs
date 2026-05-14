@@ -137,13 +137,9 @@ namespace AuthApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Project project, [FromForm] List<int> newContractIds)
         {
-            ValidateDates(project);
+            ModelState.Clear();
 
-            if (!ModelState.IsValid)
-            {
-                FillFormViewBag();
-                return View("CreateEdit", project);
-            }
+            project.CreatedAt = DateTime.Now;
 
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
@@ -183,10 +179,16 @@ namespace AuthApp.Controllers
         {
             if (id != project.Id) return BadRequest();
 
+            ModelState.Remove("ProjectContracts");
+            ModelState.Remove("Budget");
+            ModelState.Remove("CreatedAt");
             ValidateDates(project);
 
             if (!ModelState.IsValid)
             {
+                TempData["DebugErrors"] = string.Join(" | ", ModelState
+                    .Where(x => x.Value != null && x.Value.Errors.Any())
+                    .Select(x => x.Key + ": " + string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage))));
                 project.ProjectContracts = await _context.ProjectContracts
                     .Include(pc => pc.Contract)
                     .Where(pc => pc.ProjectId == id)
@@ -237,7 +239,7 @@ namespace AuthApp.Controllers
 
             return RedirectToAction(nameof(Edit), new { id = projectId });
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DetachContract(int projectContractId, int projectId)
