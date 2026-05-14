@@ -20,7 +20,7 @@
 }
 
 <style>
-    /* ── Кастомный select с поиском (контрагент) ─────────────────────────── */
+    
     .cs-wrap { position: relative; width: 100%; }
 
     .cs-trigger {
@@ -81,16 +81,16 @@
 
         <ul class="nav nav-tabs mb-0" id="projectTabs">
             <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#tabInfo">
-                    <i class="fas fa-info-circle mr-1"></i>Общая информация
+                <a class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabInfo" href="#">
+                    <i class="fas fa-info-circle me-1"></i>Общая информация
                 </a>
             </li>
             @if (isEdit)
             {
                 <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#tabDocs" id="docsTabLink">
-                        <i class="fas fa-paperclip mr-1"></i>Документы
-                        <span class="badge bg-secondary ml-1" id="docCount">@Model.ProjectDocuments.Count</span>
+                    <a class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDocs" href="#" id="docsTabLink">
+                        <i class="fas fa-paperclip me-1"></i>Документы
+                        <span class="badge bg-secondary ms-1" id="docCount">@Model.ProjectDocuments.Count</span>
                     </a>
                 </li>
             }
@@ -128,6 +128,13 @@
                                     <span asp-validation-for="Team" class="text-danger small"></span>
                                 </div>
 
+                                <div class="col-md-6 form-group">
+                                    <label asp-for="Budget">Сумма (бюджет)</label>
+                                    <input asp-for="Budget" type="number" step="0.01" min="0"
+                                           class="form-control" placeholder="Введите сумму">
+                                    <span asp-validation-for="Budget" class="text-danger small"></span>
+                                </div>
+
                                 <div class="col-12 form-group">
                                     <label asp-for="Description">Описание <span class="text-danger">*</span></label>
                                     <textarea asp-for="Description" class="form-control" rows="3"
@@ -154,7 +161,7 @@
                                                placeholder="Введите или выберите группу" autocomplete="off">
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-outline-secondary"
-                                                    onclick="$('#modalProjectGroups').modal('show')"
+                                                    onclick="openModal('modalProjectGroups')"
                                                     title="Выбрать из существующих">
                                                 <i class="fas fa-list"></i>
                                             </button>
@@ -189,9 +196,6 @@
                                     <div class="input-group date">
                                         @{ var startVal = Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : ""; }
                                         <input asp-for="StartDate" type="date" class="form-control" value="@startVal">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -200,9 +204,6 @@
                                     <div class="input-group date">
                                         @{ var actualVal = Model.ActualEndDate.HasValue ? Model.ActualEndDate.Value.ToString("yyyy-MM-dd") : ""; }
                                         <input asp-for="ActualEndDate" type="date" class="form-control" value="@actualVal">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -229,7 +230,7 @@
                                             </div>
                                             <div class="cs-list" id="cpList">
                                                 <div class="cs-option cs-loading">
-                                                    <i class="fas fa-spinner fa-spin mr-1"></i> Загрузка...
+                                                    <i class="fas fa-spinner fa-spin me-1"></i> Загрузка...
                                                 </div>
                                             </div>
                                         </div>
@@ -275,7 +276,7 @@
                                                placeholder="Введите или выберите отдел" autocomplete="off">
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-outline-secondary"
-                                                    onclick="$('#modalDepartments').modal('show')"
+                                                    onclick="openModal('modalDepartments')"
                                                     title="Выбрать из существующих">
                                                 <i class="fas fa-list"></i>
                                             </button>
@@ -296,9 +297,6 @@
                                     <div class="input-group date">
                                         @{ var plannedVal = Model.PlannedEndDate.HasValue ? Model.PlannedEndDate.Value.ToString("yyyy-MM-dd") : ""; }
                                         <input asp-for="PlannedEndDate" type="date" class="form-control" value="@plannedVal">
-                                        <div class="input-group-append">
-                                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -334,10 +332,10 @@
 
                         <div class="card-footer d-flex gap-2">
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save mr-1"></i>Сохранить
+                                Сохранить
                             </button>
                             <a asp-action="Index" class="btn btn-default">
-                                <i class="fas fa-times mr-1"></i>Отменить
+                                Отменить
                             </a>
                         </div>
                     </form>
@@ -349,7 +347,7 @@
                 <div class="tab-pane fade" id="tabDocs">
                     <div class="card card-outline card-info" style="border-top-left-radius:0">
                         <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-paperclip mr-1"></i>Документы проекта</h3>
+                            <h3 class="card-title"><i class="fas fa-paperclip me-1"></i>Документы проекта</h3>
                         </div>
                         <div class="card-body">
 
@@ -383,7 +381,7 @@
                                     </div>
                                     <div class="input-group-append">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-upload mr-1"></i>Загрузить
+                                            <i class="fas fa-upload me-1"></i>Загрузить
                                         </button>
                                     </div>
                                 </div>
@@ -455,37 +453,44 @@
 </section>
 
 
-<div class="modal fade" id="modalProjectGroups" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header bg-primary">
-                <h5 class="modal-title text-white"><i class="fas fa-layer-group mr-2"></i>Группа проектов</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">×</button>
+<div class="modal fade" id="modalProjectGroups" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:12px;overflow:hidden">
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#5c6bc0,#3f51b5);padding:16px 20px">
+                <h5 class="modal-title text-white fw-semibold" style="font-size:15px">
+                    <i class="fas fa-layer-group me-2"></i>Группа проектов
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body p-0">
-                <div class="p-3 border-bottom">
-                    <input type="text" id="pgNewValue" class="form-control" placeholder="Введите новую группу...">
+                <div class="p-3" style="border-bottom:1px solid #f0f0f0">
+                    <input type="text" id="pgNewValue" class="form-control form-control-sm"
+                           placeholder="Введите новую группу..." style="border-radius:8px">
                 </div>
-                <div id="pgList" style="max-height:300px;overflow-y:auto">
+                <div style="max-height:260px;overflow-y:auto">
                     @if (ViewBag.ProjectGroups != null && ((List<string>)ViewBag.ProjectGroups).Any())
                     {
                         foreach (var g in (List<string>)ViewBag.ProjectGroups)
                         {
-                            <div class="suggest-item px-3 py-2 border-bottom" style="cursor:pointer"
-                                 onclick="pickSuggest('ProjectGroup','@g')">
-                                <i class="fas fa-layer-group text-muted mr-2"></i>@g
+                            <div class="modal-pick-item" data-field="ProjectGroup" data-value="@g"
+                                 style="padding:10px 20px;cursor:pointer;border-bottom:1px solid #f8f8f8;font-size:14px;display:flex;align-items:center;gap:10px;transition:background .15s">
+                                <i class="fas fa-layer-group" style="color:#9c9fc9;font-size:12px;width:14px"></i>
+                                <span>@g</span>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="text-center text-muted py-3 small">Нет сохранённых групп</div>
+                        <div class="text-center py-4" style="color:#bbb;font-size:13px">
+                            <i class="fas fa-inbox d-block mb-2" style="font-size:24px"></i>
+                            Нет сохранённых групп
+                        </div>
                     }
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success btn-sm" onclick="pickNewSuggest('ProjectGroup','pgNewValue')">
-                    <i class="fas fa-plus mr-1"></i>Добавить новую
+            <div class="modal-footer border-0" style="padding:12px 16px;background:#fafafa">
+                <button type="button" class="btn btn-sm btn-success w-100" id="btnAddPg" style="border-radius:8px">
+                    <i class="fas fa-plus me-1"></i>Добавить новую
                 </button>
             </div>
         </div>
@@ -493,37 +498,44 @@
 </div>
 
 
-<div class="modal fade" id="modalDepartments" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header bg-primary">
-                <h5 class="modal-title text-white"><i class="fas fa-sitemap mr-2"></i>Отдел</h5>
-                <button type="button" class="close text-white" data-dismiss="modal">×</button>
+<div class="modal fade" id="modalDepartments" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:12px;overflow:hidden">
+            <div class="modal-header border-0" style="background:linear-gradient(135deg,#5c6bc0,#3f51b5);padding:16px 20px">
+                <h5 class="modal-title text-white fw-semibold" style="font-size:15px">
+                    <i class="fas fa-sitemap me-2"></i>Отдел
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body p-0">
-                <div class="p-3 border-bottom">
-                    <input type="text" id="deptNewValue" class="form-control" placeholder="Введите новый отдел...">
+                <div class="p-3" style="border-bottom:1px solid #f0f0f0">
+                    <input type="text" id="deptNewValue" class="form-control form-control-sm"
+                           placeholder="Введите новый отдел..." style="border-radius:8px">
                 </div>
-                <div id="deptList" style="max-height:300px;overflow-y:auto">
+                <div style="max-height:260px;overflow-y:auto">
                     @if (ViewBag.Departments != null && ((List<string>)ViewBag.Departments).Any())
                     {
                         foreach (var d in (List<string>)ViewBag.Departments)
                         {
-                            <div class="suggest-item px-3 py-2 border-bottom" style="cursor:pointer"
-                                 onclick="pickSuggest('Department','@d')">
-                                <i class="fas fa-sitemap text-muted mr-2"></i>@d
+                            <div class="modal-pick-item" data-field="Department" data-value="@d"
+                                 style="padding:10px 20px;cursor:pointer;border-bottom:1px solid #f8f8f8;font-size:14px;display:flex;align-items:center;gap:10px;transition:background .15s">
+                                <i class="fas fa-sitemap" style="color:#9c9fc9;font-size:12px;width:14px"></i>
+                                <span>@d</span>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="text-center text-muted py-3 small">Нет сохранённых отделов</div>
+                        <div class="text-center py-4" style="color:#bbb;font-size:13px">
+                            <i class="fas fa-inbox d-block mb-2" style="font-size:24px"></i>
+                            Нет сохранённых отделов
+                        </div>
                     }
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success btn-sm" onclick="pickNewSuggest('Department','deptNewValue')">
-                    <i class="fas fa-plus mr-1"></i>Добавить новый
+            <div class="modal-footer border-0" style="padding:12px 16px;background:#fafafa">
+                <button type="button" class="btn btn-sm btn-success w-100" id="btnAddDept" style="border-radius:8px">
+                    <i class="fas fa-plus me-1"></i>Добавить новый
                 </button>
             </div>
         </div>
@@ -533,32 +545,95 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-    $(function () {
+   
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
-        
+
+    function pickCp(display) {
+        $('#ContractorsHidden').val(display);
+        $('#cpDisplay').text(display);
+        $('#cpWrap').removeClass('cs-open');
+        $('#cpList .cs-option').removeClass('cs-selected');
+        $('#cpList .cs-option').filter(function() {
+            return $(this).text().trim() === display;
+        }).addClass('cs-selected');
+    }
+
+    
+    function openModal(id) {
+        var el = document.getElementById(id);
+        if (el) bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+    function hideAllModals() {
+        ['modalProjectGroups','modalDepartments'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                var m = bootstrap.Modal.getInstance(el);
+                if (m) m.hide();
+            }
+        });
+    }
+
+    $(function () {
+     
         $('input[type=file]').on('change', function () {
-            var names = Array.from(this.files).map(f => f.name).join(', ');
+            var names = Array.from(this.files).map(function(f){ return f.name; }).join(', ');
             $(this).next('.custom-file-label').text(names || 'Выберите файлы...');
         });
 
-        if (window.location.hash === '#docs')
-            $('#projectTabs a[href="#tabDocs"]').tab('show');
-
        
-        $(document).on('mouseenter', '.suggest-item', function() {
-            $(this).css('background','#f4f6f9');
-        }).on('mouseleave', '.suggest-item', function() {
+        if (window.location.hash === '#docs') {
+            var tabEl = document.getElementById('docsTabLink');
+            if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
+        }
+
+        $(document).on('mouseenter', '.modal-pick-item', function() {
+            $(this).css('background','#f0f2ff');
+        }).on('mouseleave', '.modal-pick-item', function() {
             $(this).css('background','');
         });
 
-        // ── Валидация дат ─────────────────────────────────────────────────────
+        $(document).on('click', '.modal-pick-item', function() {
+            var field = $(this).data('field');
+            var value = $(this).data('value');
+            document.getElementById(field).value = value;
+            hideAllModals();
+        });
+
+        $('#btnAddPg').on('click', function() {
+            var val = $('#pgNewValue').val().trim();
+            if (!val) { $('#pgNewValue').focus(); return; }
+            document.getElementById('ProjectGroup').value = val;
+            $('#pgNewValue').val('');
+            hideAllModals();
+        });
+
+        $('#btnAddDept').on('click', function() {
+            var val = $('#deptNewValue').val().trim();
+            if (!val) { $('#deptNewValue').focus(); return; }
+            document.getElementById('Department').value = val;
+            $('#deptNewValue').val('');
+            hideAllModals();
+        });
+
+        
+        $('#pgNewValue').on('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); $('#btnAddPg').click(); }
+        });
+        $('#deptNewValue').on('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); $('#btnAddDept').click(); }
+        });
+
         $('#StartDate, #PlannedEndDate, #ActualEndDate').on('change', validateDates);
 
-        // ── Кастомный выпадающий список контрагентов ──────────────────────────
+      
         var cpLoaded = false;
         var cpTimer;
 
-        // Открытие/закрытие по клику на триггер
         $('#cpTrigger').on('click', function (e) {
             e.stopPropagation();
             var wrap = $('#cpWrap');
@@ -571,13 +646,11 @@
             }
         });
 
-        // Закрытие при клике вне
         $(document).on('click', function (e) {
             if (!$(e.target).closest('#cpWrap').length)
                 $('#cpWrap').removeClass('cs-open');
         });
 
-        // Поиск с задержкой
         $('#cpSearch').on('input', function () {
             clearTimeout(cpTimer);
             cpTimer = setTimeout(function () {
@@ -585,52 +658,56 @@
             }, 300);
         }).on('click', function(e) { e.stopPropagation(); });
 
+       
+        $(document).on('click', '#cpList .cs-option[data-cp]', function() {
+            pickCp($(this).data('cp'));
+        });
+
         function loadCp(q) {
-            $('#cpList').html('<div class="cs-option cs-loading"><i class="fas fa-spinner fa-spin mr-1"></i> Загрузка...</div>');
-            $.getJSON('@Url.Action("SearchCounterparties","Projects")', { q: q }, function (data) {
-                if (!data.length) {
-                    $('#cpList').html('<div class="cs-option cs-no-results">Контрагенты не найдены</div>');
-                    return;
-                }
-                var html = '';
-                data.forEach(function (item) {
+            $('#cpList').html('<div class="cs-option cs-loading"><i class="fas fa-spinner fa-spin me-1"></i> Загрузка...</div>');
+
+            var url = '@Url.Action("SearchCounterparties","Projects")' + '?q=' + encodeURIComponent(q || '');
+
+            var controller = new AbortController();
+            var timeout = setTimeout(function() { controller.abort(); }, 8000);
+
+            fetch(url, { signal: controller.signal })
+                .then(function(r) {
+                    clearTimeout(timeout);
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(function(data) {
+                    if (!data || !data.length) {
+                        $('#cpList').html('<div class="cs-option cs-no-results">Контрагенты не найдены</div>');
+                        return;
+                    }
+                    var html = '';
                     var cur = $('#ContractorsHidden').val();
-                    var sel = (item.display === cur) ? ' cs-selected' : '';
-                    html += '<div class="cs-option' + sel + '" onclick="pickCp(' + JSON.stringify(item.display) + ')">' +
-                            '<i class="fas fa-building text-muted mr-2"></i>' + escHtml(item.display) + '</div>';
+                    data.forEach(function(item) {
+                        var sel = (item.display === cur) ? ' cs-selected' : '';
+                        html += '<div class="cs-option' + sel + '" data-cp="' + escHtml(item.display) + '">' +
+                                '<i class="fas fa-building text-muted me-2"></i>' + escHtml(item.display) + '</div>';
+                    });
+                    $('#cpList').html(html);
+                })
+                .catch(function(err) {
+                    clearTimeout(timeout);
+                    console.error('loadCp error:', err);
+                    var msg = err.name === 'AbortError' ? 'Превышено время ожидания' : ('Ошибка: ' + err.message);
+                    $('#cpList').html('<div class="cs-option cs-no-results text-danger">' + escHtml(msg) + '</div>');
                 });
-                $('#cpList').html(html);
-            }).fail(function () {
-                $('#cpList').html('<div class="cs-option cs-no-results text-danger">Ошибка загрузки</div>');
-            });
         }
+
+        $('#projectForm').on('submit', function (e) {
+            validateDates();
+            if ($('.date-error').length > 0) {
+                e.preventDefault();
+                $('html, body').animate({ scrollTop: $('.date-error').first().offset().top - 100 }, 400);
+            }
+        });
     });
 
-    // Выбор контрагента
-    function pickCp(display) {
-        $('#ContractorsHidden').val(display);    // значение уйдёт на сервер
-        $('#cpDisplay').text(display);           // показываем в триггере
-        $('#cpWrap').removeClass('cs-open');
-        // снимаем/ставим выделение
-        $('#cpList .cs-option').removeClass('cs-selected');
-        $('#cpList .cs-option:contains("' + display + '")').addClass('cs-selected');
-    }
-
-    // ── Группы / Отделы ───────────────────────────────────────────────────────
-    function pickSuggest(fieldId, value) {
-        document.getElementById(fieldId).value = value;
-        $('#modalProjectGroups, #modalDepartments').modal('hide');
-    }
-
-    function pickNewSuggest(fieldId, inputId) {
-        var val = document.getElementById(inputId).value.trim();
-        if (!val) { alert('Введите значение'); return; }
-        document.getElementById(fieldId).value = val;
-        document.getElementById(inputId).value = '';
-        $('#modalProjectGroups, #modalDepartments').modal('hide');
-    }
-
-    // ── Даты ─────────────────────────────────────────────────────────────────
     function validateDates() {
         var start   = $('#StartDate').val();
         var planned = $('#PlannedEndDate').val();
@@ -656,21 +733,6 @@
     function clearDateError(fieldId) {
         $('#' + fieldId).removeClass('is-invalid')
             .closest('.input-group').next('.date-error').remove();
-    }
-
-    $('#projectForm').on('submit', function (e) {
-        validateDates();
-        if ($('.date-error').length > 0) {
-            e.preventDefault();
-            $('html, body').animate({ scrollTop: $('.date-error').first().offset().top - 100 }, 400);
-        }
-    });
-
-    // ── Утилита ───────────────────────────────────────────────────────────────
-    function escHtml(str) {
-        return String(str)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
     </script>
 }

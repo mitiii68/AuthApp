@@ -3,32 +3,40 @@
   "WorkspaceRootPath": "C:\\MyProject\\AuthApp\\AuthApp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\projects\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\projects\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\projects\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\projects\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\projects\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\projects\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\contracts\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\contracts\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\controllers\\projectscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\controllers\\projectscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260514045108_AddBudgetToProject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:AuthApp\\Migrations\\20260514045108_AddBudgetToProject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\models\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\models\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\models\\projectdocument.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\models\\projectdocument.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\migrations\\20260508082654_addcontractstables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\migrations\\20260508082654_addcontractstables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\models\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\models\\project.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\controllers\\projectscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\controllers\\projectscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\models\\projectdocument.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\models\\projectdocument.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -57,10 +65,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\services\\katoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\services\\katoservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\migrations\\20260508082654_addcontractstables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|solutionrelative:authapp\\migrations\\20260508082654_addcontractstables.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{ED2F5FA7-4C8F-E286-BAFD-1B959AD576DA}|AuthApp\\AuthApp.csproj|c:\\myproject\\authapp\\authapp\\authapp\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -288,11 +292,11 @@
       "DocumentGroups": [
         {
           "DockedHeight": 276,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\User.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\User.cs",
@@ -305,26 +309,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "AuthApp\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "AuthApp\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AgIAANgAAAAAAAAAAAAAAN8AAABJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-04-16T03:35:34.74Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "CreateEdit.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Projects\\CreateEdit.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Projects\\CreateEdit.cshtml",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Projects\\CreateEdit.cshtml",
               "RelativeToolTip": "AuthApp\\Views\\Projects\\CreateEdit.cshtml",
-              "ViewState": "AgIAAHsCAAAAAAAAAAAAACICAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAAM8CAAAAwBonhfn7v8UCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-05-13T03:51:02.554Z",
               "EditorCaption": ""
@@ -337,52 +328,65 @@
               "RelativeDocumentMoniker": "AuthApp\\Views\\Contracts\\Create.cshtml",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Contracts\\Create.cshtml",
               "RelativeToolTip": "AuthApp\\Views\\Contracts\\Create.cshtml",
-              "ViewState": "AgIAALcBAAAAEJwzorQawJ4BAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAAIMBAAAAeAg5758GwDMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-05-08T07:04:32.165Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "ProjectsController.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Controllers\\ProjectsController.cs",
               "RelativeDocumentMoniker": "AuthApp\\Controllers\\ProjectsController.cs",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Controllers\\ProjectsController.cs",
               "RelativeToolTip": "AuthApp\\Controllers\\ProjectsController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAwAAAAAAAAAA==",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAowAcAAAAwAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T03:48:43.511Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-13T03:48:43.511Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Projects\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Projects\\Index.cshtml",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Projects\\Index.cshtml",
               "RelativeToolTip": "AuthApp\\Views\\Projects\\Index.cshtml",
-              "ViewState": "AgIAAPoAAAAAAAAAAAAAAAUBAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAAKsBAAAAlOUklN4qwAsAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-05-13T03:54:05.205Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 4,
               "Title": "Project.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\Project.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\Project.cs",
               "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\Project.cs",
               "RelativeToolTip": "AuthApp\\Models\\Project.cs",
-              "ViewState": "AgIAACUAAAAAAAAAAAAUwCwAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T03:47:45.286Z"
+              "WhenOpened": "2026-05-13T03:47:45.286Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "AuthApp\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "AuthApp\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAN8AAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-16T03:35:34.74Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "ProjectDocument.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\ProjectDocument.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\ProjectDocument.cs",
@@ -394,7 +398,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 10,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Contracts\\Edit.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Contracts\\Edit.cshtml",
@@ -406,7 +410,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 12,
               "Title": "ContractParticipant.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\ContractParticipant.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\ContractParticipant.cs",
@@ -418,7 +422,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 9,
               "Title": "AppDbContext.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Data\\AppDbContext.cs",
               "RelativeDocumentMoniker": "AuthApp\\Data\\AppDbContext.cs",
@@ -430,7 +434,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 11,
               "Title": "ContractDocument.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\ContractDocument.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\ContractDocument.cs",
@@ -442,7 +446,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 13,
               "Title": "Delete.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Contracts\\Delete.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Contracts\\Delete.cshtml",
@@ -454,7 +458,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 14,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Contracts\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Contracts\\Index.cshtml",
@@ -466,7 +470,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 15,
               "Title": "KatoService.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Services\\KatoService.cs",
               "RelativeDocumentMoniker": "AuthApp\\Services\\KatoService.cs",
@@ -478,7 +482,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "Contract.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\Contract.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\Contract.cs",
@@ -490,7 +494,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 19,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\appsettings.json",
               "RelativeDocumentMoniker": "AuthApp\\appsettings.json",
@@ -502,7 +506,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 20,
               "Title": "ContractType.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Enums\\ContractType.cs",
               "RelativeDocumentMoniker": "AuthApp\\Enums\\ContractType.cs",
@@ -514,7 +518,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Program.cs",
               "RelativeDocumentMoniker": "AuthApp\\Program.cs",
@@ -526,7 +530,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 21,
               "Title": "ContractStage.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Enums\\ContractStage.cs",
               "RelativeDocumentMoniker": "AuthApp\\Enums\\ContractStage.cs",
@@ -538,7 +542,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "ContractService.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Services\\ContractService.cs",
               "RelativeDocumentMoniker": "AuthApp\\Services\\ContractService.cs",
@@ -550,7 +554,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "EditLocation.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\EditLocation.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\EditLocation.cshtml",
@@ -562,7 +566,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 24,
               "Title": "LoginHistory.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\LoginHistory.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\LoginHistory.cs",
@@ -574,7 +578,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 25,
               "Title": "Counterparty.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\Counterparty.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\Counterparty.cs",
@@ -586,7 +590,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 29,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Users\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Users\\Index.cshtml",
@@ -598,7 +602,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 26,
               "Title": "EditLocation.cshtml",
               "DocumentMoniker": "C:\\Users\\Dima\\Downloads\\EditLocation.cshtml",
               "RelativeDocumentMoniker": "..\\..\\..\\Users\\Dima\\Downloads\\EditLocation.cshtml",
@@ -610,7 +614,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 27,
               "Title": "UserActionLog.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\UserActionLog.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\UserActionLog.cs",
@@ -622,7 +626,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 28,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Home\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Home\\Index.cshtml",
@@ -634,7 +638,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 30,
               "Title": "Create.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Counterparties\\Create.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Counterparties\\Create.cshtml",
@@ -646,7 +650,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 32,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Counterparties\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Counterparties\\Index.cshtml",
@@ -658,7 +662,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 31,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Counterparties\\Edit.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Counterparties\\Edit.cshtml",
@@ -670,7 +674,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 33,
               "Title": "OrganizationType.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Enums\\OrganizationType.cs",
               "RelativeDocumentMoniker": "AuthApp\\Enums\\OrganizationType.cs",
@@ -682,7 +686,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 34,
               "Title": "Industry.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Enums\\Industry.cs",
               "RelativeDocumentMoniker": "AuthApp\\Enums\\Industry.cs",
@@ -694,7 +698,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 35,
               "Title": "CounterpartyType.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Enums\\CounterpartyType.cs",
               "RelativeDocumentMoniker": "AuthApp\\Enums\\CounterpartyType.cs",
@@ -706,7 +710,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 39,
               "Title": "Upload.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Documents\\Upload.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Documents\\Upload.cshtml",
@@ -718,7 +722,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 36,
               "Title": "Trash.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Documents\\Trash.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Documents\\Trash.cshtml",
@@ -730,7 +734,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 40,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Documents\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Documents\\Index.cshtml",
@@ -742,7 +746,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 37,
               "Title": "Profile.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\Profile.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\Profile.cshtml",
@@ -754,7 +758,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 38,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Tags\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Tags\\Index.cshtml",
@@ -766,7 +770,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 41,
               "Title": "EditProfile.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Users\\EditProfile.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Users\\EditProfile.cshtml",
@@ -778,7 +782,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 42,
               "Title": "KatoEntry.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\KatoEntry.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\KatoEntry.cs",
@@ -790,7 +794,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 45,
               "Title": "FavoriteDocument.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\FavoriteDocument.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\FavoriteDocument.cs",
@@ -802,7 +806,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 44,
               "Title": "Favorites.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Documents\\Favorites.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Documents\\Favorites.cshtml",
@@ -814,7 +818,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 46,
               "Title": "FileDocuments.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\FileDocuments.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\FileDocuments.cs",
@@ -826,7 +830,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
+              "DocumentIndex": 47,
               "Title": "FileTag.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\FileTag.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\FileTag.cs",
@@ -838,7 +842,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 48,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\TagCategories\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\TagCategories\\Index.cshtml",
@@ -850,7 +854,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 49,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\Dima\\Downloads\\Index.cshtml",
               "RelativeDocumentMoniker": "..\\..\\..\\Users\\Dima\\Downloads\\Index.cshtml",
@@ -862,7 +866,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
+              "DocumentIndex": 50,
               "Title": "TagCategory.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\TagCategory.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\TagCategory.cs",
@@ -874,7 +878,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
+              "DocumentIndex": 51,
               "Title": "Tag.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\Tag.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\Tag.cs",
@@ -886,7 +890,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
+              "DocumentIndex": 52,
               "Title": "ActionLogs.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Users\\ActionLogs.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Users\\ActionLogs.cshtml",
@@ -898,7 +902,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 53,
               "Title": "Login.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\Login.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\Login.cshtml",
@@ -910,7 +914,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 53,
+              "DocumentIndex": 54,
               "Title": "LoginViewModel.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\LoginViewModel.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\LoginViewModel.cs",
@@ -922,7 +926,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 55,
               "Title": "Role.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\Role.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\Role.cs",
@@ -934,7 +938,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 56,
+              "DocumentIndex": 57,
               "Title": "VerifyResetCode.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\VerifyResetCode.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\VerifyResetCode.cshtml",
@@ -946,7 +950,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 55,
+              "DocumentIndex": 56,
               "Title": "ChangePassword.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\ChangePassword.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\ChangePassword.cshtml",
@@ -958,7 +962,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 57,
+              "DocumentIndex": 58,
               "Title": "ResetPassword.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\ResetPassword.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\ResetPassword.cshtml",
@@ -970,7 +974,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 59,
+              "DocumentIndex": 60,
               "Title": "site.css",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\wwwroot\\css\\site.css",
               "RelativeDocumentMoniker": "AuthApp\\wwwroot\\css\\site.css",
@@ -982,7 +986,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 58,
+              "DocumentIndex": 59,
               "Title": "ForgotPassword.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\ForgotPassword.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\ForgotPassword.cshtml",
@@ -994,7 +998,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 60,
+              "DocumentIndex": 61,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Roles\\Index.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Roles\\Index.cshtml",
@@ -1006,7 +1010,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 61,
+              "DocumentIndex": 62,
               "Title": "_ViewImports.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\_ViewImports.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\_ViewImports.cshtml",
@@ -1018,7 +1022,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 62,
+              "DocumentIndex": 63,
               "Title": "Register.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\Register.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\Register.cshtml",
@@ -1030,7 +1034,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 63,
+              "DocumentIndex": 64,
               "Title": "ConfirmCode.cshtml",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\ConfirmCode.cshtml",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\ConfirmCode.cshtml",
@@ -1042,7 +1046,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 64,
+              "DocumentIndex": 65,
               "Title": "RegisterViewModel.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Models\\RegisterViewModel.cs",
               "RelativeDocumentMoniker": "AuthApp\\Models\\RegisterViewModel.cs",
@@ -1054,7 +1058,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 65,
+              "DocumentIndex": 66,
               "Title": "EmailService.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Services\\EmailService.cs",
               "RelativeDocumentMoniker": "AuthApp\\Services\\EmailService.cs",
@@ -1066,7 +1070,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 66,
+              "DocumentIndex": 67,
               "Title": "Register.cshtml.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Views\\Account\\Register.cshtml.cs",
               "RelativeDocumentMoniker": "AuthApp\\Views\\Account\\Register.cshtml.cs",
@@ -1080,7 +1084,7 @@
         },
         {
           "DockedHeight": 116,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -1089,32 +1093,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 69,
-              "Title": "20260513034652_AddProjets.cs",
-              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260513034652_AddProjets.cs",
-              "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260513034652_AddProjets.cs",
-              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260513034652_AddProjets.cs",
-              "RelativeToolTip": "AuthApp\\Migrations\\20260513034652_AddProjets.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-13T03:46:52.66Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "20260508082654_AddContractsTables.cs",
-              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
-              "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
-              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
-              "RelativeToolTip": "AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
-              "ViewState": "AgIAAOQAAAAAAAAAAAAowAIAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-08T08:26:56.13Z",
-              "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
@@ -1126,7 +1104,45 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 68,
+              "DocumentIndex": 3,
+              "Title": "20260514045108_AddBudgetToProject.cs",
+              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260514045108_AddBudgetToProject.cs",
+              "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260514045108_AddBudgetToProject.cs",
+              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260514045108_AddBudgetToProject.cs",
+              "RelativeToolTip": "AuthApp\\Migrations\\20260514045108_AddBudgetToProject.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-14T04:51:08.881Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 70,
+              "Title": "20260513034652_AddProjets.cs",
+              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260513034652_AddProjets.cs",
+              "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260513034652_AddProjets.cs",
+              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260513034652_AddProjets.cs",
+              "RelativeToolTip": "AuthApp\\Migrations\\20260513034652_AddProjets.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T03:46:52.66Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "20260508082654_AddContractsTables.cs",
+              "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
+              "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
+              "ToolTip": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
+              "RelativeToolTip": "AuthApp\\Migrations\\20260508082654_AddContractsTables.cs",
+              "ViewState": "AgIAAOQAAAAAAAAAAAAowOgAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-08T08:26:56.13Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 69,
               "Title": "20260512043732_AddContractDocuments.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260512043732_AddContractDocuments.cs",
               "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260512043732_AddContractDocuments.cs",
@@ -1138,7 +1154,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 67,
+              "DocumentIndex": 68,
               "Title": "20260504055525_AddFavoriteDocuments.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260504055525_AddFavoriteDocuments.cs",
               "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260504055525_AddFavoriteDocuments.cs",
@@ -1150,7 +1166,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 43,
               "Title": "20260504085320_AddKatoEntries.cs",
               "DocumentMoniker": "C:\\MyProject\\AuthApp\\AuthApp\\AuthApp\\Migrations\\20260504085320_AddKatoEntries.cs",
               "RelativeDocumentMoniker": "AuthApp\\Migrations\\20260504085320_AddKatoEntries.cs",

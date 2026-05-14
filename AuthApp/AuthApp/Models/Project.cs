@@ -41,6 +41,8 @@ namespace AuthApp.Models
 
         public DateTime? PlannedEndDate { get; set; }   
 
+        public decimal? Budget { get; set; }            
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public List<ProjectDocument> ProjectDocuments { get; set; } = new();

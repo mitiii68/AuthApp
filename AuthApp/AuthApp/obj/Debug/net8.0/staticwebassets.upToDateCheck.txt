@@ -78,3 +78,7 @@ wwwroot\uploads\eaeee342-1df2-4756-8f05-ce7f9a5c27b7.pdf
 wwwroot\uploads\eb404964-39b3-45e2-bbc4-3f69dc822372.docx
 wwwroot\uploads\f426dbc1-83e8-40f0-9b16-f943e2b7121f.pdf
 wwwroot\uploads\f71fbccb-033c-40bc-9833-06b98cff55d7.zip
+wwwroot\uploads\projects\5287f22e-7e7f-4cfa-95b7-d1f0bf8bcd02.xlsx
+wwwroot\uploads\projects\96f81f5d-0679-4a9d-80ff-d6d2bcdbb459.pdf
+wwwroot\uploads\projects\b39d5e6b-8e7f-4ba5-9c98-96e1af96b64b.docx
+wwwroot\uploads\projects\e3046e7a-25db-4808-a70d-837fa4410fb2.pdf
