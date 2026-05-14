@@ -353,7 +353,6 @@
                     </div>
                     <div class="card-body">
 
-                        
                         <div class="mb-4">
                             <label class="font-weight-bold mb-2 d-block">
                                 <i class="fas fa-search me-1 text-muted"></i>Найти и прикрепить договор
@@ -374,7 +373,6 @@
 
                         @if (isEdit)
                         {
-                           
                             @if (!Model.ProjectContracts.Any())
                             {
                                 <div class="text-center text-muted py-4" id="emptyContracts">
@@ -398,8 +396,10 @@
                                         {
                                             <tr>
                                                 <td>
-                                                    <i class="fas fa-file-contract text-info me-1"></i>
-                                                    <strong>@(pc.Contract?.ContractNumber ?? "—")</strong>
+                                                    <a href="/Contracts/Edit/@pc.Contract?.Id" target="_blank" class="text-info" title="Открыть договор">
+                                                        <i class="fas fa-file-contract me-1"></i>
+                                                        <strong>@(pc.Contract?.ContractNumber ?? "—")</strong>
+                                                    </a>
                                                 </td>
                                                 <td class="text-muted small">
                                                     @(pc.Contract?.FullName ?? "—")
@@ -427,7 +427,6 @@
                         }
                         else
                         {
-                           
                             <div id="emptyContracts" class="text-center text-muted py-4">
                                 <i class="fas fa-file-contract fa-3x d-block mb-2"></i>
                                 Договоры не выбраны
@@ -443,7 +442,7 @@
                                 </thead>
                                 <tbody id="newContractsTbody"></tbody>
                             </table>
-                           
+                            
                             <div id="newContractInputs"></div>
                         }
 
@@ -751,7 +750,6 @@
             var contractDate = $(this).data('date');
 
             if (@(isEdit ? "true" : "false")) {
-                // РЕДАКТИРОВАНИЕ — сразу POST-прикрепление
                 var form = $('<form method="post" style="display:none">' +
                     '<input name="projectId"  value="' + projectId + '">' +
                     '<input name="contractId" value="' + contractId + '">' +
@@ -761,7 +759,6 @@
                 $('body').append(form);
                 form.submit();
             } else {
-                // СОЗДАНИЕ — добавляем в JS-таблицу и скрытый input
                 if ($('#newContractInputs input[value="' + contractId + '"]').length) return;
 
                 $('#newContractInputs').append(
@@ -784,7 +781,6 @@
             }
         });
 
-        // Убрать договор из списка при создании
         $(document).on('click', '.btn-remove-contract', function() {
             var row = $(this).closest('tr');
             var cid = row.data('cid');

@@ -217,7 +217,6 @@ namespace AuthApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Прикрепить договор к проекту
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AttachContract(int projectId, int contractId)
@@ -238,8 +237,7 @@ namespace AuthApp.Controllers
 
             return RedirectToAction(nameof(Edit), new { id = projectId });
         }
-
-        // Открепить договор от проекта
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DetachContract(int projectContractId, int projectId)
