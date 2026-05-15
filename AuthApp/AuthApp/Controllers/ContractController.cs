@@ -99,6 +99,39 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Create(Contract contract, List<int> participantIds, string amountRaw, List<int> documentIds)
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
+            if (string.IsNullOrWhiteSpace(contract.FullName))
+                ModelState.AddModelError("FullName", "Полное наименование обязательно.");
+            if (string.IsNullOrWhiteSpace(contract.ShortName))
+                ModelState.AddModelError("ShortName", "Краткое наименование обязательно.");
+            if (string.IsNullOrWhiteSpace(contract.ContractNumber))
+                ModelState.AddModelError("ContractNumber", "Номер договора обязателен.");
+            if (contract.CounterpartyId == null || contract.CounterpartyId == 0)
+                ModelState.AddModelError("CounterpartyId", "Контрагент обязателен.");
+            if (contract.ResponsibleUserId == null || contract.ResponsibleUserId == 0)
+                ModelState.AddModelError("ResponsibleUserId", "Ответственный обязателен.");
+            if (string.IsNullOrWhiteSpace(amountRaw))
+                ModelState.AddModelError("amountRaw", "Сумма с НДС обязательна.");
+            if (contract.ConclusionDate == null)
+                ModelState.AddModelError("ConclusionDate", "Дата заключения обязательна.");
+            if (contract.ExecutionStartDate == null)
+                ModelState.AddModelError("ExecutionStartDate", "Дата начала исполнения обязательна.");
+            if (contract.ClosingDate == null)
+                ModelState.AddModelError("ClosingDate", "Дата закрытия обязательна.");
+            if (string.IsNullOrWhiteSpace(contract.ResponsibleFromCustomer))
+                ModelState.AddModelError("ResponsibleFromCustomer", "Ответственный со стороны заказчика обязателен.");
+            if (participantIds == null || participantIds.Count == 0)
+                ModelState.AddModelError("participantIds", "Выберите хотя бы одного участника.");
+            if (documentIds == null || documentIds.Count == 0)
+                ModelState.AddModelError("documentIds", "Прикрепите хотя бы один документ.");
+
+            if (!ModelState.IsValid)
+            {
+                FillViewBag();
+                ViewBag.Counterparties = await _context.Counterparties.ToListAsync();
+                ViewBag.Users = await _context.Users.ToListAsync();
+                ViewBag.SelectedDocuments = documentIds ?? new List<int>();
+                return View(contract);
+            }
 
             contract.CreatedAt = DateTime.Now;
 

@@ -91,6 +91,9 @@
     .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
     .btn-ghost:hover { background: var(--surface-2); }
 
+    .form-input.input-error, .form-select.input-error { border-color: var(--danger); background: var(--danger-light); }
+    .multi-picker-trigger.input-error { border-color: var(--danger); background: var(--danger-light); }
+    .field-error { font-size: 12px; color: var(--danger); font-weight: 600; margin-top: 3px; }
     @@media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } .form-card { padding: 18px; } }
 </style>
 
@@ -110,89 +113,123 @@
 
             <div class="form-group">
                 <label class="required">Полное наименование</label>
-                <input name="FullName" class="form-input" placeholder="Введите полное наименование..." />
+                <input name="FullName" id="FullName" class="form-input @(ViewData.ModelState["FullName"]?.Errors.Count > 0 ? "input-error" : "")" placeholder="Введите полное наименование..." value="@Model?.FullName" required />
+                @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["FullName"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Краткое наименование</label>
-                <input name="ShortName" class="form-input" placeholder="Краткое название..." />
+                <label class="required">Краткое наименование</label>
+                <input name="ShortName" id="ShortName" class="form-input @(ViewData.ModelState["ShortName"]?.Errors.Count > 0 ? "input-error" : "")" placeholder="Краткое название..." value="@Model?.ShortName" required />
+                @if (ViewData.ModelState["ShortName"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ShortName"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Номер договора</label>
-                <input name="ContractNumber" class="form-input" placeholder="№ договора..." />
+                <label class="required">Номер договора</label>
+                <input name="ContractNumber" id="ContractNumber" class="form-input @(ViewData.ModelState["ContractNumber"]?.Errors.Count > 0 ? "input-error" : "")" placeholder="№ договора..." value="@Model?.ContractNumber" required />
+                @if (ViewData.ModelState["ContractNumber"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ContractNumber"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Контрагент</label>
-                <select name="CounterpartyId" class="form-select">
+                <label class="required">Контрагент</label>
+                <select name="CounterpartyId" id="CounterpartyId" class="form-select @(ViewData.ModelState["CounterpartyId"]?.Errors.Count > 0 ? "input-error" : "")" required>
                     <option value="">— Выберите контрагента —</option>
                     @foreach (var cp in counterparties)
                     {
-                        <option value="@cp.Id">@cp.Name</option>
+                        if (Model?.CounterpartyId == cp.Id)
+                        { <option value="@cp.Id" selected>@cp.Name</option> }
+                        else
+                        { <option value="@cp.Id">@cp.Name</option> }
                     }
                 </select>
+                @if (ViewData.ModelState["CounterpartyId"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["CounterpartyId"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Стадия</label>
-                <select name="Stage" class="form-select">
+                <label class="required">Стадия</label>
+                @{ var stageVal = Model?.Stage.ToString(); }
+                <select name="Stage" id="Stage" class="form-select @(ViewData.ModelState["Stage"]?.Errors.Count > 0 ? "input-error" : "")" required>
                     <option value="">— Выберите стадию —</option>
-                    <option value="0">Выполняется</option>
-                    <option value="1">Завершён</option>
-                    <option value="2">Расторгнут</option>
-                    <option value="3">На согласовании</option>
-                    <option value="4">На регистрации в Казначействе</option>
+                    @if (stageVal == "0") { <option value="0" selected>Выполняется</option> } else { <option value="0">Выполняется</option> }
+                    @if (stageVal == "1") { <option value="1" selected>Завершён</option> } else { <option value="1">Завершён</option> }
+                    @if (stageVal == "2") { <option value="2" selected>Расторгнут</option> } else { <option value="2">Расторгнут</option> }
+                    @if (stageVal == "3") { <option value="3" selected>На согласовании</option> } else { <option value="3">На согласовании</option> }
+                    @if (stageVal == "4") { <option value="4" selected>На регистрации в Казначействе</option> } else { <option value="4">На регистрации в Казначействе</option> }
                 </select>
+                @if (ViewData.ModelState["Stage"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["Stage"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Тип договора</label>
-                <select name="Type" class="form-select">
+                <label class="required">Тип договора</label>
+                @{ var typeVal = Model?.Type.ToString(); }
+                <select name="Type" id="Type" class="form-select @(ViewData.ModelState["Type"]?.Errors.Count > 0 ? "input-error" : "")" required>
                     <option value="">— Выберите тип —</option>
-                    <option value="0">Исходящий</option>
-                    <option value="1">Входящий</option>
+                    @if (typeVal == "0") { <option value="0" selected>Исходящий</option> } else { <option value="0">Исходящий</option> }
+                    @if (typeVal == "1") { <option value="1" selected>Входящий</option> } else { <option value="1">Входящий</option> }
                 </select>
+                @if (ViewData.ModelState["Type"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["Type"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Ответственный</label>
-                <select name="ResponsibleUserId" class="form-select">
+                <label class="required">Ответственный</label>
+                <select name="ResponsibleUserId" id="ResponsibleUserId" class="form-select @(ViewData.ModelState["ResponsibleUserId"]?.Errors.Count > 0 ? "input-error" : "")" required>
                     <option value="">— Выберите ответственного —</option>
                     @foreach (var u in users)
                     {
-                        <option value="@u.UserId">@(u.FullName ?? u.Email)</option>
+                        if (Model?.ResponsibleUserId == u.UserId)
+                        { <option value="@u.UserId" selected>@(u.FullName ?? u.Email)</option> }
+                        else
+                        { <option value="@u.UserId">@(u.FullName ?? u.Email)</option> }
                     }
                 </select>
+                @if (ViewData.ModelState["ResponsibleUserId"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ResponsibleUserId"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Сумма с НДС</label>
-                <input name="amountRaw" type="text" class="form-input" value="" placeholder="0.00" />
+                <label class="required">Сумма с НДС</label>
+                <input name="amountRaw" id="amountRaw" type="text" class="form-input @(ViewData.ModelState["amountRaw"]?.Errors.Count > 0 ? "input-error" : "")" placeholder="0.00" required />
+                @if (ViewData.ModelState["amountRaw"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["amountRaw"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Дата заключения</label>
-                <input name="ConclusionDate" type="date" class="form-input" />
+                <label class="required">Дата заключения</label>
+                <input name="ConclusionDate" id="ConclusionDate" type="date" class="form-input @(ViewData.ModelState["ConclusionDate"]?.Errors.Count > 0 ? "input-error" : "")" value="@Model?.ConclusionDate?.ToString("yyyy-MM-dd")" required />
+                @if (ViewData.ModelState["ConclusionDate"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ConclusionDate"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Дата начала исполнения</label>
-                <input name="ExecutionStartDate" type="date" class="form-input" />
+                <label class="required">Дата начала исполнения</label>
+                <input name="ExecutionStartDate" id="ExecutionStartDate" type="date" class="form-input @(ViewData.ModelState["ExecutionStartDate"]?.Errors.Count > 0 ? "input-error" : "")" value="@Model?.ExecutionStartDate?.ToString("yyyy-MM-dd")" required />
+                @if (ViewData.ModelState["ExecutionStartDate"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ExecutionStartDate"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Дата закрытия</label>
-                <input name="ClosingDate" type="date" class="form-input" />
+                <label class="required">Дата закрытия</label>
+                <input name="ClosingDate" id="ClosingDate" type="date" class="form-input @(ViewData.ModelState["ClosingDate"]?.Errors.Count > 0 ? "input-error" : "")" value="@Model?.ClosingDate?.ToString("yyyy-MM-dd")" required />
+                @if (ViewData.ModelState["ClosingDate"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ClosingDate"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group">
-                <label>Ответственный со стороны заказчика</label>
-                <input name="ResponsibleFromCustomer" class="form-input" placeholder="ФИО..." />
+                <label class="required">Ответственный со стороны заказчика</label>
+                <input name="ResponsibleFromCustomer" id="ResponsibleFromCustomer" class="form-input @(ViewData.ModelState["ResponsibleFromCustomer"]?.Errors.Count > 0 ? "input-error" : "")" placeholder="ФИО..." value="@Model?.ResponsibleFromCustomer" required />
+                @if (ViewData.ModelState["ResponsibleFromCustomer"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["ResponsibleFromCustomer"].Errors[0].ErrorMessage</span> }
             </div>
 
             <div class="form-group full">
-                <label>Участники</label>
+                <label class="required">Участники</label>
+                @if (ViewData.ModelState["participantIds"]?.Errors.Count > 0)
+                { <span class="field-error">@ViewData.ModelState["participantIds"].Errors[0].ErrorMessage</span> }
                 <div class="multi-picker-wrap" id="participantWrap">
                     <div class="multi-picker-trigger" id="participantTrigger" onclick="togglePicker()">
                         <div class="multi-picker-chips" id="participantChips">
@@ -225,7 +262,9 @@
         <h2>Документы</h2>
 
         <div class="form-group">
-            <label>Файлы с тегом "Договор"</label>
+            <label class="required">Файлы с тегом "Договор"</label>
+            @if (ViewData.ModelState["documentIds"]?.Errors.Count > 0)
+            { <span class="field-error">@ViewData.ModelState["documentIds"].Errors[0].ErrorMessage</span> }
             <div class="multi-picker-wrap" id="docWrap">
                 <div class="multi-picker-trigger" id="docTrigger" onclick="toggleDocPicker()">
                     <div class="multi-picker-chips" id="docChips">
@@ -270,6 +309,47 @@
 </form>
 
 <script>
+document.querySelector('form').addEventListener('submit', function(e) {
+    let valid = true;
+    const participantTrigger = document.getElementById('participantTrigger');
+    if (selectedIds.size === 0) {
+        participantTrigger.classList.add('input-error');
+        let err = document.getElementById('participantError');
+        if (!err) {
+            err = document.createElement('span');
+            err.id = 'participantError';
+            err.className = 'field-error';
+            err.textContent = 'Выберите хотя бы одного участника.';
+            participantTrigger.closest('.multi-picker-wrap').before(err);
+        }
+        valid = false;
+    } else {
+        participantTrigger.classList.remove('input-error');
+        const err = document.getElementById('participantError');
+        if (err) err.remove();
+    }
+
+    const docTrigger = document.getElementById('docTrigger');
+    if (selectedDocIds.size === 0) {
+        docTrigger.classList.add('input-error');
+        let err = document.getElementById('docError');
+        if (!err) {
+            err = document.createElement('span');
+            err.id = 'docError';
+            err.className = 'field-error';
+            err.textContent = 'Прикрепите хотя бы один документ.';
+            docTrigger.closest('.multi-picker-wrap').before(err);
+        }
+        valid = false;
+    } else {
+        docTrigger.classList.remove('input-error');
+        const err = document.getElementById('docError');
+        if (err) err.remove();
+    }
+
+    if (!valid) e.preventDefault();
+});
+
 const selectedIds = new Set();
 
 function togglePicker() {
