@@ -1,0 +1,423 @@
+@* Views/Contracts/ApprovalHistory.cshtml *@
+@{
+    ViewData["Title"] = "История согласования";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int contractId = ViewBag.ContractId;
+    string contractName = ViewBag.ContractName ?? "Договор";
+}
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+    :root {
+        --accent:        #3b5bdb;
+        --accent-light:  #e7ecfd;
+        --accent-hover:  #2f4ac7;
+        --surface:       #ffffff;
+        --surface-2:     #f8f9fc;
+        --border:        #e3e8f0;
+        --text:          #1a1d2e;
+        --text-sub:      #6b7280;
+        --green:         #2f9e44;
+        --green-light:   #d3f9d8;
+        --green-text:    #1a7f37;
+        --yellow-light:  #fff3bf;
+        --yellow-text:   #b36a00;
+        --danger:        #e03131;
+        --danger-light:  #fff0f0;
+        --shadow-sm:     0 1px 4px rgba(59,91,219,.08);
+        --shadow-md:     0 4px 24px rgba(59,91,219,.11);
+        --radius:        14px;
+        --font:          'Nunito', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); color: var(--text); background: var(--surface-2); }
+
+    /* ── Шапка страницы ── */
+    .page-header {
+        display: flex; align-items: flex-start; gap: 16px;
+        margin: 28px 0 24px; flex-wrap: wrap;
+    }
+    .back-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 16px; border-radius: 10px;
+        background: var(--surface); border: 1.5px solid var(--border);
+        color: var(--text-sub); font-family: var(--font); font-size: 13.5px;
+        font-weight: 700; text-decoration: none; white-space: nowrap;
+        transition: background .12s, color .12s;
+    }
+    .back-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+    .page-title { font-size: 24px; font-weight: 800; letter-spacing: -.4px; line-height: 1.2; }
+    .page-subtitle {
+        font-size: 13px; color: var(--text-sub); font-weight: 600;
+        margin-top: 4px; display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── Карточка документа ── */
+    .doc-card {
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-sm);
+        overflow: hidden; margin-bottom: 20px;
+        transition: box-shadow .15s;
+    }
+    .doc-card:hover { box-shadow: var(--shadow-md); }
+
+    .doc-card-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 22px; border-bottom: 1.5px solid var(--border);
+        background: var(--surface-2); flex-wrap: wrap; gap: 12px;
+    }
+    .doc-card-title {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 14.5px; font-weight: 800; color: var(--text);
+    }
+    .doc-icon {
+        width: 34px; height: 34px; border-radius: 8px;
+        background: var(--accent-light); color: var(--accent);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .doc-card-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ── Полоска "согласован" ── */
+    .approved-bar {
+        display: flex; align-items: center; gap: 8px;
+        padding: 9px 22px; background: #f0fdf4;
+        border-bottom: 1.5px solid #bbf7d0;
+        font-size: 12.5px; font-weight: 700; color: var(--green-text);
+    }
+
+    /* ── Таблица ── */
+    .approval-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .approval-table thead th {
+        padding: 11px 18px; background: var(--surface-2);
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--text-sub);
+        border-bottom: 1.5px solid var(--border); text-align: left; white-space: nowrap;
+    }
+    .approval-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    .approval-table tbody tr:last-child { border-bottom: none; }
+    .approval-table tbody tr:hover { background: #f4f6ff; }
+    .approval-table td { padding: 13px 18px; vertical-align: middle; }
+
+    /* ── Участник ── */
+    .participant-cell { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+        width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+        background: var(--accent-light); color: var(--accent);
+        font-size: 13px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .participant-name { font-weight: 700; font-size: 13.5px; }
+    .participant-pos  { font-size: 11.5px; color: var(--text-sub); font-weight: 500; margin-top: 1px; }
+
+    /* ── Статус-бейджи ── */
+    .badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 700;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .badge-draft      { background: #f1f3f5; color: #6b7280; }
+    .badge-draft .badge-dot { background: #9ca3af; }
+    .badge-inapproval { background: var(--yellow-light); color: var(--yellow-text); }
+    .badge-inapproval .badge-dot { background: var(--yellow-text); }
+    .badge-approved   { background: var(--green-light); color: var(--green-text); }
+    .badge-approved .badge-dot { background: var(--green-text); }
+    .badge-rejected   { background: var(--danger-light); color: var(--danger); }
+    .badge-rejected .badge-dot { background: var(--danger); }
+
+    .status-pending  .badge { background: var(--yellow-light); color: var(--yellow-text); }
+    .status-pending  .badge .badge-dot { background: var(--yellow-text); }
+    .status-approved .badge { background: var(--green-light);  color: var(--green-text); }
+    .status-approved .badge .badge-dot { background: var(--green-text); }
+    .status-rejected .badge { background: var(--danger-light); color: var(--danger); }
+    .status-rejected .badge .badge-dot { background: var(--danger); }
+
+    /* ── Дата ── */
+    .date-cell { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; }
+    .date-cell.has-date { color: var(--text); font-weight: 600; }
+
+    /* ── Комментарий ── */
+    .comment-cell {
+        max-width: 200px; font-size: 12.5px; color: var(--text-sub);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .comment-cell.has-comment { color: var(--text); font-style: italic; }
+
+    /* ── Кнопки ── */
+    .btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 7px 15px; border-radius: 8px; font-family: var(--font);
+        font-size: 12.5px; font-weight: 700; cursor: pointer; border: none;
+        text-decoration: none; transition: background .13s, transform .1s, box-shadow .13s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.2); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+    .btn-success { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(47,158,68,.2); }
+    .btn-success:hover { background: #276c39; }
+    .btn-danger  { background: var(--danger); color: #fff; box-shadow: 0 2px 8px rgba(224,49,49,.2); }
+    .btn-danger:hover  { background: #b52a2a; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* ── Пустые состояния ── */
+    .empty-row td {
+        text-align: center; padding: 32px; color: var(--text-sub);
+        font-size: 13px; font-weight: 600;
+    }
+    .loading-state {
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; padding: 60px 20px; gap: 12px;
+        color: var(--text-sub);
+    }
+    .spinner {
+        width: 36px; height: 36px; border: 3px solid var(--border);
+        border-top-color: var(--accent); border-radius: 50%;
+        animation: spin .7s linear infinite;
+    }
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Модалка ── */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(15,20,50,.45); z-index: 1000;
+        align-items: center; justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+        background: #fff; border-radius: 16px; padding: 28px;
+        width: 440px; max-width: 95vw;
+        box-shadow: 0 12px 50px rgba(0,0,0,.2);
+        animation: modalIn .18s ease;
+    }
+    @@keyframes modalIn { from { opacity:0; transform: scale(.94) translateY(8px); } to { opacity:1; transform: none; } }
+    .modal-box h3 { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+    .modal-box p  { font-size: 13px; color: var(--text-sub); margin-bottom: 16px; }
+    .modal-box textarea {
+        width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+        padding: 11px 14px; font-family: var(--font); font-size: 13.5px;
+        resize: vertical; min-height: 90px; outline: none; color: var(--text);
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .modal-box textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+    /* ── Порядковый номер ── */
+    .order-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+        background: var(--border); color: var(--text-sub);
+        font-size: 11px; font-weight: 800;
+    }
+    .order-badge.active { background: var(--accent-light); color: var(--accent); }
+    .order-badge.done   { background: var(--green-light);  color: var(--green-text); }
+    .order-badge.fail   { background: var(--danger-light); color: var(--danger); }
+</style>
+
+<div class="page-header">
+    <a asp-action="Index" class="back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Назад
+    </a>
+    <div>
+        <div class="page-title">История согласования</div>
+        <div class="page-subtitle">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            @contractName
+        </div>
+    </div>
+</div>
+
+<div id="approvalRoot">
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <span style="font-size:13.5px;font-weight:600;">Загрузка данных...</span>
+    </div>
+</div>
+
+<div class="modal-overlay" id="decideModal">
+    <div class="modal-box">
+        <h3 id="decideModalTitle">Принять решение</h3>
+        <p id="decideModalSub">Вы можете оставить комментарий к решению.</p>
+        <textarea id="decideComment" placeholder="Комментарий (необязательно)..."></textarea>
+        <div class="modal-actions">
+            <button class="btn btn-ghost btn-sm" onclick="closeModal()">Отмена</button>
+            <button class="btn btn-sm" id="decideConfirmBtn" onclick="confirmDecision()">Подтвердить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const contractId      = @contractId;
+let pendingApprovalId = null;
+let pendingDocumentId = null;
+let pendingDecision   = null;
+
+// ── Загрузка ───────────────────────────────────────────────────────────────────
+async function load() {
+    const root = document.getElementById('approvalRoot');
+    try {
+        const res  = await fetch(`/api/contracts/${contractId}/approval-overview`);
+        if (!res.ok) throw new Error(res.status);
+        const docs = await res.json();
+        if (!docs.length) {
+            root.innerHTML = `<div class="doc-card"><div class="loading-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="font-weight:700">Нет прикреплённых документов</span></div></div>`;
+            return;
+        }
+        root.innerHTML = docs.map(buildCard).join('');
+    } catch(e) {
+        root.innerHTML = `<div class="doc-card"><div class="loading-state" style="color:var(--danger)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style="font-weight:700">Не удалось загрузить данные</span><button class="btn btn-ghost btn-sm" onclick="load()">Повторить</button></div></div>`;
+    }
+}
+
+function buildCard(doc) {
+    const statusMap = {
+        0: { cls: 'badge-draft',      text: 'Черновик' },
+        1: { cls: 'badge-inapproval', text: 'На согласовании' },
+        2: { cls: 'badge-approved',   text: 'Согласован' },
+        3: { cls: 'badge-rejected',   text: 'Отклонён' }
+    };
+    const s = statusMap[doc.approvalStatus] || statusMap[0];
+    const canStart = doc.approvalStatus === 0 || doc.approvalStatus === 3;
+
+    const startBtn = canStart
+        ? `<button class="btn btn-primary btn-sm" onclick="startApproval(${doc.contractDocumentId})">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+               Запустить согласование
+           </button>`
+        : '';
+
+    const approvedBar = doc.approvedAt
+        ? `<div class="approved-bar">
+               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+               Согласован: ${new Date(doc.approvedAt).toLocaleString('ru')}
+           </div>`
+        : '';
+
+    let rows = '';
+    if (doc.rows.length) {
+        rows = doc.rows.map(r => {
+            const isParallel = doc.rows.every(x => x.orderIndex === 0);
+            const orderNum   = isParallel ? '' : (r.orderIndex + 1);
+            const orderCls   = r.status === 1 ? 'done' : r.status === 2 ? 'fail' : r.status === 0 && !isParallel && r.orderIndex === doc.rows.filter(x=>x.status===1).length ? 'active' : '';
+            const orderBadge = isParallel
+                ? ''
+                : `<span class="order-badge ${orderCls}">${orderNum}</span>`;
+
+            const initials = (r.fullName ?? '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+            const statusCls  = { 0:'status-pending', 1:'status-approved', 2:'status-rejected' }[r.status];
+            const statusText = { 0:'Ожидает', 1:'Согласован', 2:'Отклонён' }[r.status];
+
+            const viewedAt  = r.viewedAt  ? `<span class="date-cell has-date">${new Date(r.viewedAt).toLocaleString('ru')}</span>`  : `<span class="date-cell">—</span>`;
+            const decidedAt = r.decidedAt ? `<span class="date-cell has-date">${new Date(r.decidedAt).toLocaleString('ru')}</span>` : `<span class="date-cell">—</span>`;
+            const comment   = r.comment   ? `<span class="comment-cell has-comment" title="${esc(r.comment)}">${esc(r.comment)}</span>` : `<span class="comment-cell">—</span>`;
+
+            const myRow = r.isCurrentUser && r.status === 0 && doc.approvalStatus === 1;
+            const btns  = myRow
+                ? `<div style="display:flex;gap:6px;white-space:nowrap">
+                       <button class="btn btn-success btn-sm" onclick="openDecide(${r.approvalId},${doc.contractDocumentId},1,'${esc(r.fullName)}')">
+                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                           Согласовать
+                       </button>
+                       <button class="btn btn-danger btn-sm" onclick="openDecide(${r.approvalId},${doc.contractDocumentId},2,'${esc(r.fullName)}')">
+                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                           Отклонить
+                       </button>
+                   </div>`
+                : '';
+
+            return `<tr>
+                <td>
+                    <div class="participant-cell">
+                        ${orderBadge}
+                        <div class="avatar">${initials}</div>
+                        <div>
+                            <div class="participant-name">${esc(r.fullName ?? '—')}</div>
+                            <div class="participant-pos">${esc(r.position ?? '—')}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="${statusCls}"><span class="badge"><span class="badge-dot"></span>${statusText}</span></td>
+                <td>${viewedAt}</td>
+                <td>${decidedAt}</td>
+                <td>${comment}</td>
+                <td>${btns}</td>
+            </tr>`;
+        }).join('');
+    } else {
+        rows = `<tr class="empty-row"><td colspan="6">Согласование не запущено</td></tr>`;
+    }
+
+    return `<div class="doc-card">
+        <div class="doc-card-header">
+            <div class="doc-card-title">
+                <div class="doc-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                ${esc(doc.documentName ?? 'Документ #' + doc.contractDocumentId)}
+            </div>
+            <div class="doc-card-actions">
+                <span class="badge ${s.cls}"><span class="badge-dot"></span>${s.text}</span>
+                ${startBtn}
+            </div>
+        </div>
+        ${approvedBar}
+        <table class="approval-table">
+            <thead><tr>
+                <th>ФИО / Должность</th>
+                <th>Статус</th>
+                <th>Дата просмотра</th>
+                <th>Дата решения</th>
+                <th>Комментарий</th>
+                <th></th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+    </div>`;
+}
+
+// ── Запуск ─────────────────────────────────────────────────────────────────────
+async function startApproval(docId) {
+    if (!confirm('Запустить согласование для всех участников договора?')) return;
+    const res = await fetch(`/api/contract-documents/${docId}/approvals/start`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+    });
+    if (res.ok) { await load(); }
+    else { const t = await res.text(); alert('Ошибка: ' + t); }
+}
+
+// ── Решение ────────────────────────────────────────────────────────────────────
+function openDecide(approvalId, documentId, decision, name) {
+    pendingApprovalId = approvalId;
+    pendingDocumentId = documentId;
+    pendingDecision   = decision;
+    document.getElementById('decideModalTitle').textContent = decision === 1 ? 'Согласовать документ' : 'Отклонить документ';
+    document.getElementById('decideModalSub').textContent   = `Участник: ${name}`;
+    document.getElementById('decideComment').value = '';
+    const btn = document.getElementById('decideConfirmBtn');
+    btn.className = 'btn btn-sm ' + (decision === 1 ? 'btn-success' : 'btn-danger');
+    btn.textContent = decision === 1 ? 'Согласовать' : 'Отклонить';
+    document.getElementById('decideModal').classList.add('open');
+}
+function closeModal() {
+    document.getElementById('decideModal').classList.remove('open');
+    pendingApprovalId = pendingDocumentId = pendingDecision = null;
+}
+async function confirmDecision() {
+    const comment = document.getElementById('decideComment').value;
+    await fetch(`/api/contract-documents/${pendingDocumentId}/approvals/${pendingApprovalId}/view`, { method: 'POST' });
+    const res = await fetch(`/api/contract-documents/${pendingDocumentId}/approvals/${pendingApprovalId}/decide`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision: pendingDecision, comment })
+    });
+    closeModal();
+    if (res.ok) { await load(); }
+    else { const t = await res.text(); alert('Ошибка: ' + t); }
+}
+function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+load();
+</script>

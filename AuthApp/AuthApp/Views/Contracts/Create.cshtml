@@ -328,7 +328,6 @@ document.querySelector('form').addEventListener('submit', function(e) {
         const err = document.getElementById('participantError');
         if (err) err.remove();
     }
-
     const docTrigger = document.getElementById('docTrigger');
     if (selectedDocIds.size === 0) {
         docTrigger.classList.add('input-error');
@@ -346,8 +345,88 @@ document.querySelector('form').addEventListener('submit', function(e) {
         const err = document.getElementById('docError');
         if (err) err.remove();
     }
+    const conclusion     = document.getElementById('ConclusionDate');
+    const executionStart = document.getElementById('ExecutionStartDate');
+    const closing        = document.getElementById('ClosingDate');
+
+    function setDateError(input, errId, message, hasError) {
+        if (hasError) {
+            input.classList.add('input-error');
+            let err = document.getElementById(errId);
+            if (!err) {
+                err = document.createElement('span');
+                err.id = errId;
+                err.className = 'field-error';
+                input.after(err);
+            }
+            err.textContent = message;
+            valid = false;
+        } else {
+            input.classList.remove('input-error');
+            const err = document.getElementById(errId);
+            if (err) err.remove();
+        }
+    }
+
+    if (conclusion.value && executionStart.value && executionStart.value < conclusion.value)
+        setDateError(executionStart, 'executionStartDateError', 'Дата начала исполнения не может быть раньше даты заключения.', true);
+    else
+        setDateError(executionStart, 'executionStartDateError', '', false);
+
+    if (executionStart.value && closing.value && closing.value < executionStart.value)
+        setDateError(closing, 'closingDateError', 'Дата закрытия не может быть раньше даты начала исполнения.', true);
+    else
+        setDateError(closing, 'closingDateError', '', false);
+
+    const today = new Date().toISOString().split('T')[0];
+    if (conclusion.value && conclusion.value > today)
+        setDateError(conclusion, 'conclusionDateError', 'Дата заключения не может быть в будущем.', true);
+    else
+        setDateError(conclusion, 'conclusionDateError', '', false);
 
     if (!valid) e.preventDefault();
+});
+
+['ConclusionDate', 'ExecutionStartDate', 'ClosingDate'].forEach(function(id) {
+    document.getElementById(id).addEventListener('change', function() {
+        var conclusion     = document.getElementById('ConclusionDate');
+        var executionStart = document.getElementById('ExecutionStartDate');
+        var closing        = document.getElementById('ClosingDate');
+        var today          = new Date().toISOString().split('T')[0];
+
+        function setDateError(input, errId, message, hasError) {
+            if (hasError) {
+                input.classList.add('input-error');
+                var err = document.getElementById(errId);
+                if (!err) {
+                    err = document.createElement('span');
+                    err.id = errId;
+                    err.className = 'field-error';
+                    input.after(err);
+                }
+                err.textContent = message;
+            } else {
+                input.classList.remove('input-error');
+                var err = document.getElementById(errId);
+                if (err) err.remove();
+            }
+        }
+
+        if (conclusion.value && conclusion.value > today)
+            setDateError(conclusion, 'conclusionDateError', 'Дата заключения не может быть в будущем.', true);
+        else
+            setDateError(conclusion, 'conclusionDateError', '', false);
+
+        if (conclusion.value && executionStart.value && executionStart.value < conclusion.value)
+            setDateError(executionStart, 'executionStartDateError', 'Дата начала исполнения не может быть раньше даты заключения.', true);
+        else
+            setDateError(executionStart, 'executionStartDateError', '', false);
+
+        if (executionStart.value && closing.value && closing.value < executionStart.value)
+            setDateError(closing, 'closingDateError', 'Дата закрытия не может быть раньше даты начала исполнения.', true);
+        else
+            setDateError(closing, 'closingDateError', '', false);
+    });
 });
 
 const selectedIds = new Set();

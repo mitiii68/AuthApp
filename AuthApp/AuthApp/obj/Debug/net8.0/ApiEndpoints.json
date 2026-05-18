@@ -1,5 +1,105 @@
 [
   {
+    "ContainingType": "AuthApp.Controllers.DocumentApprovalController",
+    "Method": "GetHistory",
+    "RelativePath": "api/contract-documents/{documentId}/approvals",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.DocumentApprovalController",
+    "Method": "Decide",
+    "RelativePath": "api/contract-documents/{documentId}/approvals/{approvalId}/decide",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "approvalId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "AuthApp.DTOs.ApprovalDecisionRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.DocumentApprovalController",
+    "Method": "MarkViewed",
+    "RelativePath": "api/contract-documents/{documentId}/approvals/{approvalId}/view",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "approvalId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.DocumentApprovalController",
+    "Method": "Start",
+    "RelativePath": "api/contract-documents/{documentId}/approvals/start",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documentId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "AuthApp.DTOs.StartApprovalRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.ContractApprovalOverviewController",
+    "Method": "GetOverview",
+    "RelativePath": "api/contracts/{contractId}/approval-overview",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "AuthApp.Controllers.KatoController",
     "Method": "Districts",
     "RelativePath": "api/kato/districts",

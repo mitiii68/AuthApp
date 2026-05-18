@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IDocumentApprovalService, DocumentApprovalService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(

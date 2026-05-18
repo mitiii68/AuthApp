@@ -1,0 +1,306 @@
+@model AuthApp.Models.Contract
+
+<style>
+    .approval-section { margin-top: 0; }
+
+    .approval-doc-block {
+        border: 1.5px solid var(--border); border-radius: 12px;
+        margin-bottom: 14px; overflow: hidden;
+        transition: box-shadow .15s;
+    }
+    .approval-doc-block:hover { box-shadow: 0 4px 20px rgba(59,91,219,.09); }
+
+    .approval-doc-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 13px 18px; background: var(--surface-2);
+        border-bottom: 1.5px solid var(--border); gap: 12px; flex-wrap: wrap;
+    }
+    .approval-doc-title {
+        display: flex; align-items: center; gap: 9px;
+        font-size: 13.5px; font-weight: 800; color: var(--text);
+    }
+    .adoc-icon {
+        width: 30px; height: 30px; border-radius: 7px;
+        background: var(--accent-light); color: var(--accent);
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .approval-doc-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* badges */
+    .abadge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .abadge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .abadge-draft      { background: #f1f3f5; color: #6b7280; }
+    .abadge-draft .abadge-dot { background: #9ca3af; }
+    .abadge-inapproval { background: #fff3bf; color: #b36a00; }
+    .abadge-inapproval .abadge-dot { background: #b36a00; }
+    .abadge-approved   { background: #d3f9d8; color: #1a7f37; }
+    .abadge-approved .abadge-dot { background: #1a7f37; }
+    .abadge-rejected   { background: #fff0f0; color: var(--danger, #e03131); }
+    .abadge-rejected .abadge-dot { background: var(--danger, #e03131); }
+
+    /* approved bar */
+    .approval-ok-bar {
+        display: flex; align-items: center; gap: 7px;
+        padding: 7px 18px; background: #f0fdf4;
+        border-bottom: 1px solid #bbf7d0;
+        font-size: 12px; font-weight: 700; color: #1a7f37;
+    }
+
+    /* table */
+    .approval-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .approval-table th {
+        padding: 9px 14px; text-align: left;
+        font-size: 10px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .07em; color: var(--text-sub);
+        background: var(--surface-2); border-bottom: 1.5px solid var(--border);
+        white-space: nowrap;
+    }
+    .approval-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .approval-table tr:last-child td { border-bottom: none; }
+    .approval-table tr:hover td { background: #f4f6ff; }
+
+    /* participant cell */
+    .ap-cell { display: flex; align-items: center; gap: 8px; }
+    .ap-avatar {
+        width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+        background: var(--accent-light, #e7ecfd); color: var(--accent, #3b5bdb);
+        font-size: 11px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .ap-name { font-weight: 700; font-size: 13px; }
+    .ap-pos  { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+
+    /* status */
+    .ast-pending  .ast-badge { background: #fff3bf; color: #b36a00; }
+    .ast-approved .ast-badge { background: #d3f9d8; color: #1a7f37; }
+    .ast-rejected .ast-badge { background: #fff0f0; color: #e03131; }
+    .ast-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+
+    /* order */
+    .ap-order {
+        width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+        background: var(--border); color: var(--text-sub);
+        font-size: 10px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .ap-order.done   { background: #d3f9d8; color: #1a7f37; }
+    .ap-order.active { background: var(--accent-light, #e7ecfd); color: var(--accent, #3b5bdb); }
+    .ap-order.fail   { background: #fff0f0; color: #e03131; }
+
+    .ap-date { font-size: 11.5px; color: var(--text-sub); white-space: nowrap; }
+    .ap-date.set { color: var(--text); font-weight: 600; }
+    .ap-comment { font-size: 11.5px; color: var(--text-sub); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ap-comment.set { color: var(--text); font-style: italic; }
+
+    .approval-empty { padding: 16px 18px; font-size: 13px; color: var(--text-sub); font-weight: 600; }
+
+    /* buttons */
+    .btn-success { background: #2f9e44; color: #fff; }
+    .btn-success:hover { background: #276c39; }
+    .btn-danger  { background: #e03131; color: #fff; }
+    .btn-danger:hover  { background: #b52a2a; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* modal */
+    .ap-modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(15,20,50,.45); z-index: 2000;
+        align-items: center; justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+    .ap-modal-overlay.open { display: flex; }
+    .ap-modal-box {
+        background: #fff; border-radius: 16px; padding: 26px;
+        width: 420px; max-width: 95vw;
+        box-shadow: 0 12px 50px rgba(0,0,0,.2);
+        animation: apModalIn .17s ease;
+    }
+    @@keyframes apModalIn { from { opacity:0; transform:scale(.94) translateY(8px); } to { opacity:1; transform:none; } }
+    .ap-modal-box h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+    .ap-modal-box p  { font-size: 12.5px; color: var(--text-sub); margin-bottom: 14px; }
+    .ap-modal-box textarea {
+        width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+        padding: 10px 13px; font-family: var(--font); font-size: 13.5px;
+        resize: vertical; min-height: 80px; outline: none;
+    }
+    .ap-modal-box textarea:focus { border-color: var(--accent, #3b5bdb); box-shadow: 0 0 0 3px var(--accent-light, #e7ecfd); }
+    .ap-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+</style>
+
+<div class="form-card approval-section">
+    <h2>Согласование документов</h2>
+    <div id="approvalContainer">
+        <div style="padding:20px;color:var(--text-sub);font-size:13px;font-weight:600;">⏳ Загрузка...</div>
+    </div>
+</div>
+
+<div class="ap-modal-overlay" id="apDecideModal">
+    <div class="ap-modal-box">
+        <h3 id="apDecideTitle">Принять решение</h3>
+        <p id="apDecideSub"></p>
+        <textarea id="apDecideComment" placeholder="Комментарий (необязательно)..."></textarea>
+        <div class="ap-modal-actions">
+            <button class="btn btn-ghost btn-sm" onclick="apCloseModal()">Отмена</button>
+            <button class="btn btn-sm" id="apDecideConfirmBtn" onclick="apConfirmDecision()">Подтвердить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const contractId      = @Model.Id;
+let apPendingApprovalId = null;
+let apPendingDocumentId = null;
+let apPendingDecision   = null;
+
+async function loadApprovals() {
+    const container = document.getElementById('approvalContainer');
+    try {
+        const res  = await fetch(`/api/contracts/${contractId}/approval-overview`);
+        if (!res.ok) throw new Error(res.status);
+        const docs = await res.json();
+        container.innerHTML = docs.length
+            ? docs.map(apBuildBlock).join('')
+            : '<div class="approval-empty">Нет прикреплённых документов.</div>';
+    } catch {
+        container.innerHTML = '<div class="approval-empty" style="color:#e03131">Не удалось загрузить данные согласования.</div>';
+    }
+}
+
+function apBuildBlock(doc) {
+    const bMap = {
+        0: ['abadge-draft','Черновик'],
+        1: ['abadge-inapproval','На согласовании'],
+        2: ['abadge-approved','Согласован'],
+        3: ['abadge-rejected','Отклонён']
+    };
+    const [bcls, btxt] = bMap[doc.approvalStatus] || bMap[0];
+    const canStart = doc.approvalStatus === 0 || doc.approvalStatus === 3;
+    const isParallel = doc.rows.every(r => r.orderIndex === 0);
+
+    const approvedBar = doc.approvedAt
+        ? `<div class="approval-ok-bar">
+               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+               Согласован: ${new Date(doc.approvedAt).toLocaleString('ru')}
+           </div>` : '';
+
+    const rows = doc.rows.length ? doc.rows.map(r => {
+        const initials = (r.fullName ?? '?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+        const stCls  = { 0:'ast-pending', 1:'ast-approved', 2:'ast-rejected' }[r.status];
+        const stTxt  = { 0:'Ожидает', 1:'Согласован', 2:'Отклонён' }[r.status];
+
+        const orderCls = r.status===1 ? 'done' : r.status===2 ? 'fail'
+            : (!isParallel && r.orderIndex === doc.rows.filter(x=>x.status===1).length ? 'active' : '');
+        const orderEl  = isParallel ? '' : `<div class="ap-order ${orderCls}">${r.orderIndex+1}</div>`;
+
+        const vAt = r.viewedAt  ? `<span class="ap-date set">${new Date(r.viewedAt).toLocaleString('ru')}</span>`  : `<span class="ap-date">—</span>`;
+        const dAt = r.decidedAt ? `<span class="ap-date set">${new Date(r.decidedAt).toLocaleString('ru')}</span>` : `<span class="ap-date">—</span>`;
+        const cmt = r.comment   ? `<span class="ap-comment set" title="${apEsc(r.comment)}">${apEsc(r.comment)}</span>` : `<span class="ap-comment">—</span>`;
+
+        const myRow = r.isCurrentUser && r.status === 0 && doc.approvalStatus === 1;
+        const btns  = myRow
+            ? `<div style="display:flex;gap:5px;white-space:nowrap">
+                   <button class="btn btn-success btn-sm" onclick="apOpenDecide(${r.approvalId},${doc.contractDocumentId},1,'${apEsc(r.fullName)}')">✓ Согласовать</button>
+                   <button class="btn btn-danger  btn-sm" onclick="apOpenDecide(${r.approvalId},${doc.contractDocumentId},2,'${apEsc(r.fullName)}')">✗ Отклонить</button>
+               </div>` : '';
+
+        return `<tr>
+            <td>
+                <div class="ap-cell">
+                    ${orderEl}
+                    <div class="ap-avatar">${initials}</div>
+                    <div>
+                        <div class="ap-name">${apEsc(r.fullName ?? '—')}</div>
+                        <div class="ap-pos">${apEsc(r.position ?? '—')}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="${stCls}"><span class="ast-badge">${stTxt}</span></td>
+            <td>${vAt}</td>
+            <td>${dAt}</td>
+            <td>${cmt}</td>
+            <td>${btns}</td>
+        </tr>`;
+    }).join('') : '';
+
+    const table = doc.rows.length
+        ? `<table class="approval-table">
+               <thead><tr>
+                   <th>ФИО / Должность</th><th>Статус</th>
+                   <th>Просмотрен</th><th>Решение</th><th>Комментарий</th><th></th>
+               </tr></thead>
+               <tbody>${rows}</tbody>
+           </table>`
+        : '<div class="approval-empty">Согласование не запущено.</div>';
+
+    const startBtn = canStart
+        ? `<button class="btn btn-primary btn-sm" onclick="apStartApproval(${doc.contractDocumentId})">
+               <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+               Запустить
+           </button>` : '';
+
+    return `<div class="approval-doc-block">
+        <div class="approval-doc-header">
+            <div class="approval-doc-title">
+                <div class="adoc-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                ${apEsc(doc.documentName ?? 'Документ #' + doc.contractDocumentId)}
+            </div>
+            <div class="approval-doc-actions">
+                <span class="abadge ${bcls}"><span class="abadge-dot"></span>${btxt}</span>
+                ${startBtn}
+            </div>
+        </div>
+        ${approvedBar}
+        ${table}
+    </div>`;
+}
+
+async function apStartApproval(docId) {
+    if (!confirm('Запустить согласование для всех участников?')) return;
+    const res = await fetch(`/api/contract-documents/${docId}/approvals/start`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({})
+    });
+    if (res.ok) { await loadApprovals(); }
+    else { alert('Ошибка при запуске согласования'); }
+}
+
+function apOpenDecide(approvalId, documentId, decision, name) {
+    apPendingApprovalId = approvalId;
+    apPendingDocumentId = documentId;
+    apPendingDecision   = decision;
+    document.getElementById('apDecideTitle').textContent = decision === 1 ? 'Согласовать документ' : 'Отклонить документ';
+    document.getElementById('apDecideSub').textContent   = `Участник: ${name}`;
+    document.getElementById('apDecideComment').value = '';
+    const btn = document.getElementById('apDecideConfirmBtn');
+    btn.className = 'btn btn-sm ' + (decision === 1 ? 'btn-success' : 'btn-danger');
+    btn.textContent = decision === 1 ? 'Согласовать' : 'Отклонить';
+    document.getElementById('apDecideModal').classList.add('open');
+}
+function apCloseModal() {
+    document.getElementById('apDecideModal').classList.remove('open');
+    apPendingApprovalId = apPendingDocumentId = apPendingDecision = null;
+}
+async function apConfirmDecision() {
+    const comment = document.getElementById('apDecideComment').value;
+    await fetch(`/api/contract-documents/${apPendingDocumentId}/approvals/${apPendingApprovalId}/view`, { method: 'POST' });
+    const res = await fetch(`/api/contract-documents/${apPendingDocumentId}/approvals/${apPendingApprovalId}/decide`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision: apPendingDecision, comment })
+    });
+    apCloseModal();
+    if (res.ok) { await loadApprovals(); }
+    else { alert('Ошибка при сохранении решения'); }
+}
+function apEsc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadApprovals();
+</script>

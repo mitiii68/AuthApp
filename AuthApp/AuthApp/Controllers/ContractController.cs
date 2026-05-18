@@ -117,6 +117,14 @@ namespace AuthApp.Controllers
                 ModelState.AddModelError("ExecutionStartDate", "Дата начала исполнения обязательна.");
             if (contract.ClosingDate == null)
                 ModelState.AddModelError("ClosingDate", "Дата закрытия обязательна.");
+            if (contract.ConclusionDate.HasValue && contract.ConclusionDate.Value.Date > DateTime.Today)
+                ModelState.AddModelError("ConclusionDate", "Дата заключения не может быть в будущем.");
+            if (contract.ConclusionDate.HasValue && contract.ExecutionStartDate.HasValue
+                && contract.ExecutionStartDate < contract.ConclusionDate)
+                ModelState.AddModelError("ExecutionStartDate", "Дата начала исполнения не может быть раньше даты заключения.");
+            if (contract.ExecutionStartDate.HasValue && contract.ClosingDate.HasValue
+                && contract.ClosingDate < contract.ExecutionStartDate)
+                ModelState.AddModelError("ClosingDate", "Дата закрытия не может быть раньше даты начала исполнения.");
             if (string.IsNullOrWhiteSpace(contract.ResponsibleFromCustomer))
                 ModelState.AddModelError("ResponsibleFromCustomer", "Ответственный со стороны заказчика обязателен.");
             if (participantIds == null || participantIds.Count == 0)
@@ -291,6 +299,8 @@ namespace AuthApp.Controllers
             return Json(files);
         }
 
+
+
         [HttpPost]
         public async Task<IActionResult> UploadContractFile(IFormFile file)
         {
@@ -339,6 +349,19 @@ namespace AuthApp.Controllers
             await LogActionAsync($"Загрузил документ договора «{file.FileName}»");
 
             return Json(new { success = true, id = document.Id, name = document.FileName, ext = document.Extension });
+
+        }
+
+        public async Task<IActionResult> ApprovalHistory(int id)
+        {
+            var contract = await _context.Contracts
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (contract == null) return NotFound();
+
+            ViewBag.ContractId = id;
+            ViewBag.ContractName = contract.FullName ?? contract.ShortName ?? $"Договор #{id}";
+            return View();
         }
     }
 }
