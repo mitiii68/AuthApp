@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using AuthApp.Data;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +21,7 @@ namespace AuthApp.Controllers
 
             var users = _context.Users
                 .Include(u => u.Role)
+                .Include(u => u.Position)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -47,6 +48,7 @@ namespace AuthApp.Controllers
 
             return View(users.ToList());
         }
+
         [HttpPost]
         public IActionResult ChangeRole(int userId, int roleId)
         {
@@ -62,24 +64,24 @@ namespace AuthApp.Controllers
             _context.SaveChanges();
 
             return RedirectToAction("Index");
-
-          
         }
+
         [HttpPost]
         public IActionResult DeleteUser(int userId)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
 
-            var user  = _context.Users.FirstOrDefault(u => u.UserId == userId);
+            var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
 
             if (user == null)
                 return RedirectToAction("Index");
 
             var currentUserEmail = HttpContext.Session.GetString("user");
 
-            if (user .Email == currentUserEmail)
+            if (user.Email == currentUserEmail)
                 return RedirectToAction("Index");
+
             string deletedEmail = user.Email ?? "";
 
             _context.Users.Remove(user);
@@ -93,7 +95,6 @@ namespace AuthApp.Controllers
             });
             _context.SaveChanges();
             return RedirectToAction("Index");
-
         }
 
         public IActionResult ActionLogs()
@@ -103,6 +104,7 @@ namespace AuthApp.Controllers
                 .ToList();
             return View(logs);
         }
+
         [HttpPost]
         public IActionResult BlockUser(int id)
         {
@@ -136,8 +138,13 @@ namespace AuthApp.Controllers
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
 
-            var user = _context.Users.FirstOrDefault(u => u.UserId == id);
+            var user = _context.Users
+                .Include(u => u.Position)
+                .FirstOrDefault(u => u.UserId == id);
             if (user == null) return NotFound();
+
+            // Передаём список должностей во ViewBag
+            ViewBag.Positions = _context.Positions.OrderBy(p => p.Name).ToList();
 
             return View(user);
         }
@@ -145,7 +152,7 @@ namespace AuthApp.Controllers
         [HttpPost]
         public IActionResult EditProfile(int userId, string? district, string? ruralDistrict,
             string? settlement, string? street, string? house,
-            double? latitude, double? longitude)
+            double? latitude, double? longitude, int? positionId)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
@@ -160,6 +167,7 @@ namespace AuthApp.Controllers
             user.House = house;
             user.Latitude = latitude;
             user.Longitude = longitude;
+            user.PositionId = positionId; // ✅ сохраняем должность
 
             _context.SaveChanges();
 
@@ -173,9 +181,5 @@ namespace AuthApp.Controllers
 
             return RedirectToAction("Index");
         }
-
-
-
-
     }
 }

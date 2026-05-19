@@ -280,14 +280,12 @@
     });
 
     async function startApprovalForContract(contractId, contractName) {
-        // Получаем список документов договора
         const res = await fetch(`/api/contracts/${contractId}/approval-overview`);
         if (!res.ok) { alert('Не удалось загрузить документы договора.'); return; }
         const docs = await res.json();
 
         if (!docs.length) { alert('У договора нет прикреплённых документов.'); return; }
 
-        // Документы, для которых можно запустить согласование (Draft=0 или Rejected=3)
         const eligible = docs.filter(d => d.approvalStatus === 0 || d.approvalStatus === 3);
         if (!eligible.length) { alert('Все документы уже находятся на согласовании или согласованы.'); return; }
 

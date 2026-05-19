@@ -194,7 +194,7 @@ namespace AuthApp.Controllers
             HttpContext.Session.SetString("FullName", user.FullName ?? "");
             HttpContext.Session.SetString("Login",    user.Login ?? "");
             HttpContext.Session.SetString("UserEmail", user.Email ?? "");
-
+            HttpContext.Session.SetString("UserId", user.UserId.ToString());
             HttpContext.Session.SetString("ShowWelcome", "true");
 
             return RedirectToAction("Index", "Home");

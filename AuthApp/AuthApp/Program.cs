@@ -9,6 +9,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IDocumentApprovalService, DocumentApprovalService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -32,13 +33,19 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthorization();
 app.UseSession();
+app.UseAuthorization();
 app.MapControllers();
+app.MapHub<AuthApp.Hubs.ApprovalNotificationHub>("/hubs/approval");
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Register}/{id?}");
+
+app.MapControllerRoute(
+    name: "positions",
+    pattern: "Positions/{action=Index}/{id?}",
+    defaults: new { controller = "PositionsView" });
 
 
 using (var scope = app.Services.CreateScope())

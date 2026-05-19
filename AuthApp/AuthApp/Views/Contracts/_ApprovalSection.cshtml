@@ -26,7 +26,6 @@
     }
     .approval-doc-actions { display: flex; gap: 8px; align-items: center; }
 
-    /* badges */
     .abadge {
         display: inline-flex; align-items: center; gap: 5px;
         padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
@@ -41,7 +40,6 @@
     .abadge-rejected   { background: #fff0f0; color: var(--danger, #e03131); }
     .abadge-rejected .abadge-dot { background: var(--danger, #e03131); }
 
-    /* approved bar */
     .approval-ok-bar {
         display: flex; align-items: center; gap: 7px;
         padding: 7px 18px; background: #f0fdf4;
@@ -49,7 +47,6 @@
         font-size: 12px; font-weight: 700; color: #1a7f37;
     }
 
-    /* table */
     .approval-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .approval-table th {
         padding: 9px 14px; text-align: left;
@@ -62,7 +59,6 @@
     .approval-table tr:last-child td { border-bottom: none; }
     .approval-table tr:hover td { background: #f4f6ff; }
 
-    /* participant cell */
     .ap-cell { display: flex; align-items: center; gap: 8px; }
     .ap-avatar {
         width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
@@ -73,7 +69,6 @@
     .ap-name { font-weight: 700; font-size: 13px; }
     .ap-pos  { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
 
-    /* status */
     .ast-pending  .ast-badge { background: #fff3bf; color: #b36a00; }
     .ast-approved .ast-badge { background: #d3f9d8; color: #1a7f37; }
     .ast-rejected .ast-badge { background: #fff0f0; color: #e03131; }
@@ -82,7 +77,6 @@
         padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700;
     }
 
-    /* order */
     .ap-order {
         width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
         background: var(--border); color: var(--text-sub);
@@ -100,14 +94,12 @@
 
     .approval-empty { padding: 16px 18px; font-size: 13px; color: var(--text-sub); font-weight: 600; }
 
-    /* buttons */
     .btn-success { background: #2f9e44; color: #fff; }
     .btn-success:hover { background: #276c39; }
     .btn-danger  { background: #e03131; color: #fff; }
     .btn-danger:hover  { background: #b52a2a; }
     .btn-sm { padding: 5px 12px; font-size: 12px; }
 
-    /* modal */
     .ap-modal-overlay {
         display: none; position: fixed; inset: 0;
         background: rgba(15,20,50,.45); z-index: 2000;
@@ -131,15 +123,142 @@
     }
     .ap-modal-box textarea:focus { border-color: var(--accent, #3b5bdb); box-shadow: 0 0 0 3px var(--accent-light, #e7ecfd); }
     .ap-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+
+    /* ── NOTIFICATION BELL ── */
+    .ap-notif-btn {
+        position: relative; background: none; border: 1.5px solid var(--border);
+        border-radius: 9px; padding: 6px 10px; cursor: pointer; display: flex;
+        align-items: center; gap: 6px; font-family: var(--font);
+        font-size: 12px; font-weight: 700; color: var(--text-sub);
+        transition: all .15s;
+    }
+    .ap-notif-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .ap-notif-btn.allowed { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+    .ap-notif-btn.denied  { opacity: .5; cursor: not-allowed; }
+    .ap-notif-badge {
+        position: absolute; top: -6px; right: -6px;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: #e03131; color: #fff;
+        font-size: 10px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid #fff;
+        animation: apBadgePop .3s ease;
+    }
+    @@keyframes apBadgePop { from { transform: scale(0); } to { transform: scale(1); } }
+
+    /* ── NOTIFICATION PANEL ── */
+    .ap-notif-panel {
+        position: fixed; top: 60px; right: 20px; z-index: 1900;
+        width: 340px; max-width: 95vw;
+        background: #fff; border: 1.5px solid var(--border);
+        border-radius: 14px; box-shadow: 0 8px 40px rgba(0,0,0,.14);
+        display: none; flex-direction: column; overflow: hidden;
+        animation: apPanelIn .18s ease;
+    }
+    .ap-notif-panel.open { display: flex; }
+    @@keyframes apPanelIn { from { opacity:0; transform: translateY(-8px) scale(.97); } to { opacity:1; transform:none; } }
+
+    .ap-notif-panel-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 16px 10px; border-bottom: 1.5px solid var(--border);
+    }
+    .ap-notif-panel-title { font-size: 14px; font-weight: 800; }
+    .ap-notif-panel-clear {
+        font-size: 12px; font-weight: 700; color: var(--text-sub);
+        background: none; border: none; cursor: pointer; padding: 3px 7px;
+        border-radius: 6px; font-family: var(--font);
+    }
+    .ap-notif-panel-clear:hover { background: var(--surface-2); color: var(--danger); }
+
+    .ap-notif-list { max-height: 360px; overflow-y: auto; }
+    .ap-notif-item {
+        display: flex; gap: 10px; padding: 12px 16px;
+        border-bottom: 1px solid var(--border); cursor: pointer;
+        transition: background .1s;
+    }
+    .ap-notif-item:last-child { border-bottom: none; }
+    .ap-notif-item:hover { background: #f4f6ff; }
+    .ap-notif-item.unread { background: var(--accent-light); }
+    .ap-notif-item.unread:hover { background: #d4dcf9; }
+    .ap-notif-icon {
+        width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px;
+    }
+    .ap-notif-icon.started  { background: #fff3bf; }
+    .ap-notif-icon.approved { background: #d3f9d8; }
+    .ap-notif-icon.decided  { background: var(--accent-light); }
+    .ap-notif-body { flex: 1; min-width: 0; }
+    .ap-notif-title-text { font-size: 13px; font-weight: 700; }
+    .ap-notif-msg   { font-size: 12px; color: var(--text-sub); margin-top: 2px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ap-notif-time  { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
+    .ap-notif-empty { padding: 28px 16px; text-align: center; font-size: 13px; color: var(--text-sub); font-weight: 600; }
+
+    .ap-realtime-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: #9ca3af; display: inline-block;
+        margin-right: 4px; flex-shrink: 0;
+        transition: background .3s;
+    }
+    .ap-realtime-dot.connected { background: #2f9e44; animation: apDotPulse 2s ease infinite; }
+    @@keyframes apDotPulse {
+        0%, 100% { opacity: 1; }
+        50%  { opacity: .4; }
+    }
+
+    /* ── IN-PAGE TOAST ── */
+    .ap-toast-wrap {
+        position: fixed; bottom: 24px; right: 24px; z-index: 3000;
+        display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .ap-toast {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 12px 16px; border-radius: 12px;
+        background: #fff; border: 1.5px solid var(--border);
+        box-shadow: 0 6px 28px rgba(0,0,0,.13);
+        font-family: var(--font); font-size: 13px;
+        animation: apToastIn .25s ease; pointer-events: auto;
+        max-width: 340px;
+    }
+    .ap-toast-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .ap-toast-title { font-weight: 800; font-size: 13px; }
+    .ap-toast-msg   { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+    .ap-toast-close {
+        background: none; border: none; cursor: pointer; color: var(--text-sub);
+        font-size: 14px; padding: 0 0 0 8px; align-self: flex-start; line-height: 1;
+    }
+    @@keyframes apToastIn { from { opacity:0; transform: translateY(14px) scale(.95); } to { opacity:1; transform:none; } }
 </style>
 
 <div class="form-card approval-section">
-    <h2>Согласование документов</h2>
+    <input type="hidden" id="apCurrentUserId" value="@Context.Session.GetString("UserId")" />
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <h2 style="margin:0">Согласование документов</h2>
+        <div style="display:flex;align-items:center;gap:8px">
+            <span class="ap-realtime-dot" id="apRealtimeDot" title="Статус подключения"></span>
+            <button class="ap-notif-btn" id="apNotifBtn" onclick="apTogglePanel()" title="Уведомления">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Уведомления
+            </button>
+        </div>
+    </div>
     <div id="approvalContainer">
         <div style="padding:20px;color:var(--text-sub);font-size:13px;font-weight:600;">⏳ Загрузка...</div>
     </div>
 </div>
 
+<!-- ══ Notification Panel ══ -->
+<div class="ap-notif-panel" id="apNotifPanel">
+    <div class="ap-notif-panel-header">
+        <span class="ap-notif-panel-title">🔔 Уведомления</span>
+        <button class="ap-notif-panel-clear" onclick="apClearNotifs()">Очистить всё</button>
+    </div>
+    <div class="ap-notif-list" id="apNotifList">
+        <div class="ap-notif-empty">Нет уведомлений</div>
+    </div>
+</div>
+
+<!-- ══ Decision Modal ══ -->
 <div class="ap-modal-overlay" id="apDecideModal">
     <div class="ap-modal-box">
         <h3 id="apDecideTitle">Принять решение</h3>
@@ -152,12 +271,218 @@
     </div>
 </div>
 
+<!-- ══ Toast wrap ══ -->
+<div class="ap-toast-wrap" id="apToastWrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
-const contractId      = @Model.Id;
+/* ═══════════════════════════════════
+   CONFIG
+═══════════════════════════════════ */
+const contractId = @Model.Id;
+
 let apPendingApprovalId = null;
 let apPendingDocumentId = null;
 let apPendingDecision   = null;
 
+/* ═══════════════════════════════════
+   NOTIFICATIONS STATE
+═══════════════════════════════════ */
+const AP_NOTIF_KEY = 'ap_notifications_c' + contractId;
+let apNotifications = JSON.parse(localStorage.getItem(AP_NOTIF_KEY) || '[]');
+let apPanelOpen = false;
+
+function apSaveNotifs() {
+    // Keep last 50
+    if (apNotifications.length > 50) apNotifications = apNotifications.slice(-50);
+    localStorage.setItem(AP_NOTIF_KEY, JSON.stringify(apNotifications));
+}
+
+function apUnreadCount() {
+    return apNotifications.filter(n => !n.read).length;
+}
+
+function apUpdateBadge() {
+    const btn   = document.getElementById('apNotifBtn');
+    const count = apUnreadCount();
+    let badge   = btn.querySelector('.ap-notif-badge');
+    if (count > 0) {
+        if (!badge) { badge = document.createElement('span'); badge.className = 'ap-notif-badge'; btn.appendChild(badge); }
+        badge.textContent = count > 99 ? '99+' : count;
+    } else {
+        badge?.remove();
+    }
+}
+
+function apRenderNotifList() {
+    const list = document.getElementById('apNotifList');
+    if (!apNotifications.length) {
+        list.innerHTML = '<div class="ap-notif-empty">Нет уведомлений</div>';
+        return;
+    }
+    const iconMap = { started: '🚀', approved: '✅', decided: '📋', approval: '🔔' };
+    list.innerHTML = [...apNotifications].reverse().map((n, i) => {
+        const ri = apNotifications.length - 1 - i;
+        const timeStr = new Date(n.sentAt).toLocaleString('ru', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+        const iconCls = n.type === 'started' ? 'started' : n.type === 'approved' ? 'approved' : 'decided';
+        return `<div class="ap-notif-item ${n.read ? '' : 'unread'}" onclick="apReadNotif(${ri})">
+            <div class="ap-notif-icon ${iconCls}">${iconMap[n.type] || '🔔'}</div>
+            <div class="ap-notif-body">
+                <div class="ap-notif-title-text">${apEsc(n.title)}</div>
+                <div class="ap-notif-msg" title="${apEsc(n.message)}">${apEsc(n.message)}</div>
+                <div class="ap-notif-time">${timeStr}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function apReadNotif(idx) {
+    if (apNotifications[idx]) apNotifications[idx].read = true;
+    apSaveNotifs();
+    apUpdateBadge();
+    apRenderNotifList();
+}
+
+function apClearNotifs() {
+    apNotifications = [];
+    apSaveNotifs();
+    apUpdateBadge();
+    apRenderNotifList();
+}
+
+function apTogglePanel() {
+    apPanelOpen = !apPanelOpen;
+    const panel = document.getElementById('apNotifPanel');
+    panel.classList.toggle('open', apPanelOpen);
+    if (apPanelOpen) {
+        // Mark all as read when opened
+        apNotifications.forEach(n => n.read = true);
+        apSaveNotifs();
+        apUpdateBadge();
+        apRenderNotifList();
+    }
+}
+
+// Close panel on outside click
+document.addEventListener('click', e => {
+    if (apPanelOpen && !e.target.closest('#apNotifPanel') && !e.target.closest('#apNotifBtn')) {
+        apPanelOpen = false;
+        document.getElementById('apNotifPanel').classList.remove('open');
+    }
+});
+
+/* ═══════════════════════════════════
+   PUSH TOAST
+═══════════════════════════════════ */
+function apShowToast(title, message, type) {
+    const wrap = document.getElementById('apToastWrap');
+    const el   = document.createElement('div');
+    const iconMap = { started: '🚀', approved: '✅', decided: '📋', approval: '🔔' };
+    el.className = 'ap-toast';
+    el.innerHTML = `
+        <span class="ap-toast-icon">${iconMap[type] || '🔔'}</span>
+        <div style="flex:1">
+            <div class="ap-toast-title">${apEsc(title)}</div>
+            <div class="ap-toast-msg">${apEsc(message)}</div>
+        </div>
+        <button class="ap-toast-close" onclick="this.closest('.ap-toast').remove()">✕</button>`;
+    wrap.appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = '0'; el.style.transition = 'opacity .3s';
+        setTimeout(() => el.remove(), 320);
+    }, 5000);
+}
+
+/* ═══════════════════════════════════
+   BROWSER PUSH PERMISSION
+═══════════════════════════════════ */
+function apRequestPushPermission() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+        document.getElementById('apNotifBtn').classList.add('allowed');
+        return;
+    }
+    if (Notification.permission === 'denied') {
+        document.getElementById('apNotifBtn').classList.add('denied');
+        return;
+    }
+    Notification.requestPermission().then(perm => {
+        if (perm === 'granted') document.getElementById('apNotifBtn').classList.add('allowed');
+        else                     document.getElementById('apNotifBtn').classList.add('denied');
+    });
+}
+
+function apBrowserPush(title, body, url) {
+    if (Notification.permission !== 'granted') return;
+    if (document.hasFocus()) return; // Only push when tab is not focused
+    const n = new Notification(title, {
+        body,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico'
+    });
+    if (url) n.onclick = () => { window.focus(); window.location.href = url; };
+}
+
+/* ═══════════════════════════════════
+   SIGNALR REAL-TIME
+═══════════════════════════════════ */
+let apConnection = null;
+
+function apInitSignalR() {
+    const dot = document.getElementById('apRealtimeDot');
+    apConnection = new signalR.HubConnectionBuilder()
+        .withUrl('/hubs/approval')
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+        .configureLogging(signalR.LogLevel.Warning)
+        .build();
+
+    apConnection.on('ReceiveNotification', (notif) => {
+        // Add to local store
+        apNotifications.push({ ...notif, read: false });
+        apSaveNotifs();
+        apUpdateBadge();
+        if (apPanelOpen) apRenderNotifList();
+
+        // In-page toast
+        apShowToast(notif.title, notif.message, notif.type);
+
+        // Browser push (when tab not focused)
+        apBrowserPush(notif.title, notif.message, notif.url);
+
+        // Reload approval table if relevant
+        if (['started', 'decided', 'approved'].includes(notif.type)) {
+            setTimeout(loadApprovals, 800);
+        }
+    });
+
+    apConnection.onreconnecting(() => { dot.className = 'ap-realtime-dot'; dot.title = 'Переподключение...'; });
+    apConnection.onreconnected(() => {
+        dot.className = 'ap-realtime-dot connected';
+        dot.title = 'Подключено';
+        apJoinUserGroup();
+    });
+    apConnection.onclose(() => { dot.className = 'ap-realtime-dot'; dot.title = 'Отключено'; });
+
+    apConnection.start()
+        .then(() => {
+            dot.className = 'ap-realtime-dot connected';
+            dot.title = 'Подключено';
+            apJoinUserGroup();
+        })
+        .catch(e => {
+            console.warn('SignalR connection failed:', e);
+            dot.title = 'Ошибка подключения';
+        });
+}
+    async function apJoinUserGroup() {
+    try {
+    // Берём userId из мета-тега (рендерится сервером)
+    const userId = document.getElementById('apCurrentUserId')?.value;
+    if (userId) await apConnection.invoke('Join', userId);
+    } catch(e) {
+    console.warn('SignalR Join failed:', e);
+    }
+    }
 async function loadApprovals() {
     const container = document.getElementById('approvalContainer');
     try {
@@ -262,6 +587,9 @@ function apBuildBlock(doc) {
     </div>`;
 }
 
+/* ═══════════════════════════════════
+   APPROVAL ACTIONS
+═══════════════════════════════════ */
 async function apStartApproval(docId) {
     if (!confirm('Запустить согласование для всех участников?')) return;
     const res = await fetch(`/api/contract-documents/${docId}/approvals/start`, {
@@ -298,9 +626,17 @@ async function apConfirmDecision() {
     if (res.ok) { await loadApprovals(); }
     else { alert('Ошибка при сохранении решения'); }
 }
+
 function apEsc(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/* ═══════════════════════════════════
+   INIT
+═══════════════════════════════════ */
+apUpdateBadge();
+apRenderNotifList();
+apRequestPushPermission();
+apInitSignalR();
 loadApprovals();
 </script>

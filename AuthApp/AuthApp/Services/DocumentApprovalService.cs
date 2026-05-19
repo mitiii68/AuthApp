@@ -112,14 +112,13 @@ namespace AuthApp.Services
             await RecalculateDocumentStatusAsync(approval.ContractDocumentId, ct);
         }
 
-        // ── История согласования ─────────────────────────────────────────────
-
         public async Task<DocumentApprovalDto> GetApprovalHistoryAsync(int contractDocumentId, CancellationToken ct = default)
         {
             var document = await _db.ContractDocuments
                 .Include(d => d.Approvals)
                     .ThenInclude(a => a.ContractParticipant)
                         .ThenInclude(p => p!.User)
+                            .ThenInclude(u => u!.Position)
                 .FirstOrDefaultAsync(d => d.Id == contractDocumentId, ct)
                 ?? throw new KeyNotFoundException($"Документ {contractDocumentId} не найден.");
 
@@ -138,7 +137,7 @@ namespace AuthApp.Services
                         ApprovalId = a.Id,
                         ParticipantId = a.ContractParticipantId,
                         FullName = a.ContractParticipant?.User?.FullName,
-                        Position = a.ContractParticipant?.User?.Position,
+                        Position = a.ContractParticipant?.User?.Position?.Name,
                         OrderIndex = a.OrderIndex,
                         Status = a.Status,
                         ViewedAt = a.ViewedAt,
@@ -147,8 +146,6 @@ namespace AuthApp.Services
                     }).ToList()
             };
         }
-
-        // ── Вспомогательные методы ────────────────────────────────────────────
 
         private async Task<DocumentApproval> GetOwnApprovalAsync(int approvalId, int currentUserId, CancellationToken ct)
         {
@@ -185,21 +182,20 @@ namespace AuthApp.Services
                 document.ApprovalStatus = DocumentApprovalStatus.Approved;
                 document.ApprovedAt = DateTime.UtcNow;
             }
-            // иначе — всё ещё InApproval
+            
 
             await _db.SaveChangesAsync(ct);
         }
-        // ── Обзор согласования для всех документов договора ──────────────────
-
+       
         public async Task<List<ContractApprovalOverviewDto>> GetApprovalOverviewAsync(
             int contractId, int currentUserId, CancellationToken ct = default)
         {
-            // Получаем все ContractDocument для данного договора вместе с согласованиями
             var documents = await _db.ContractDocument
                 .Where(cd => cd.ContractId == contractId)
                 .Include(cd => cd.Approvals)
                     .ThenInclude(a => a.ContractParticipant)
                         .ThenInclude(p => p!.User)
+                            .ThenInclude(u => u!.Position)
                 .OrderBy(cd => cd.Id)
                 .ToListAsync(ct);
 
@@ -217,7 +213,7 @@ namespace AuthApp.Services
                         ApprovalId    = a.Id,
                         ParticipantId = a.ContractParticipantId,
                         FullName      = a.ContractParticipant?.User?.FullName,
-                        Position      = a.ContractParticipant?.User?.Position,
+                        Position = a.ContractParticipant?.User?.Position?.Name,
                         OrderIndex    = a.OrderIndex,
                         Status        = a.Status,
                         ViewedAt      = a.ViewedAt,

@@ -1,0 +1,545 @@
+@{
+    ViewData["Title"] = "Управление должностями";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+ 
+    :root {
+        --accent:       #3b5bdb;
+        --accent-light: #e7ecfd;
+        --accent-hover: #2f4ac7;
+        --surface:      #ffffff;
+        --surface-2:    #f8f9fc;
+        --border:       #e3e8f0;
+        --text:         #1a1d2e;
+        --text-sub:     #6b7280;
+        --danger:       #e03131;
+        --danger-light: #fff0f0;
+        --green:        #2f9e44;
+        --green-light:  #d3f9d8;
+        --green-text:   #1a7f37;
+        --shadow-sm:    0 1px 4px rgba(59,91,219,.08);
+        --shadow-md:    0 4px 24px rgba(59,91,219,.11);
+        --radius:       14px;
+        --font:         'Nunito', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--surface-2); color: var(--text); }
+
+    .pos-page-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin: 28px 0 22px; flex-wrap: wrap; gap: 14px;
+    }
+    .pos-title-group { display: flex; flex-direction: column; gap: 4px; }
+    .pos-page-title  { font-size: 24px; font-weight: 800; letter-spacing: -.4px; }
+    .pos-page-sub    { font-size: 13px; color: var(--text-sub); font-weight: 600; }
+
+    .btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 16px; border-radius: 9px; border: none; cursor: pointer;
+        font-family: var(--font); font-size: 13px; font-weight: 700;
+        text-decoration: none; transition: background .13s, transform .1s, box-shadow .13s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(59,91,219,.22); }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost   { background: var(--surface); color: var(--text); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-2); }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-danger:hover  { background: #b52a2a; }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-success:hover { background: #257535; }
+    .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 7px; }
+    .btn-icon { padding: 6px; }
+
+    .pos-toolbar {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .pos-search-wrap {
+        position: relative; flex: 1; min-width: 220px; max-width: 360px;
+    }
+    .pos-search-wrap svg {
+        position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+        color: var(--text-sub); pointer-events: none;
+    }
+    .pos-search-input {
+        width: 100%; padding: 8px 12px 8px 34px;
+        border: 1.5px solid var(--border); border-radius: 9px;
+        font-family: var(--font); font-size: 13px; background: var(--surface);
+        color: var(--text); outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .pos-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    .pos-count-label { font-size: 13px; color: var(--text-sub); font-weight: 600; white-space: nowrap; margin-left: auto; }
+
+    .pos-card {
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .pos-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .pos-table thead th {
+        padding: 11px 18px; background: var(--surface-2);
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .08em; color: var(--text-sub);
+        border-bottom: 1.5px solid var(--border); text-align: left; white-space: nowrap;
+        user-select: none; cursor: pointer;
+    }
+    .pos-table thead th:hover { color: var(--accent); }
+    .pos-table thead th.sorted { color: var(--accent); }
+    .pos-table thead th .sort-icon { margin-left: 4px; opacity: .5; font-size: 10px; }
+    .pos-table thead th.sorted .sort-icon { opacity: 1; }
+
+    .pos-table tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+    .pos-table tbody tr:last-child { border-bottom: none; }
+    .pos-table tbody tr:hover { background: #f4f6ff; }
+    .pos-table td { padding: 12px 18px; vertical-align: middle; }
+
+    .pos-name-cell { display: flex; align-items: center; gap: 10px; }
+    .pos-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--accent); flex-shrink: 0;
+    }
+    .pos-name { font-weight: 700; }
+    .pos-actions { display: flex; gap: 6px; }
+
+    .pos-empty {
+        text-align: center; padding: 48px 20px;
+        color: var(--text-sub); font-size: 13.5px; font-weight: 600;
+    }
+    .pos-empty svg { opacity: .25; margin-bottom: 10px; display: block; margin-inline: auto; }
+
+    /* ── Inline Edit Row ── */
+    .pos-edit-row td { padding: 8px 18px; background: var(--accent-light); }
+    .pos-inline-input {
+        padding: 7px 12px; border: 1.5px solid var(--accent); border-radius: 8px;
+        font-family: var(--font); font-size: 13.5px; font-weight: 600;
+        background: #fff; outline: none; width: 280px;
+    }
+    .pos-inline-input:focus { box-shadow: 0 0 0 3px rgba(59,91,219,.15); }
+
+    .pos-modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(15,20,50,.45); z-index: 2000;
+        align-items: center; justify-content: center;
+        backdrop-filter: blur(3px);
+    }
+    .pos-modal-overlay.open { display: flex; }
+    .pos-modal-box {
+        background: #fff; border-radius: 18px; padding: 28px;
+        width: 440px; max-width: 95vw;
+        box-shadow: 0 16px 60px rgba(0,0,0,.22);
+        animation: posModalIn .18s cubic-bezier(.22,1,.36,1);
+    }
+    @@keyframes posModalIn { from { opacity:0; transform: scale(.93) translateY(12px); } to { opacity:1; transform: none; } }
+    .pos-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .pos-modal-title  { font-size: 17px; font-weight: 800; }
+    .pos-modal-close  {
+        background: none; border: none; cursor: pointer; padding: 4px;
+        color: var(--text-sub); border-radius: 6px; line-height: 0;
+        transition: color .12s, background .12s;
+    }
+    .pos-modal-close:hover { color: var(--danger); background: var(--danger-light); }
+
+    .pos-field { margin-bottom: 16px; }
+    .pos-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+    .pos-input {
+        width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+        border-radius: 10px; font-family: var(--font); font-size: 14px;
+        color: var(--text); outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .pos-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+    .pos-input-hint { font-size: 11.5px; color: var(--text-sub); margin-top: 5px; }
+
+    .pos-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    .pos-toast-wrap {
+        position: fixed; bottom: 24px; right: 24px; z-index: 3000;
+        display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .pos-toast {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 16px; border-radius: 11px;
+        font-family: var(--font); font-size: 13.5px; font-weight: 700;
+        box-shadow: 0 4px 20px rgba(0,0,0,.15);
+        animation: toastIn .25s ease; pointer-events: auto;
+    }
+    .pos-toast.success { background: var(--green-light); color: var(--green-text); border: 1.5px solid #bbf7d0; }
+    .pos-toast.error   { background: var(--danger-light); color: var(--danger); border: 1.5px solid #fecaca; }
+    @@keyframes toastIn { from { opacity:0; transform: translateY(14px) scale(.95); } to { opacity:1; transform: none; } }
+
+    .pos-del-box { background: var(--danger-light); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+    .pos-del-box p { font-size: 13px; color: var(--danger); font-weight: 600; }
+    .pos-del-box strong { font-size: 14px; display: block; margin-top: 4px; }
+
+    .pos-stats { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .pos-stat-chip {
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: 10px; padding: 10px 16px;
+        display: flex; flex-direction: column; gap: 2px; min-width: 120px;
+    }
+    .pos-stat-val { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .pos-stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .07em; }
+
+    .pos-pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 14px; border-top: 1.5px solid var(--border); }
+    .pos-page-btn {
+        width: 32px; height: 32px; border-radius: 7px; border: 1.5px solid var(--border);
+        background: var(--surface); color: var(--text); font-family: var(--font);
+        font-size: 13px; font-weight: 700; cursor: pointer; display: flex;
+        align-items: center; justify-content: center; transition: all .12s;
+    }
+    .pos-page-btn:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+    .pos-page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .pos-page-btn:disabled { opacity: .4; cursor: default; }
+</style>
+
+<div style="max-width:900px;margin:auto;padding:0 20px 40px;">
+
+    <div class="pos-page-header">
+        <div class="pos-title-group">
+            <div class="pos-page-title">Должности</div>
+            <div class="pos-page-sub">Управление справочником должностей участников согласования</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <a href="javascript:history.back()" class="btn btn-ghost">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                Назад
+            </a>
+            <button class="btn btn-primary" onclick="posOpenCreate()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Добавить должность
+            </button>
+        </div>
+    </div>
+
+    <div class="pos-stats" id="posStats">
+        <div class="pos-stat-chip">
+            <span class="pos-stat-val" id="statTotal">—</span>
+            <span class="pos-stat-lbl">Всего должностей</span>
+        </div>
+        <div class="pos-stat-chip">
+            <span class="pos-stat-val" id="statFiltered">—</span>
+            <span class="pos-stat-lbl">Показано</span>
+        </div>
+    </div>
+
+    <div class="pos-toolbar">
+        <div class="pos-search-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="pos-search-input" id="posSearch" placeholder="Поиск должности..." oninput="posFilter()" autocomplete="off">
+        </div>
+        <span class="pos-count-label" id="posCountLabel"></span>
+    </div>
+
+    <div class="pos-card">
+        <table class="pos-table">
+            <thead>
+                <tr>
+                    <th style="width:40px">#</th>
+                    <th onclick="posSort('name')" id="thName">
+                        Название <span class="sort-icon" id="siName">↕</span>
+                    </th>
+                    <th onclick="posSort('created')" id="thCreated">
+                        Дата создания <span class="sort-icon" id="siCreated">↕</span>
+                    </th>
+                    <th style="width:140px;text-align:right">Действия</th>
+                </tr>
+            </thead>
+            <tbody id="posTableBody">
+                <tr><td colspan="4" class="pos-empty" style="padding:32px">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Загрузка...
+                </td></tr>
+            </tbody>
+        </table>
+        <div class="pos-pagination" id="posPagination" style="display:none"></div>
+    </div>
+</div>
+
+<div class="pos-modal-overlay" id="posCreateModal">
+    <div class="pos-modal-box">
+        <div class="pos-modal-header">
+            <span class="pos-modal-title" id="posModalTitle">Добавить должность</span>
+            <button class="pos-modal-close" onclick="posCloseCreate()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="pos-field">
+            <label class="pos-label" for="posNameInput">Название должности</label>
+            <input class="pos-input" id="posNameInput" type="text" placeholder="Например: Руководитель отдела" maxlength="150"
+                   onkeydown="if(event.key==='Enter') posSaveCreate()">
+            <div class="pos-input-hint">Максимум 150 символов. Название будет отображаться в согласовании.</div>
+        </div>
+        <div class="pos-modal-actions">
+            <button class="btn btn-ghost" onclick="posCloseCreate()">Отмена</button>
+            <button class="btn btn-primary" id="posSaveBtn" onclick="posSaveCreate()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="pos-modal-overlay" id="posDeleteModal">
+    <div class="pos-modal-box">
+        <div class="pos-modal-header">
+            <span class="pos-modal-title" style="color:var(--danger)">Удалить должность</span>
+            <button class="pos-modal-close" onclick="posCloseDelete()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="pos-del-box">
+            <p>Вы собираетесь удалить должность:</p>
+            <strong id="posDeleteName">—</strong>
+        </div>
+        <p style="font-size:13px;color:var(--text-sub);margin-bottom:4px;">
+            Пользователи с этой должностью потеряют её привязку. Это действие нельзя отменить.
+        </p>
+        <div class="pos-modal-actions">
+            <button class="btn btn-ghost" onclick="posCloseDelete()">Отмена</button>
+            <button class="btn btn-danger" onclick="posConfirmDelete()">Удалить</button>
+        </div>
+    </div>
+</div>
+
+<div class="pos-toast-wrap" id="posToastWrap"></div>
+
+<script>
+let posAll       = [];   
+let posFiltered  = [];   
+let posSortKey   = 'name';
+let posSortAsc   = true;
+let posPage      = 1;
+const PAGE_SIZE  = 20;
+let posEditId    = null; 
+let posDeleteId  = null;
+
+
+async function posLoad() {
+    try {
+        const res  = await fetch('/api/positions');
+        if (!res.ok) throw new Error();
+        posAll = await res.json();
+        posApplyFilter();
+    } catch {
+        document.getElementById('posTableBody').innerHTML =
+            `<tr><td colspan="4" class="pos-empty">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Ошибка загрузки. <button class="btn btn-ghost btn-sm" onclick="posLoad()" style="margin-top:8px">Повторить</button>
+             </td></tr>`;
+    }
+}
+
+async function posCreate(name) {
+    const res = await fetch('/api/positions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return await res.json();
+}
+
+async function posUpdate(id, name) {
+    const res = await fetch(`/api/positions/${id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
+async function posDelete(id) {
+    const res = await fetch(`/api/positions/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(await res.text());
+}
+
+function posApplyFilter() {
+    const q = document.getElementById('posSearch').value.toLowerCase().trim();
+    let list = q ? posAll.filter(p => p.name.toLowerCase().includes(q)) : [...posAll];
+
+    list.sort((a, b) => {
+        let va = posSortKey === 'name' ? a.name.toLowerCase() : (a.createdAt ?? '');
+        let vb = posSortKey === 'name' ? b.name.toLowerCase() : (b.createdAt ?? '');
+        return va < vb ? (posSortAsc ? -1 : 1) : va > vb ? (posSortAsc ? 1 : -1) : 0;
+    });
+
+    posFiltered = list;
+    posPage = 1;
+    posRender();
+}
+
+function posFilter() { posApplyFilter(); }
+
+function posSort(key) {
+    if (posSortKey === key) posSortAsc = !posSortAsc;
+    else { posSortKey = key; posSortAsc = true; }
+
+    ['name','created'].forEach(k => {
+        const th = document.getElementById('th' + k.charAt(0).toUpperCase() + k.slice(1));
+        const si = document.getElementById('si' + k.charAt(0).toUpperCase() + k.slice(1));
+        if (th) th.classList.toggle('sorted', k === posSortKey);
+        if (si) si.textContent = k === posSortKey ? (posSortAsc ? '↑' : '↓') : '↕';
+    });
+    posApplyFilter();
+}
+
+function posRender() {
+    const total    = posAll.length;
+    const filtered = posFiltered.length;
+    document.getElementById('statTotal').textContent    = total;
+    document.getElementById('statFiltered').textContent = filtered;
+    document.getElementById('posCountLabel').textContent =
+        filtered !== total ? `Найдено: ${filtered} из ${total}` : `Всего: ${total}`;
+
+    const pages  = Math.ceil(filtered / PAGE_SIZE);
+    const start  = (posPage - 1) * PAGE_SIZE;
+    const slice  = posFiltered.slice(start, start + PAGE_SIZE);
+
+    const tbody  = document.getElementById('posTableBody');
+    if (!slice.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="pos-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Должности не найдены
+        </td></tr>`;
+    } else {
+        tbody.innerHTML = slice.map((p, i) => {
+            const num     = start + i + 1;
+            const created = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ru') : '—';
+            return `<tr>
+                <td style="color:var(--text-sub);font-size:12px;font-weight:700">${num}</td>
+                <td>
+                    <div class="pos-name-cell">
+                        <div class="pos-dot"></div>
+                        <span class="pos-name">${posEsc(p.name)}</span>
+                    </div>
+                </td>
+                <td style="font-size:13px;color:var(--text-sub)">${created}</td>
+                <td>
+                    <div class="pos-actions" style="justify-content:flex-end">
+                        <button class="btn btn-ghost btn-sm" title="Редактировать" onclick="posOpenEdit(${p.id}, '${posEsc(p.name).replace(/'/g,"\\'")}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Изменить
+                        </button>
+                        <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger)" title="Удалить" onclick="posOpenDelete(${p.id}, '${posEsc(p.name).replace(/'/g,"\\'")}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                            Удалить
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    const pagDiv = document.getElementById('posPagination');
+    if (pages > 1) {
+        pagDiv.style.display = 'flex';
+        let html = `<button class="pos-page-btn" onclick="posGo(${posPage-1})" ${posPage===1?'disabled':''}>‹</button>`;
+        for (let p = 1; p <= pages; p++) {
+            if (pages > 7 && Math.abs(p - posPage) > 2 && p !== 1 && p !== pages) {
+                if (p === 2 || p === pages - 1) html += `<span style="padding:0 4px;color:var(--text-sub)">…</span>`;
+                continue;
+            }
+            html += `<button class="pos-page-btn ${p===posPage?'active':''}" onclick="posGo(${p})">${p}</button>`;
+        }
+        html += `<button class="pos-page-btn" onclick="posGo(${posPage+1})" ${posPage===pages?'disabled':''}>›</button>`;
+        pagDiv.innerHTML = html;
+    } else {
+        pagDiv.style.display = 'none';
+    }
+}
+
+function posGo(p) { posPage = p; posRender(); }
+
+function posOpenCreate() {
+    posEditId = null;
+    document.getElementById('posModalTitle').textContent = 'Добавить должность';
+    document.getElementById('posNameInput').value = '';
+    document.getElementById('posSaveBtn').textContent = 'Сохранить';
+    document.getElementById('posCreateModal').classList.add('open');
+    setTimeout(() => document.getElementById('posNameInput').focus(), 50);
+}
+
+function posOpenEdit(id, name) {
+    posEditId = id;
+    document.getElementById('posModalTitle').textContent = 'Редактировать должность';
+    document.getElementById('posNameInput').value = name;
+    document.getElementById('posSaveBtn').textContent = 'Обновить';
+    document.getElementById('posCreateModal').classList.add('open');
+    setTimeout(() => { const i = document.getElementById('posNameInput'); i.focus(); i.select(); }, 50);
+}
+
+function posCloseCreate() {
+    document.getElementById('posCreateModal').classList.remove('open');
+    posEditId = null;
+}
+
+async function posSaveCreate() {
+    const name = document.getElementById('posNameInput').value.trim();
+    if (!name) { document.getElementById('posNameInput').focus(); return; }
+
+    const btn = document.getElementById('posSaveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Сохранение...';
+
+    try {
+        if (posEditId === null) {
+            await posCreate(name);
+            posToast('Должность добавлена', 'success');
+        } else {
+            await posUpdate(posEditId, name);
+            posToast('Должность обновлена', 'success');
+        }
+        posCloseCreate();
+        await posLoad();
+    } catch (e) {
+        posToast('Ошибка: ' + (e.message || 'попробуйте снова'), 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = posEditId === null ? 'Сохранить' : 'Обновить';
+    }
+}
+
+function posOpenDelete(id, name) {
+    posDeleteId = id;
+    document.getElementById('posDeleteName').textContent = name;
+    document.getElementById('posDeleteModal').classList.add('open');
+}
+function posCloseDelete() {
+    document.getElementById('posDeleteModal').classList.remove('open');
+    posDeleteId = null;
+}
+async function posConfirmDelete() {
+    if (!posDeleteId) return;
+    try {
+        await posDelete(posDeleteId);
+        posToast('Должность удалена', 'success');
+        posCloseDelete();
+        await posLoad();
+    } catch (e) {
+        posToast('Ошибка удаления: ' + (e.message || ''), 'error');
+    }
+}
+
+function posToast(msg, type = 'success') {
+    const wrap = document.getElementById('posToastWrap');
+    const el   = document.createElement('div');
+    const icon = type === 'success'
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    el.className = `pos-toast ${type}`;
+    el.innerHTML = `${icon}${posEsc(msg)}`;
+    wrap.appendChild(el);
+    setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(() => el.remove(), 320); }, 3000);
+}
+
+function posEsc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('posCreateModal').addEventListener('click', e => { if (e.target === e.currentTarget) posCloseCreate(); });
+document.getElementById('posDeleteModal').addEventListener('click', e => { if (e.target === e.currentTarget) posCloseDelete(); });
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { posCloseCreate(); posCloseDelete(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); posOpenCreate(); }
+});
+
+posLoad();
+</script>

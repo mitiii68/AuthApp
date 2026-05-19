@@ -23,11 +23,14 @@ namespace AuthApp.Data
         public DbSet<Counterparty> Counterparties => Set<Counterparty>();
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<ContractParticipant> ContractParticipants { get; set; }
-        public DbSet<ContractDocument> ContractDocument {  get; set; }
-        public DbSet<Project>Projects { get; set; }
+        public DbSet<ContractDocument> ContractDocument { get; set; }
+        public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectContract> ProjectContracts { get; set; }
         public DbSet<ContractDocument> ContractDocuments => Set<ContractDocument>();
         public DbSet<DocumentApproval> DocumentApprovals => Set<DocumentApproval>();
+
+        // ── Новая таблица должностей ──
+        public DbSet<Position> Positions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,20 +46,26 @@ namespace AuthApp.Data
                 .WithMany(tc => tc.TagCategoryTags)
                 .HasForeignKey(tct => tct.TagCategoryId);
 
-           
             modelBuilder.Entity<TagCategoryTag>()
                 .HasIndex(tct => new { tct.TagId, tct.TagCategoryId })
                 .IsUnique();
 
             modelBuilder.Entity<ContractParticipant>()
-    .HasIndex(cp => new { cp.ContractId, cp.UserId })
-    .IsUnique();
+                .HasIndex(cp => new { cp.ContractId, cp.UserId })
+                .IsUnique();
 
             modelBuilder.Entity<Contract>()
                 .HasOne(c => c.SourceContract)
                 .WithMany()
                 .HasForeignKey(c => c.SourceContractId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // ── Position → User (один ко многим, nullable FK) ──
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Position)
+                .WithMany(p => p.Users)
+                .HasForeignKey(u => u.PositionId)
+                .OnDelete(DeleteBehavior.SetNull); // при удалении должности — PositionId = null
         }
     }
 }

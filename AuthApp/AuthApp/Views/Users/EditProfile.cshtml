@@ -1,9 +1,10 @@
-﻿@model AuthApp.Models.User
+@model AuthApp.Models.User
 
 @{
     ViewData["Title"] = "Редактирование профиля";
     var lat = Model.Latitude ?? 49.9483;
     var lng = Model.Longitude ?? 82.6170;
+    var positions = ViewBag.Positions as List<AuthApp.Models.Position> ?? new List<AuthApp.Models.Position>();
 }
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -167,6 +168,28 @@
         <div class="edit-body">
             <form method="post" asp-action="EditProfile" asp-controller="Users">
                 <input type="hidden" name="userId" value="@Model.UserId" />
+                <p class="section-title">Должность</p>
+                <div class="form-grid" style="margin-bottom:8px;">
+                    <div class="form-group">
+                        <label>Должность пользователя</label>
+                        <select name="positionId" class="form-control">
+                            <option value="">— Не назначена —</option>
+                            @foreach (var pos in positions)
+                            {
+                                if (Model.PositionId == pos.Id)
+                                {
+                                    <option value="@pos.Id" selected>@pos.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@pos.Id">@pos.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <hr class="section-divider" />
 
                 <p class="section-title">Местоположение</p>
 
@@ -175,18 +198,24 @@
                         <label>Район <span class="req">*</span></label>
                         <select name="district" class="form-control">
                             <option value="">— Выберите район —</option>
-                            <option value="Октябрьский" selected="@(Model.District == "Октябрьский")">Октябрьский</option>
-                            <option value="Ульбинский" selected="@(Model.District == "Ульбинский")">Ульбинский</option>
-                            <option value="Аблакетский" selected="@(Model.District == "Аблакетский")">Аблакетский</option>
-                            <option value="Новопокровский" selected="@(Model.District == "Новопокровский")">Новопокровский</option>
+                            @{ var districts = new[] { "Октябрьский", "Ульбинский", "Аблакетский", "Новопокровский" }; }
+                            @foreach (var d in districts)
+                            {
+                                if (Model.District == d) { <option value="@d" selected>@d</option> }
+                                else { <option value="@d">@d</option> }
+                            }
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Сельский округ</label>
                         <select name="ruralDistrict" class="form-control">
                             <option value="">— Выберите округ —</option>
-                            <option value="Согринский" selected="@(Model.RuralDistrict == "Согринский")">Согринский</option>
-                            <option value="Предгорненский" selected="@(Model.RuralDistrict == "Предгорненский")">Предгорненский</option>
+                            @{ var ruralDistricts = new[] { "Согринский", "Предгорненский" }; }
+                            @foreach (var rd in ruralDistricts)
+                            {
+                                if (Model.RuralDistrict == rd) { <option value="@rd" selected>@rd</option> }
+                                else { <option value="@rd">@rd</option> }
+                            }
                         </select>
                     </div>
                 </div>
@@ -196,9 +225,12 @@
                         <label>Населённый пункт <span class="req">*</span></label>
                         <select name="settlement" class="form-control">
                             <option value="">— Выберите —</option>
-                            <option value="Усть-Каменогорск" selected="@(Model.Settlement == "Усть-Каменогорск")">Усть-Каменогорск</option>
-                            <option value="Согра" selected="@(Model.Settlement == "Согра")">Согра</option>
-                            <option value="Предгорное" selected="@(Model.Settlement == "Предгорное")">Предгорное</option>
+                            @{ var settlements = new[] { "Усть-Каменогорск", "Согра", "Предгорное" }; }
+                            @foreach (var s in settlements)
+                            {
+                                if (Model.Settlement == s) { <option value="@s" selected>@s</option> }
+                                else { <option value="@s">@s</option> }
+                            }
                         </select>
                     </div>
                     <div class="form-group">
@@ -232,7 +264,7 @@
                 <hr class="section-divider" />
 
                 <div class="btn-row">
-                    <button type="submit" class="btn-save"> Сохранить</button>
+                    <button type="submit" class="btn-save">Сохранить</button>
                     <a asp-action="Index" asp-controller="Users" class="btn-cancel">Отмена</a>
                 </div>
             </form>

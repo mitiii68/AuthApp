@@ -284,6 +284,7 @@
                         <th>Количество входов</th>
                         <th>Роль</th>
                         <th>Дата регистрации</th>
+                        <th>Должность</th>
                         <th>Смена роли</th>
                         <th>Удаление</th>
                         <th>Действия</th>
@@ -309,6 +310,16 @@
                                 }
                             </td>
                             <td>@user.CreateAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                @if (user.Position != null)
+                                {
+                                    <span style="font-size:13px;font-weight:600;color:#1d4ed8;">@user.Position.Name</span>
+                                }
+                                else
+                                {
+                                    <span style="font-size:12px;color:#9ca3af;">Не назначена</span>
+                                }
+                            </td>
                             <td>
                                 <div class="action-group">
                                     @if (user.RoleId == 1)
@@ -364,6 +375,10 @@
                     </button>
                 </form>
             }
+            <a asp-controller="Users" asp-action="EditProfile" asp-route-id="@user.UserId"
+               class="btn-mini btn-admin" style="margin-top:6px;display:inline-block;text-decoration:none;">
+                 Редактировать
+            </a>
         </td>
                            
                         </tr>
