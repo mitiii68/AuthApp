@@ -123,8 +123,6 @@
     }
     .ap-modal-box textarea:focus { border-color: var(--accent, #3b5bdb); box-shadow: 0 0 0 3px var(--accent-light, #e7ecfd); }
     .ap-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
-
-    /* ── NOTIFICATION BELL ── */
     .ap-notif-btn {
         position: relative; background: none; border: 1.5px solid var(--border);
         border-radius: 9px; padding: 6px 10px; cursor: pointer; display: flex;
@@ -146,7 +144,6 @@
     }
     @@keyframes apBadgePop { from { transform: scale(0); } to { transform: scale(1); } }
 
-    /* ── NOTIFICATION PANEL ── */
     .ap-notif-panel {
         position: fixed; top: 60px; right: 20px; z-index: 1900;
         width: 340px; max-width: 95vw;
@@ -206,7 +203,6 @@
         50%  { opacity: .4; }
     }
 
-    /* ── IN-PAGE TOAST ── */
     .ap-toast-wrap {
         position: fixed; bottom: 24px; right: 24px; z-index: 3000;
         display: flex; flex-direction: column; gap: 8px; pointer-events: none;
@@ -247,7 +243,6 @@
     </div>
 </div>
 
-<!-- ══ Notification Panel ══ -->
 <div class="ap-notif-panel" id="apNotifPanel">
     <div class="ap-notif-panel-header">
         <span class="ap-notif-panel-title">🔔 Уведомления</span>
@@ -258,7 +253,6 @@
     </div>
 </div>
 
-<!-- ══ Decision Modal ══ -->
 <div class="ap-modal-overlay" id="apDecideModal">
     <div class="ap-modal-box">
         <h3 id="apDecideTitle">Принять решение</h3>
@@ -271,29 +265,20 @@
     </div>
 </div>
 
-<!-- ══ Toast wrap ══ -->
 <div class="ap-toast-wrap" id="apToastWrap"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
-/* ═══════════════════════════════════
-   CONFIG
-═══════════════════════════════════ */
 const contractId = @Model.Id;
 
 let apPendingApprovalId = null;
 let apPendingDocumentId = null;
 let apPendingDecision   = null;
-
-/* ═══════════════════════════════════
-   NOTIFICATIONS STATE
-═══════════════════════════════════ */
 const AP_NOTIF_KEY = 'ap_notifications_c' + contractId;
 let apNotifications = JSON.parse(localStorage.getItem(AP_NOTIF_KEY) || '[]');
 let apPanelOpen = false;
 
 function apSaveNotifs() {
-    // Keep last 50
     if (apNotifications.length > 50) apNotifications = apNotifications.slice(-50);
     localStorage.setItem(AP_NOTIF_KEY, JSON.stringify(apNotifications));
 }
@@ -355,7 +340,6 @@ function apTogglePanel() {
     const panel = document.getElementById('apNotifPanel');
     panel.classList.toggle('open', apPanelOpen);
     if (apPanelOpen) {
-        // Mark all as read when opened
         apNotifications.forEach(n => n.read = true);
         apSaveNotifs();
         apUpdateBadge();
@@ -363,7 +347,6 @@ function apTogglePanel() {
     }
 }
 
-// Close panel on outside click
 document.addEventListener('click', e => {
     if (apPanelOpen && !e.target.closest('#apNotifPanel') && !e.target.closest('#apNotifBtn')) {
         apPanelOpen = false;
@@ -371,9 +354,6 @@ document.addEventListener('click', e => {
     }
 });
 
-/* ═══════════════════════════════════
-   PUSH TOAST
-═══════════════════════════════════ */
 function apShowToast(title, message, type) {
     const wrap = document.getElementById('apToastWrap');
     const el   = document.createElement('div');
@@ -393,9 +373,6 @@ function apShowToast(title, message, type) {
     }, 5000);
 }
 
-/* ═══════════════════════════════════
-   BROWSER PUSH PERMISSION
-═══════════════════════════════════ */
 function apRequestPushPermission() {
     if (!('Notification' in window)) return;
     if (Notification.permission === 'granted') {
@@ -414,7 +391,7 @@ function apRequestPushPermission() {
 
 function apBrowserPush(title, body, url) {
     if (Notification.permission !== 'granted') return;
-    if (document.hasFocus()) return; // Only push when tab is not focused
+    if (document.hasFocus()) return; 
     const n = new Notification(title, {
         body,
         icon: '/favicon.ico',
@@ -423,9 +400,6 @@ function apBrowserPush(title, body, url) {
     if (url) n.onclick = () => { window.focus(); window.location.href = url; };
 }
 
-/* ═══════════════════════════════════
-   SIGNALR REAL-TIME
-═══════════════════════════════════ */
 let apConnection = null;
 
 function apInitSignalR() {
@@ -437,19 +411,15 @@ function apInitSignalR() {
         .build();
 
     apConnection.on('ReceiveNotification', (notif) => {
-        // Add to local store
         apNotifications.push({ ...notif, read: false });
         apSaveNotifs();
         apUpdateBadge();
         if (apPanelOpen) apRenderNotifList();
 
-        // In-page toast
         apShowToast(notif.title, notif.message, notif.type);
 
-        // Browser push (when tab not focused)
         apBrowserPush(notif.title, notif.message, notif.url);
 
-        // Reload approval table if relevant
         if (['started', 'decided', 'approved'].includes(notif.type)) {
             setTimeout(loadApprovals, 800);
         }
@@ -476,7 +446,6 @@ function apInitSignalR() {
 }
     async function apJoinUserGroup() {
     try {
-    // Берём userId из мета-тега (рендерится сервером)
     const userId = document.getElementById('apCurrentUserId')?.value;
     if (userId) await apConnection.invoke('Join', userId);
     } catch(e) {
@@ -586,10 +555,6 @@ function apBuildBlock(doc) {
         ${table}
     </div>`;
 }
-
-/* ═══════════════════════════════════
-   APPROVAL ACTIONS
-═══════════════════════════════════ */
 async function apStartApproval(docId) {
     if (!confirm('Запустить согласование для всех участников?')) return;
     const res = await fetch(`/api/contract-documents/${docId}/approvals/start`, {
@@ -631,9 +596,6 @@ function apEsc(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ═══════════════════════════════════
-   INIT
-═══════════════════════════════════ */
 apUpdateBadge();
 apRenderNotifList();
 apRequestPushPermission();

@@ -25,8 +25,6 @@ namespace AuthApp.Models
         public string? House { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
-
-        // Заменили string? Position на FK
         public int? PositionId { get; set; }
         public Position? Position { get; set; }
     }

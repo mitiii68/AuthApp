@@ -143,7 +143,6 @@ namespace AuthApp.Controllers
                 .FirstOrDefault(u => u.UserId == id);
             if (user == null) return NotFound();
 
-            // Передаём список должностей во ViewBag
             ViewBag.Positions = _context.Positions.OrderBy(p => p.Name).ToList();
 
             return View(user);
@@ -167,7 +166,7 @@ namespace AuthApp.Controllers
             user.House = house;
             user.Latitude = latitude;
             user.Longitude = longitude;
-            user.PositionId = positionId; // ✅ сохраняем должность
+            user.PositionId = positionId; 
 
             _context.SaveChanges();
 

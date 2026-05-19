@@ -14,6 +14,29 @@ namespace AuthApp.Controllers
             _context = context;
         }
 
+        // Проект заблокирован если хотя бы один привязанный договор полностью согласован
+        private async Task<bool> IsProjectLockedAsync(int projectId)
+        {
+            var contractIds = await _context.ProjectContracts
+                .Where(pc => pc.ProjectId == projectId)
+                .Select(pc => pc.ContractId)
+                .ToListAsync();
+
+            if (contractIds.Count == 0) return false;
+
+            foreach (var contractId in contractIds)
+            {
+                var docs = await _context.ContractDocument
+                    .Where(cd => cd.ContractId == contractId)
+                    .ToListAsync();
+
+                if (docs.Count > 0 && docs.All(d => d.ApprovalStatus == AuthApp.Enums.DocumentApprovalStatus.Approved))
+                    return true;
+            }
+
+            return false;
+        }
+
         private void FillFormViewBag()
         {
             ViewBag.Users = GetUserNames();
@@ -163,6 +186,12 @@ namespace AuthApp.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
+            if (await IsProjectLockedAsync(id))
+            {
+                TempData["Error"] = "Редактирование заблокировано: один из договоров проекта полностью согласован.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var project = await _context.Projects
                 .Include(p => p.ProjectContracts)
                     .ThenInclude(pc => pc.Contract)
@@ -178,6 +207,12 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Edit(int id, Project project)
         {
             if (id != project.Id) return BadRequest();
+
+            if (await IsProjectLockedAsync(id))
+            {
+                TempData["Error"] = "Редактирование заблокировано: один из договоров проекта полностью согласован.";
+                return RedirectToAction(nameof(Index));
+            }
 
             ModelState.Remove("ProjectContracts");
             ModelState.Remove("Budget");

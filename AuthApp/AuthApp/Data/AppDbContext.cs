@@ -28,8 +28,6 @@ namespace AuthApp.Data
         public DbSet<ProjectContract> ProjectContracts { get; set; }
         public DbSet<ContractDocument> ContractDocuments => Set<ContractDocument>();
         public DbSet<DocumentApproval> DocumentApprovals => Set<DocumentApproval>();
-
-        // ── Новая таблица должностей ──
         public DbSet<Position> Positions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -60,12 +58,11 @@ namespace AuthApp.Data
                 .HasForeignKey(c => c.SourceContractId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // ── Position → User (один ко многим, nullable FK) ──
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Position)
                 .WithMany(p => p.Users)
                 .HasForeignKey(u => u.PositionId)
-                .OnDelete(DeleteBehavior.SetNull); // при удалении должности — PositionId = null
+                .OnDelete(DeleteBehavior.SetNull); 
         }
     }
 }

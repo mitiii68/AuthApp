@@ -24,6 +24,16 @@ namespace AuthApp.Controllers
             return role == "Admin";
         }
 
+        // Договор заблокирован если все его документы согласованы
+        private async Task<bool> IsContractLockedAsync(int contractId)
+        {
+            var docs = await _context.ContractDocument
+                .Where(cd => cd.ContractId == contractId)
+                .ToListAsync();
+
+            return docs.Count > 0 && docs.All(d => d.ApprovalStatus == DocumentApprovalStatus.Approved);
+        }
+
         private string CurrentUserEmail()
             => HttpContext.Session.GetString("UserEmail") ?? "неизвестный";
 
@@ -183,9 +193,16 @@ namespace AuthApp.Controllers
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
 
+            if (await IsContractLockedAsync(id))
+            {
+                TempData["Error"] = "Редактирование заблокировано: все документы договора согласованы.";
+                return RedirectToAction("Index");
+            }
+
             var contract = await _context.Contracts
                 .Include(c => c.Participants)
                 .FirstOrDefaultAsync(c => c.Id == id);
+
 
             if (contract == null) return NotFound();
 
@@ -205,6 +222,12 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Edit(int id, Contract contract, List<int> participantIds, string amountRaw, List<int> documentIds)
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
+            if (await IsContractLockedAsync(id))
+            {
+                TempData["Error"] = "Редактирование заблокировано: все документы договора согласованы.";
+                return RedirectToAction("Index");
+            }
 
             var existing = await _context.Contracts
                 .Include(c => c.Participants)
@@ -248,15 +271,31 @@ namespace AuthApp.Controllers
                 });
             }
 
-            var oldDocs = _context.ContractDocument.Where(cd => cd.ContractId == id);
-            _context.ContractDocument.RemoveRange(oldDocs);
+            var oldDocs = await _context.ContractDocument
+                .Where(cd => cd.ContractId == id)
+                .ToListAsync();
+
+            // Удаляем только те документы которые не согласованы и не на согласовании
+            // (чтобы не потерять историю согласования)
+            var docsToRemove = oldDocs
+                .Where(d => !documentIds.Contains(d.FileDocumentId ?? 0)
+                    && d.ApprovalStatus != DocumentApprovalStatus.Approved
+                    && d.ApprovalStatus != DocumentApprovalStatus.InApproval)
+                .ToList();
+            _context.ContractDocument.RemoveRange(docsToRemove);
+
+            // Добавляем только новые документы которых ещё нет
+            var existingFileIds = oldDocs.Select(d => d.FileDocumentId).ToHashSet();
             foreach (var docId in documentIds)
             {
-                _context.ContractDocument.Add(new ContractDocument
+                if (!existingFileIds.Contains(docId))
                 {
-                    ContractId     = id,
-                    FileDocumentId = docId
-                });
+                    _context.ContractDocument.Add(new ContractDocument
+                    {
+                        ContractId     = id,
+                        FileDocumentId = docId
+                    });
+                }
             }
 
             await _context.SaveChangesAsync();
