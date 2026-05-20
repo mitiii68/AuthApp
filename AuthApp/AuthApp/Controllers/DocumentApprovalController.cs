@@ -5,7 +5,6 @@ using System.Security.Claims;
 
 namespace AuthApp.Controllers
 {
-    // ── Маршруты для конкретного документа ───────────────────────────────────
     [ApiController]
     [Route("api/contract-documents/{documentId:int}/approvals")]
     public class DocumentApprovalController : ControllerBase
@@ -41,10 +40,6 @@ namespace AuthApp.Controllers
             return Ok();
         }
 
-        /// <summary>
-        /// POST api/contract-documents/{documentId}/approvals/{approvalId}/decide
-        /// Принять решение (согласовать / отклонить)
-        /// </summary>
         [HttpPost("{approvalId:int}/decide")]
         public async Task<IActionResult> Decide(int documentId, int approvalId,
             [FromBody] ApprovalDecisionRequest request, CancellationToken ct)
@@ -54,16 +49,11 @@ namespace AuthApp.Controllers
             return Ok(new { message = "Решение зафиксировано." });
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-
         private int GetCurrentUserId()
         {
-            // Сначала пробуем JWT claim
             var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (claim != null && int.TryParse(claim, out var claimId))
                 return claimId;
-
-            // Fallback на сессию (приложение использует сессионную авторизацию)
             var sessionId = HttpContext.Session.GetString("UserId");
             if (sessionId != null && int.TryParse(sessionId, out var sessionUserId))
                 return sessionUserId;
@@ -72,7 +62,6 @@ namespace AuthApp.Controllers
         }
     }
 
-    // ── Маршрут обзора согласований по договору ───────────────────────────────
     [ApiController]
     [Route("api/contracts")]
     public class ContractApprovalOverviewController : ControllerBase
@@ -84,11 +73,6 @@ namespace AuthApp.Controllers
             _service = service;
         }
 
-        /// <summary>
-        /// GET api/contracts/{contractId}/approval-overview
-        /// Возвращает список всех документов договора с историей согласования каждого.
-        /// Используется JS на страницах ApprovalHistory и _ApprovalSection.
-        /// </summary>
         [HttpGet("{contractId:int}/approval-overview")]
         public async Task<IActionResult> GetOverview(int contractId, CancellationToken ct)
         {
@@ -96,8 +80,6 @@ namespace AuthApp.Controllers
             var result = await _service.GetApprovalOverviewAsync(contractId, userId, ct);
             return Ok(result);
         }
-
-        // ─────────────────────────────────────────────────────────────────────
 
         private int GetCurrentUserId()
         {
@@ -108,9 +90,6 @@ namespace AuthApp.Controllers
             var sessionId = HttpContext.Session.GetString("UserId");
             if (sessionId != null && int.TryParse(sessionId, out var sessionUserId))
                 return sessionUserId;
-
-            // Если авторизация не настроена для API — возвращаем 0
-            // (IsCurrentUser будет false для всех строк, кнопки не покажутся)
             return 0;
         }
     }

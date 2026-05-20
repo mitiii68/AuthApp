@@ -8,6 +8,7 @@
     int totalCount   = ViewBag.TotalCount is int tc ? tc : 0;
     string? currentSearch = ViewBag.Search as string;
     string? currentStatus = ViewBag.Status as string;
+    bool isAdmin = Context.Session.GetString("UserRole") == "Admin";
 
     var stageColors = new Dictionary<string, (string bg, string color)>
     {
@@ -244,7 +245,7 @@
                 <h1>Проекты</h1>
                 <div class="subtitle">Управление проектами организации</div>
             </div>
-            <a asp-action="Create" class="btn-create">
+            <a asp-action="Create" class="btn-create" style="@(!isAdmin ? "display:none" : "")">
                 <i class="fas fa-plus"></i> Создать проект
             </a>
         </div>
@@ -331,7 +332,7 @@
                         var contractCount = proj.ProjectContracts.Count;
                         <tr>
                             <td>
-                                <a asp-action="Edit" asp-route-id="@proj.Id" class="project-name">
+                                <a asp-action="@(isAdmin ? "Edit" : "Details")" asp-route-id="@proj.Id" class="project-name">
                                     @proj.Name
                                 </a>
                                 @if (!string.IsNullOrEmpty(proj.Department))
@@ -368,7 +369,7 @@
                             </td>
                             <td>@(proj.Department ?? "—")</td>
                             <td>
-                                <a asp-action="Edit" asp-route-id="@proj.Id"
+                                <a asp-action="@(isAdmin ? "Edit" : "Details")" asp-route-id="@proj.Id"
                                    class="participant-chip @(contractCount > 0 ? "has-contracts" : "")"
                                    title="Перейти к договорам проекта"
                                    style="text-decoration:none">
@@ -378,18 +379,28 @@
                             </td>
                             <td style="text-align:right">
                                 <div style="display:flex;gap:6px;justify-content:flex-end">
-                                    <a asp-action="Edit" asp-route-id="@proj.Id"
-                                       class="action-btn" title="Редактировать">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form asp-action="Delete" method="post" class="d-inline"
-                                          onsubmit="return confirm('Удалить проект «@proj.Name»?')">
-                                        <input type="hidden" name="id" value="@proj.Id" />
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="action-btn del" title="Удалить">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    @if (isAdmin)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@proj.Id"
+                                           class="action-btn" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form asp-action="Delete" method="post" class="d-inline"
+                                              onsubmit="return confirm('Удалить проект «@proj.Name»?')">
+                                            <input type="hidden" name="id" value="@proj.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="action-btn del" title="Удалить">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Details" asp-route-id="@proj.Id"
+                                           class="action-btn" title="Просмотр">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    }
                                 </div>
                             </td>
                         </tr>

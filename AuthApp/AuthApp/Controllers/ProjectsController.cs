@@ -14,6 +14,9 @@ namespace AuthApp.Controllers
             _context = context;
         }
 
+        private bool IsAdmin() =>
+            HttpContext.Session.GetString("UserRole") == "Admin";
+
         // Проект заблокирован если хотя бы один привязанный договор полностью согласован
         private async Task<bool> IsProjectLockedAsync(int projectId)
         {
@@ -117,6 +120,9 @@ namespace AuthApp.Controllers
 
         public async Task<IActionResult> Index(string? search, string? status, int page = 1, int pageSize = 10)
         {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Admin" && role != "User") return RedirectToAction("Index", "Home");
+
             var query = _context.Projects
                 .Include(p => p.ProjectContracts)
                 .AsQueryable();
@@ -150,8 +156,25 @@ namespace AuthApp.Controllers
             return View(projects);
         }
 
+        public async Task<IActionResult> Details(int id)
+        {
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Admin" && role != "User") return RedirectToAction("Index", "Home");
+
+            var project = await _context.Projects
+                .Include(p => p.ProjectContracts)
+                    .ThenInclude(pc => pc.Contract)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (project == null) return NotFound();
+
+            FillFormViewBag();
+            return View("CreateEdit", project);
+        }
+
         public IActionResult Create()
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
             FillFormViewBag();
             return View("CreateEdit", new Project());
         }
@@ -160,6 +183,7 @@ namespace AuthApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Project project, [FromForm] List<int> newContractIds)
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
             ModelState.Clear();
 
             project.CreatedAt = DateTime.Now;
@@ -186,6 +210,8 @@ namespace AuthApp.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
             if (await IsProjectLockedAsync(id))
             {
                 TempData["Error"] = "Редактирование заблокировано: один из договоров проекта полностью согласован.";
@@ -206,6 +232,8 @@ namespace AuthApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Project project)
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
             if (id != project.Id) return BadRequest();
 
             if (await IsProjectLockedAsync(id))
@@ -242,6 +270,8 @@ namespace AuthApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
             var project = await _context.Projects
                 .Include(p => p.ProjectContracts)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -258,6 +288,8 @@ namespace AuthApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AttachContract(int projectId, int contractId)
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
             var alreadyAttached = await _context.ProjectContracts
                 .AnyAsync(pc => pc.ProjectId == projectId && pc.ContractId == contractId);
 
@@ -279,6 +311,8 @@ namespace AuthApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DetachContract(int projectContractId, int projectId)
         {
+            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+
             var link = await _context.ProjectContracts.FindAsync(projectContractId);
             if (link != null)
             {

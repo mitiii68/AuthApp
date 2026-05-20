@@ -2,6 +2,7 @@
 @model AuthApp.Models.Project
 @{
     bool isEdit = Model.Id != 0;
+    bool isAdmin = Context.Session.GetString("UserRole") == "Admin";
     ViewData["Title"] = isEdit ? "Редактирование проекта" : "Создание проекта";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -137,6 +138,13 @@
                         <h3 class="card-title">Общая информация</h3>
                     </div>
 
+                    @if (!isAdmin)
+                    {
+                        <div class="alert alert-info mx-3 mt-3 mb-0" style="border-radius:8px;font-size:14px">
+                            <i class="fas fa-eye me-2"></i>Режим просмотра — редактирование недоступно
+                        </div>
+                    }
+
                     <form asp-action="@(isEdit ? "Edit" : "Create")" method="post" id="projectForm">
                         @Html.AntiForgeryToken()
                         @if (isEdit)
@@ -151,33 +159,33 @@
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Name">Наименование проекта <span class="text-danger">*</span></label>
-                                    <input asp-for="Name" class="form-control" placeholder="Введите наименование">
+                                    <input asp-for="Name" class="form-control" placeholder="Введите наименование" readonly="@(!isAdmin)">
                                     <span asp-validation-for="Name" class="text-danger small"></span>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Team">Команда проекта <span class="text-danger">*</span></label>
-                                    <input asp-for="Team" class="form-control" placeholder="Введите команду">
+                                    <input asp-for="Team" class="form-control" placeholder="Введите команду" readonly="@(!isAdmin)">
                                     <span asp-validation-for="Team" class="text-danger small"></span>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Budget">Сумма (бюджет)</label>
                                     <input asp-for="Budget" type="number" step="0.01" min="0"
-                                           class="form-control" placeholder="Введите сумму">
+                                           class="form-control" placeholder="Введите сумму" readonly="@(!isAdmin)">
                                     <span asp-validation-for="Budget" class="text-danger small"></span>
                                 </div>
 
                                 <div class="col-12 form-group">
                                     <label asp-for="Description">Описание <span class="text-danger">*</span></label>
                                     <textarea asp-for="Description" class="form-control" rows="3"
-                                              placeholder="Введите описание проекта"></textarea>
+                                              placeholder="Введите описание проекта" readonly="@(!isAdmin)"></textarea>
                                     <span asp-validation-for="Description" class="text-danger small"></span>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Status">Статус <span class="text-danger">*</span></label>
-                                    <select asp-for="Status" class="form-control"
+                                    <select asp-for="Status" class="form-control" disabled="@(!isAdmin)"
                                             asp-items='@(new SelectList(new[] {
                                                 "На стадии идеи","Разработка бюджета и КП","Бюджет утвержден",
                                                 "Объявлены закупки","Договор на согласовании","На регистрации","Выполняется","Завершен"
@@ -191,20 +199,23 @@
                                     <label asp-for="ProjectGroup">Группа проектов</label>
                                     <div class="input-group">
                                         <input asp-for="ProjectGroup" class="form-control" id="ProjectGroup"
-                                               placeholder="Введите или выберите группу" autocomplete="off">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-outline-secondary"
-                                                    onclick="openModal('modalProjectGroups')"
-                                                    title="Выбрать из существующих">
-                                                <i class="fas fa-list"></i>
-                                            </button>
-                                        </div>
+                                               placeholder="Введите или выберите группу" autocomplete="off" readonly="@(!isAdmin)">
+                                        @if (isAdmin)
+                                        {
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        onclick="openModal('modalProjectGroups')"
+                                                        title="Выбрать из существующих">
+                                                    <i class="fas fa-list"></i>
+                                                </button>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="ResponsiblePerson">Ответственный <span class="text-danger">*</span></label>
-                                    <select asp-for="ResponsiblePerson" class="form-control">
+                                    <select asp-for="ResponsiblePerson" class="form-control" disabled="@(!isAdmin)">
                                         <option value="">Выберите значение</option>
                                         @if (ViewBag.Users != null)
                                         {
@@ -228,7 +239,7 @@
                                     <label asp-for="StartDate">Дата начала <span class="text-danger">*</span></label>
                                     <div class="input-group date">
                                         @{ var startVal = Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : ""; }
-                                        <input asp-for="StartDate" id="StartDate" type="date" class="form-control" value="@startVal">
+                                        <input asp-for="StartDate" id="StartDate" type="date" class="form-control" value="@startVal" readonly="@(!isAdmin)">
                                     </div>
                                 </div>
 
@@ -236,40 +247,47 @@
                                     <label asp-for="ActualEndDate">Фактическая дата завершения</label>
                                     <div class="input-group date">
                                         @{ var actualVal = Model.ActualEndDate.HasValue ? Model.ActualEndDate.Value.ToString("yyyy-MM-dd") : ""; }
-                                        <input asp-for="ActualEndDate" id="ActualEndDate" type="date" class="form-control" value="@actualVal">
+                                        <input asp-for="ActualEndDate" id="ActualEndDate" type="date" class="form-control" value="@actualVal" readonly="@(!isAdmin)">
                                     </div>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Contractors">Контрагенты <span class="text-danger">*</span></label>
                                     <input type="hidden" asp-for="Contractors" id="ContractorsHidden" />
-                                    <div class="cs-wrap" id="cpWrap">
-                                        <div class="cs-trigger" id="cpTrigger">
-                                            <span class="cs-trigger-text" id="cpDisplay">
-                                                @(string.IsNullOrEmpty(Model.Contractors)
-                                                    ? "— Выберите контрагента —"
-                                                    : Model.Contractors)
-                                            </span>
-                                            <i class="fas fa-chevron-down cs-arrow"></i>
-                                        </div>
-                                        <div class="cs-dropdown" id="cpDropdown">
-                                            <div class="cs-search-wrap">
-                                                <input type="text" class="cs-search" id="cpSearch"
-                                                       placeholder="Поиск по названию...">
+                                    @if (isAdmin)
+                                    {
+                                        <div class="cs-wrap" id="cpWrap">
+                                            <div class="cs-trigger" id="cpTrigger">
+                                                <span class="cs-trigger-text" id="cpDisplay">
+                                                    @(string.IsNullOrEmpty(Model.Contractors)
+                                                        ? "— Выберите контрагента —"
+                                                        : Model.Contractors)
+                                                </span>
+                                                <i class="fas fa-chevron-down cs-arrow"></i>
                                             </div>
-                                            <div class="cs-list" id="cpList">
-                                                <div class="cs-option cs-loading">
-                                                    <i class="fas fa-spinner fa-spin me-1"></i> Загрузка...
+                                            <div class="cs-dropdown" id="cpDropdown">
+                                                <div class="cs-search-wrap">
+                                                    <input type="text" class="cs-search" id="cpSearch"
+                                                           placeholder="Поиск по названию...">
+                                                </div>
+                                                <div class="cs-list" id="cpList">
+                                                    <div class="cs-option cs-loading">
+                                                        <i class="fas fa-spinner fa-spin me-1"></i> Загрузка...
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        <input type="text" class="form-control" value="@Model.Contractors" readonly>
+                                    }
                                     <span asp-validation-for="Contractors" class="text-danger small"></span>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="InterestSource">Источник интереса <span class="text-danger">*</span></label>
-                                    <select asp-for="InterestSource" class="form-control"
+                                    <select asp-for="InterestSource" class="form-control" disabled="@(!isAdmin)"
                                             asp-items='@(new SelectList(new[] {
                                                 "Постоянный клиент","Самопроизвольный","Сотрудник","Партнер"
                                             }))'>
@@ -279,7 +297,7 @@
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="Employee">Сотрудник</label>
-                                    <select asp-for="Employee" class="form-control">
+                                    <select asp-for="Employee" class="form-control" disabled="@(!isAdmin)">
                                         <option value="">Выберите значение</option>
                                         @if (ViewBag.Users != null)
                                         {
@@ -302,20 +320,23 @@
                                     <label asp-for="Department">Отдел <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input asp-for="Department" class="form-control" id="Department"
-                                               placeholder="Введите или выберите отдел" autocomplete="off">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-outline-secondary"
-                                                    onclick="openModal('modalDepartments')"
-                                                    title="Выбрать из существующих">
-                                                <i class="fas fa-list"></i>
-                                            </button>
-                                        </div>
+                                               placeholder="Введите или выберите отдел" autocomplete="off" readonly="@(!isAdmin)">
+                                        @if (isAdmin)
+                                        {
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        onclick="openModal('modalDepartments')"
+                                                        title="Выбрать из существующих">
+                                                    <i class="fas fa-list"></i>
+                                                </button>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
 
                                 <div class="col-md-6 form-group">
                                     <label asp-for="WarrantyPeriod">Срок гарантии</label>
-                                    <select asp-for="WarrantyPeriod" class="form-control"
+                                    <select asp-for="WarrantyPeriod" class="form-control" disabled="@(!isAdmin)"
                                             asp-items='@(new SelectList(new[] { "3 мес","6 мес","12 мес","24 мес","36 мес","60 мес" }))'>
                                         <option value="">Выберите опцию</option>
                                     </select>
@@ -325,7 +346,7 @@
                                     <label asp-for="PlannedEndDate">Плановая дата завершения</label>
                                     <div class="input-group date">
                                         @{ var plannedVal = Model.PlannedEndDate.HasValue ? Model.PlannedEndDate.Value.ToString("yyyy-MM-dd") : ""; }
-                                        <input asp-for="PlannedEndDate" id="PlannedEndDate" type="date" class="form-control" value="@plannedVal">
+                                        <input asp-for="PlannedEndDate" id="PlannedEndDate" type="date" class="form-control" value="@plannedVal" readonly="@(!isAdmin)">
                                     </div>
                                 </div>
 
@@ -333,11 +354,11 @@
                                     <div class="icheck-primary">
                                         @if (Model.IsActive)
                                         {
-                                            <input asp-for="IsActive" type="checkbox" id="chkActive" checked>
+                                            <input asp-for="IsActive" type="checkbox" id="chkActive" checked disabled="@(!isAdmin)">
                                         }
                                         else
                                         {
-                                            <input asp-for="IsActive" type="checkbox" id="chkActive">
+                                            <input asp-for="IsActive" type="checkbox" id="chkActive" disabled="@(!isAdmin)">
                                         }
                                         <label for="chkActive">Актуальный</label>
                                     </div>
@@ -349,11 +370,14 @@
                         <div id="newContractInputs"></div>
 
                         <div class="card-footer d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                Сохранить
-                            </button>
+                            @if (isAdmin)
+                            {
+                                <button type="submit" class="btn btn-success">
+                                    Сохранить
+                                </button>
+                            }
                             <a asp-action="Index" class="btn btn-default">
-                                Отменить
+                                @(isAdmin ? "Отменить" : "Назад")
                             </a>
                         </div>
                     </form>
@@ -373,18 +397,27 @@
                             <label class="font-weight-bold mb-2 d-block">
                                 <i class="fas fa-search me-1 text-muted"></i>Найти и прикрепить договор
                             </label>
-                            <div class="input-group">
-                                <input type="text" id="contractSearchInput" class="form-control contract-search-input"
-                                       placeholder="Поиск по номеру или наименованию договора..."
-                                       autocomplete="off">
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-outline-secondary" id="btnClearContractSearch"
-                                            title="Очистить">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                            @if (isAdmin)
+                            {
+                                <div class="input-group">
+                                    <input type="text" id="contractSearchInput" class="form-control contract-search-input"
+                                           placeholder="Поиск по номеру или наименованию договора..."
+                                           autocomplete="off">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary" id="btnClearContractSearch"
+                                                title="Очистить">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="contract-results" id="contractResults"></div>
+                                <div class="contract-results" id="contractResults"></div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-secondary py-2" style="font-size:13px;border-radius:8px">
+                                    <i class="fas fa-lock me-1"></i>Прикрепление договоров доступно только администратору
+                                </div>
+                            }
                         </div>
 
                         @if (isEdit)
@@ -404,7 +437,7 @@
                                             <th>Номер договора</th>
                                             <th>Наименование</th>
                                             <th>Дата заключения</th>
-                                            <th style="width:80px" class="text-right">Открепить</th>
+                                            @if (isAdmin) { <th style="width:80px" class="text-right">Открепить</th> }
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -424,17 +457,20 @@
                                                     @(pc.Contract?.ConclusionDate.HasValue == true
                                                         ? pc.Contract.ConclusionDate.Value.ToString("dd.MM.yyyy") : "—")
                                                 </td>
-                                                <td class="text-right">
-                                                    <form asp-action="DetachContract" method="post" class="d-inline"
-                                                          onsubmit="return confirm('Открепить договор «@(pc.Contract?.ContractNumber)» от проекта?')">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="projectContractId" value="@pc.Id" />
-                                                        <input type="hidden" name="projectId"         value="@Model.Id" />
-                                                        <button type="submit" class="btn btn-xs btn-danger" title="Открепить">
-                                                            <i class="fas fa-unlink"></i>
-                                                        </button>
-                                                    </form>
-                                                </td>
+                                                @if (isAdmin)
+                                                {
+                                                    <td class="text-right">
+                                                        <form asp-action="DetachContract" method="post" class="d-inline"
+                                                              onsubmit="return confirm('Открепить договор «@(pc.Contract?.ContractNumber)» от проекта?')">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="projectContractId" value="@pc.Id" />
+                                                            <input type="hidden" name="projectId"         value="@Model.Id" />
+                                                            <button type="submit" class="btn btn-xs btn-danger" title="Открепить">
+                                                                <i class="fas fa-unlink"></i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                }
                                             </tr>
                                         }
                                     </tbody>

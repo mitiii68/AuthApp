@@ -138,7 +138,10 @@
 <div style="padding: 32px;">
     <div class="page-header">
         <h1 class="page-title">Контрагенты</h1>
-        <a asp-action="Create" class="btn-primary-custom">+ Добавить контрагента</a>
+        @if (Context.Session.GetString("UserRole") == "Admin")
+        {
+            <a asp-action="Create" class="btn-primary-custom">+ Добавить контрагента</a>
+        }
     </div>
 
     <div class="card-table">
@@ -160,7 +163,14 @@
                         <td colspan="6">
                             <div class="empty-state">
                                 <div class="empty-state-icon">🏢</div>
-                                <p>Контрагенты не найдены. <a asp-action="Create" style="color:var(--blue)">Добавить первого?</a></p>
+                                @if (Context.Session.GetString("UserRole") == "Admin")
+                                {
+                                    <p>Контрагенты не найдены. <a asp-action="Create" style="color:var(--blue)">Добавить первого?</a></p>
+                                }
+                                else
+                                {
+                                    <p>Контрагенты не найдены.</p>
+                                }
                             </div>
                         </td>
                     </tr>
@@ -197,12 +207,15 @@
                             </td>
                             <td>@item.IinBin</td>
                             <td>
-                                <div class="actions-cell">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-edit">Изменить</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id"
-                                       onclick="return confirm('Удалить контрагента @item.Name?')"
-                                       class="btn-delete">Удалить</a>
-                                </div>
+                                @if (Context.Session.GetString("UserRole") == "Admin")
+                                {
+                                    <div class="actions-cell">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn-edit">Изменить</a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id"
+                                           onclick="return confirm('Удалить контрагента @item.Name?')"
+                                           class="btn-delete">Удалить</a>
+                                    </div>
+                                }
                             </td>
                         </tr>
                     }

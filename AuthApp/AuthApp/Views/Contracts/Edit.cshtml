@@ -6,6 +6,7 @@
     var counterparties       = ViewBag.Counterparties as List<AuthApp.Models.Counterparty> ?? new();
     var users                = ViewBag.Users as List<AuthApp.Models.User> ?? new();
     var selectedParticipants = ViewBag.SelectedParticipants as List<int> ?? new();
+    bool isAdmin             = Context.Session.GetString("UserRole") == "Admin";
 }
 
 <style>
@@ -88,8 +89,18 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         Назад
     </a>
-    <h1>Редактировать договор</h1>
+    <h1>@(isAdmin ? "Редактировать договор" : "Просмотр договора")</h1>
 </div>
+
+@if (!isAdmin)
+{
+    <div class="form-card" style="background:#eff6ff;border-color:#bfdbfe;padding:14px 20px;margin-bottom:0">
+        <span style="font-size:14px;font-weight:700;color:#1d4ed8">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Режим просмотра — редактирование недоступно
+        </span>
+    </div>
+}
 
 <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
 
@@ -99,22 +110,22 @@
 
             <div class="form-group">
                 <label class="required">Полное наименование</label>
-                <input name="FullName" class="form-input" value="@Model.FullName" placeholder="Введите полное наименование..." />
+                <input name="FullName" class="form-input" value="@Model.FullName" placeholder="Введите полное наименование..." @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Краткое наименование</label>
-                <input name="ShortName" class="form-input" value="@Model.ShortName" placeholder="Краткое название..." />
+                <input name="ShortName" class="form-input" value="@Model.ShortName" placeholder="Краткое название..." @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Номер договора</label>
-                <input name="ContractNumber" class="form-input" value="@Model.ContractNumber" placeholder="№ договора..." />
+                <input name="ContractNumber" class="form-input" value="@Model.ContractNumber" placeholder="№ договора..." @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Контрагент</label>
-                <select name="CounterpartyId" class="form-select">
+                <select name="CounterpartyId" class="form-select" @(!isAdmin ? "disabled" : "")>
                     <option value="">— Выберите контрагента —</option>
                     @foreach (var cp in counterparties)
                     {
@@ -125,7 +136,7 @@
 
             <div class="form-group">
                 <label>Стадия</label>
-                <select name="Stage" class="form-select">
+                <select name="Stage" class="form-select" @(!isAdmin ? "disabled" : "")>
                     <option value="">— Выберите стадию —</option>
                     <option value="0" selected="@(Model.Stage == AuthApp.Enums.ContractStage.InProgress)">Выполняется</option>
                     <option value="1" selected="@(Model.Stage == AuthApp.Enums.ContractStage.Completed)">Завершён</option>
@@ -137,7 +148,7 @@
 
             <div class="form-group">
                 <label>Тип договора</label>
-                <select name="Type" class="form-select">
+                <select name="Type" class="form-select" @(!isAdmin ? "disabled" : "")>
                     <option value="">— Выберите тип —</option>
                     <option value="0" selected="@(Model.Type == AuthApp.Enums.ContractType.Outgoing)">Исходящий</option>
                     <option value="1" selected="@(Model.Type == AuthApp.Enums.ContractType.Incoming)">Входящий</option>
@@ -146,7 +157,7 @@
 
             <div class="form-group">
                 <label>Ответственный</label>
-                <select name="ResponsibleUserId" class="form-select">
+                <select name="ResponsibleUserId" class="form-select" @(!isAdmin ? "disabled" : "")>
                     <option value="">— Выберите ответственного —</option>
                     @foreach (var u in users)
                     {
@@ -157,31 +168,33 @@
 
             <div class="form-group">
                 <label>Сумма с НДС</label>
-                <input name="amountRaw" type="text" class="form-input" value="@Model.AmountWithVat?.ToString(System.Globalization.CultureInfo.InvariantCulture)" placeholder="0.00" />
+                <input name="amountRaw" type="text" class="form-input" value="@Model.AmountWithVat?.ToString(System.Globalization.CultureInfo.InvariantCulture)" placeholder="0.00" @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Дата заключения</label>
-                <input name="ConclusionDate" type="date" class="form-input" value="@Model.ConclusionDate?.ToString("yyyy-MM-dd")" />
+                <input name="ConclusionDate" type="date" class="form-input" value="@Model.ConclusionDate?.ToString("yyyy-MM-dd")" @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Дата начала исполнения</label>
-                <input name="ExecutionStartDate" type="date" class="form-input" value="@Model.ExecutionStartDate?.ToString("yyyy-MM-dd")" />
+                <input name="ExecutionStartDate" type="date" class="form-input" value="@Model.ExecutionStartDate?.ToString("yyyy-MM-dd")" @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Дата закрытия</label>
-                <input name="ClosingDate" type="date" class="form-input" value="@Model.ClosingDate?.ToString("yyyy-MM-dd")" />
+                <input name="ClosingDate" type="date" class="form-input" value="@Model.ClosingDate?.ToString("yyyy-MM-dd")" @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group">
                 <label>Ответственный со стороны заказчика</label>
-                <input name="ResponsibleFromCustomer" class="form-input" value="@Model.ResponsibleFromCustomer" placeholder="ФИО..." />
+                <input name="ResponsibleFromCustomer" class="form-input" value="@Model.ResponsibleFromCustomer" placeholder="ФИО..." @(!isAdmin ? "readonly" : "") />
             </div>
 
             <div class="form-group full">
                 <label>Участники</label>
+                @if (isAdmin)
+                {
                 <div class="multi-picker-wrap" id="participantWrap">
                     <div class="multi-picker-trigger" id="participantTrigger" onclick="togglePicker()">
                         <div class="multi-picker-chips" id="participantChips">
@@ -206,6 +219,20 @@
                     </div>
                     <div id="participantHidden"></div>
                 </div>
+                }
+                else
+                {
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 0">
+                        @foreach (var uid in selectedParticipants)
+                        {
+                            var u = users.FirstOrDefault(x => x.UserId == uid);
+                            if (u != null)
+                            {
+                                <span style="background:#e7ecfd;color:#3b5bdb;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700">@(u.FullName ?? u.Email)</span>
+                            }
+                        }
+                    </div>
+                }
             </div>
 
         </div>
@@ -235,6 +262,8 @@
             </div>
         </div>
 
+        @if (isAdmin)
+        {
         <div class="form-group" style="margin-top:16px;">
             <label>Загрузить новый файл</label>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -247,14 +276,18 @@
             </div>
             <div id="uploadStatus" style="font-size:13px;margin-top:8px;"></div>
         </div>
+        }
     </div>
 
     <div class="form-actions">
-        <a asp-action="Index" class="btn btn-ghost">Отмена</a>
-        <button type="submit" class="btn btn-primary">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            Сохранить изменения
-        </button>
+        <a asp-action="Index" class="btn btn-ghost">@(isAdmin ? "Отмена" : "Назад")</a>
+        @if (isAdmin)
+        {
+            <button type="submit" class="btn btn-primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Сохранить изменения
+            </button>
+        }
     </div>
 
 </form>

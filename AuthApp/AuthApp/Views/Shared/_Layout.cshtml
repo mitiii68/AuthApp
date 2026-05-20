@@ -197,7 +197,11 @@
 
 
             @using Microsoft.AspNetCore.Http
-            
+            @{
+                var _userRole = Context.Session.GetString("UserRole");
+                var _isAdmin  = _userRole == "Admin";
+                var _isUser   = _userRole == "User";
+            }
 
             <ul class="navbar-nav-links">
                 <li class="dropdown">
@@ -210,32 +214,38 @@
                                 Главная
                             </a>
                         </li>
-                        
                     </ul>
                 </li>
 
-
-                @if (Context.Session.GetString("UserRole") == "Admin")
+                @if (_isAdmin || _isUser)
                 {
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
                             Настройки
                         </a>
                         <ul class="dropdown-menu">
+                            @* Документы — Admin полный доступ, User только просмотр *@
                             <li><a class="dropdown-item" asp-controller="Documents" asp-action="Index">Документы</a></li>
-                            <li><a class="dropdown-item" asp-controller="Documents" asp-action="Upload">Загрузка файлов</a></li>
-                            <li><a class="dropdown-item" asp-controller="Tags" asp-action="Index">Теги</a></li>
-                            <li><a class="dropdown-item" asp-controller="TagCategories" asp-action="Index">Категории тегов</a></li>
+                            @if (_isAdmin)
+                            {
+                                <li><a class="dropdown-item" asp-controller="Documents" asp-action="Upload">Загрузка файлов</a></li>
+                                <li><a class="dropdown-item" asp-controller="Tags" asp-action="Index">Теги</a></li>
+                                <li><a class="dropdown-item" asp-controller="TagCategories" asp-action="Index">Категории тегов</a></li>
+                            }
+                            @* Проекты и Договоры — оба видят *@
                             <li><a class="dropdown-item" asp-controller="Projects" asp-action="Index">Проекты</a></li>
                             <li><hr class="dropdown-divider" /></li>
-                            <li><a class="dropdown-item" asp-controller="Counterparties" asp-action="Index">Контрагенты</a></li>
                             <li><a class="dropdown-item" asp-controller="Contracts" asp-action="Index">Договоры</a></li>
-                            <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Пользователи</a></li>
-                            <li><a class="dropdown-item" asp-controller="Positions" asp-action="Index">Должности</a></li>
-                            <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Роли</a></li>
-                            <li><a class="dropdown-item" asp-controller="LoginHistory" asp-action="Index">История входов</a></li>
-                            <li><a class="dropdown-item" asp-controller="Users" asp-action="ActionLogs">История действий</a></li>
-
+                            @if (_isAdmin)
+                            {
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" asp-controller="Counterparties" asp-action="Index">Контрагенты</a></li>
+                                <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Пользователи</a></li>
+                                <li><a class="dropdown-item" asp-controller="Positions" asp-action="Index">Должности</a></li>
+                                <li><a class="dropdown-item" asp-controller="Roles" asp-action="Index">Роли</a></li>
+                                <li><a class="dropdown-item" asp-controller="LoginHistory" asp-action="Index">История входов</a></li>
+                                <li><a class="dropdown-item" asp-controller="Users" asp-action="ActionLogs">История действий</a></li>
+                            }
                         </ul>
                     </li>
                 }

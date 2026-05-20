@@ -56,7 +56,8 @@ namespace AuthApp.Controllers
 
         public async Task<IActionResult> Index(string search, int page = 1, int pageSize = 10)
         {
-            if (!IsAdmin()) return RedirectToAction("Index", "Home");
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role != "Admin" && role != "User") return RedirectToAction("Index", "Home");
 
             var query = _context.Contracts
                 .Include(c => c.Counterparty)
