@@ -405,7 +405,7 @@ let apConnection = null;
 function apInitSignalR() {
     const dot = document.getElementById('apRealtimeDot');
     apConnection = new signalR.HubConnectionBuilder()
-        .withUrl('/hubs/approval')
+    .withUrl('/hubs/approvalNotification')
         .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
         .configureLogging(signalR.LogLevel.Warning)
         .build();

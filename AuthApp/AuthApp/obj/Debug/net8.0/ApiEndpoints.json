@@ -157,6 +157,26 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "AuthApp.Controllers.NotificationsController",
+    "Method": "ReadAll",
+    "RelativePath": "api/notifications/read-all",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthApp.Controllers.NotificationsController",
+    "Method": "GetUnread",
+    "RelativePath": "api/notifications/unread",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "AuthApp.Controllers.Api.PositionsController",
     "Method": "GetAll",
     "RelativePath": "api/positions",

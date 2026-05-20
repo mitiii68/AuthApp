@@ -290,5 +290,75 @@
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    @if (Context.Session.GetString("UserId") != null)
+    {
+        <script>
+            (function () {
+            const userId = "@Context.Session.GetString("UserId")";
+            if (!userId) return;
+
+            const container = document.createElement('div');
+            container.id = 'notif-container';
+            Object.assign(container.style, {
+            position: 'fixed', top: '70px', right: '20px',
+            zIndex: '9999', display: 'flex', flexDirection: 'column', gap: '10px'
+            });
+            document.body.appendChild(container);
+
+            function showToast(dto) {
+            const toast = document.createElement('div');
+            toast.innerHTML = `
+            <div style="font-weight:600;margin-bottom:4px">${dto.title}</div>
+            <div style="font-size:13px;color:#374151">${dto.message}</div>
+            ${dto.url ? `<a href="${dto.url}" style="font-size:12px;color:#1a6fd4;text-decoration:none;margin-top:6px;display:inline-block">Перейти →</a>` : ''}
+            `;
+            Object.assign(toast.style, {
+            background: '#fff', border: '1px solid #e5e7eb',
+            borderLeft: '4px solid #1a6fd4', borderRadius: '10px',
+            padding: '14px 16px', minWidth: '300px', maxWidth: '360px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            animation: 'slideIn 0.25s ease', cursor: 'pointer'
+            });
+            toast.onclick = () => { if (dto.url) location.href = dto.url; else toast.remove(); };
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.4s'; setTimeout(() => toast.remove(), 400); }, 6000);
+            }
+
+            const style = document.createElement('style');
+            style.textContent = `@@keyframes slideIn { from { transform: translateX(40px); opacity:0 } to { transform: translateX(0); opacity:1 } }`;
+            document.head.appendChild(style);
+
+            
+            const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/hubs/approvalNotification")
+            .withAutomaticReconnect()
+            .build();
+
+            connection.on("ReceiveNotification", showToast);
+
+            connection.start()
+            .then(() => {
+                connection.invoke("Join", userId);
+                return fetch('/api/notifications/unread');
+            })
+            .then(r => r.json())
+            .then(list => {
+                list.forEach(item => showToast({
+                    title: item.title,
+                    message: item.message,
+                    url: item.url,
+                    type: item.type
+                }));
+                if (list.length > 0) {
+                    fetch('/api/notifications/read-all', { method: 'POST' });
+                }
+            })
+            .catch(err => console.warn("SignalR:", err));
+            })();
+        </script>
+    }
 </body>
 </html>

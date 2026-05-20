@@ -1,7 +1,8 @@
 using AuthApp.Data;
-using Microsoft.EntityFrameworkCore;
+using AuthApp.Hubs;
 using AuthApp.Models;
 using AuthApp.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,7 @@ app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHub<AuthApp.Hubs.ApprovalNotificationHub>("/hubs/approval");
+app.MapHub<ApprovalNotificationHub>("/hubs/approvalNotification");
 
 app.MapControllerRoute(
     name: "default",

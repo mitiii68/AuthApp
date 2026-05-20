@@ -28,7 +28,8 @@ namespace AuthApp.Controllers
         public async Task<IActionResult> Start(int documentId,
             [FromBody] StartApprovalRequest request, CancellationToken ct)
         {
-            await _service.StartApprovalAsync(documentId, request, ct);
+            var userId = GetCurrentUserId();
+            await _service.StartApprovalAsync(documentId, request, userId, ct);
             return Ok(new { message = "Согласование запущено." });
         }
 

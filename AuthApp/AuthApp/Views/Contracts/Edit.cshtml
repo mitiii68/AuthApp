@@ -256,8 +256,10 @@
             Сохранить изменения
         </button>
     </div>
-    @await Html.PartialAsync("_ApprovalSection", Model)
+
 </form>
+
+@await Html.PartialAsync("_ApprovalSection", Model)
 
 <script>
 const selectedIds = new Set(@Html.Raw("[" + string.Join(",", selectedParticipants) + "]"));

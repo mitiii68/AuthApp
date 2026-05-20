@@ -2,13 +2,15 @@ using AuthApp.Data;
 using AuthApp.DTOs;
 using AuthApp.Enums;
 using AuthApp.Models;
+using AuthApp.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApp.Services
 {
     public interface IDocumentApprovalService
     {
-        Task StartApprovalAsync(int contractDocumentId, StartApprovalRequest request, CancellationToken ct = default);
+        Task StartApprovalAsync(int contractDocumentId, StartApprovalRequest request, int initiatorUserId = 0, CancellationToken ct = default);
         Task MarkViewedAsync(int approvalId, int currentUserId, CancellationToken ct = default);
         Task MakeDecisionAsync(int approvalId, int currentUserId, ApprovalDecisionRequest request, CancellationToken ct = default);
         Task<DocumentApprovalDto> GetApprovalHistoryAsync(int contractDocumentId, CancellationToken ct = default);
@@ -18,12 +20,14 @@ namespace AuthApp.Services
     public class DocumentApprovalService : IDocumentApprovalService
     {
         private readonly AppDbContext _db;
+        private readonly IHubContext<ApprovalNotificationHub> _hub;
 
-        public DocumentApprovalService(AppDbContext db)
+        public DocumentApprovalService(AppDbContext db, IHubContext<ApprovalNotificationHub> hub)
         {
             _db = db;
+            _hub = hub;
         }
-        public async Task StartApprovalAsync(int contractDocumentId, StartApprovalRequest request, CancellationToken ct = default)
+        public async Task StartApprovalAsync(int contractDocumentId, StartApprovalRequest request, int initiatorUserId = 0, CancellationToken ct = default)
         {
             var document = await _db.ContractDocuments
                 .Include(d => d.Contract)
@@ -69,6 +73,33 @@ namespace AuthApp.Services
             document.ApprovedAt = null;
 
             await _db.SaveChangesAsync(ct);
+
+            var contractId = document.ContractId;
+            var docName = document.FullName ?? $"Документ #{contractDocumentId}";
+            foreach (var participant in ordered)
+            {
+                if (participant.UserId == initiatorUserId) continue;
+
+                _db.UserNotifications.Add(new UserNotification
+                {
+                    UserId    = participant.UserId,
+                    Type      = "started",
+                    Title     = "Запущено согласование",
+                    Message   = $"Документ «{docName}» ожидает вашего согласования.",
+                    Url       = $"/Contracts/Edit/{contractId}",
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                await _hub.SendApprovalNotification(participant.UserId, new ApprovalNotificationDto
+                {
+                    Type    = "started",
+                    Title   = "Запущено согласование",
+                    Message = $"Документ «{docName}» ожидает вашего согласования.",
+                    Url     = $"/Contracts/Edit/{contractId}",
+                    SentAt  = DateTime.UtcNow
+                });
+            }
+            await _db.SaveChangesAsync(ct);
         }
         public async Task MarkViewedAsync(int approvalId, int currentUserId, CancellationToken ct = default)
         {
@@ -110,6 +141,38 @@ namespace AuthApp.Services
 
             await _db.SaveChangesAsync(ct);
             await RecalculateDocumentStatusAsync(approval.ContractDocumentId, ct);
+
+            var doc2 = await _db.ContractDocuments
+                .Include(d => d.Contract)
+                .FirstOrDefaultAsync(d => d.Id == approval.ContractDocumentId, ct);
+            if (doc2?.Contract?.ResponsibleUserId != null)
+            {
+                var decisionText = request.Decision == ApprovalStatus.Approved ? "согласовал" : "отклонил";
+                var participantName = approval.ContractParticipant?.User?.FullName ?? "Участник";
+                var notifMsg = $"{participantName} {decisionText} документ «{doc2.FullName ?? $"#{approval.ContractDocumentId}"}».";
+                var notifUrl = $"/Contracts/Edit/{doc2.ContractId}";
+                var recipientId = doc2.Contract.ResponsibleUserId.Value;
+
+                _db.UserNotifications.Add(new UserNotification
+                {
+                    UserId    = recipientId,
+                    Type      = "decided",
+                    Title     = "Решение по согласованию",
+                    Message   = notifMsg,
+                    Url       = notifUrl,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await _db.SaveChangesAsync(ct);
+
+                await _hub.SendApprovalNotification(recipientId, new ApprovalNotificationDto
+                {
+                    Type    = "decided",
+                    Title   = "Решение по согласованию",
+                    Message = notifMsg,
+                    Url     = notifUrl,
+                    SentAt  = DateTime.UtcNow
+                });
+            }
         }
 
         public async Task<DocumentApprovalDto> GetApprovalHistoryAsync(int contractDocumentId, CancellationToken ct = default)
@@ -151,6 +214,7 @@ namespace AuthApp.Services
         {
             var approval = await _db.DocumentApprovals
                 .Include(a => a.ContractParticipant)
+                    .ThenInclude(p => p!.User)
                 .Include(a => a.ContractDocument)
                 .FirstOrDefaultAsync(a => a.Id == approvalId, ct)
                 ?? throw new KeyNotFoundException($"Запись согласования {approvalId} не найдена.");

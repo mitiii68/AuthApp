@@ -24,7 +24,6 @@ namespace AuthApp.Controllers
             return role == "Admin";
         }
 
-        // Договор заблокирован если все его документы согласованы
         private async Task<bool> IsContractLockedAsync(int contractId)
         {
             var docs = await _context.ContractDocument
@@ -261,8 +260,14 @@ namespace AuthApp.Controllers
                 existing.AmountWithVat = null;
             }
 
-            _context.ContractParticipants.RemoveRange(existing.Participants);
-            foreach (var userId in participantIds)
+            var existingUserIds = existing.Participants.Select(p => p.UserId).ToHashSet();
+            var newUserIds = participantIds.ToHashSet();
+            var toRemove = existing.Participants
+                .Where(p => !newUserIds.Contains(p.UserId))
+                .ToList();
+            _context.ContractParticipants.RemoveRange(toRemove);
+
+            foreach (var userId in newUserIds.Except(existingUserIds))
             {
                 _context.ContractParticipants.Add(new ContractParticipant
                 {
@@ -275,8 +280,6 @@ namespace AuthApp.Controllers
                 .Where(cd => cd.ContractId == id)
                 .ToListAsync();
 
-            // Удаляем только те документы которые не согласованы и не на согласовании
-            // (чтобы не потерять историю согласования)
             var docsToRemove = oldDocs
                 .Where(d => !documentIds.Contains(d.FileDocumentId ?? 0)
                     && d.ApprovalStatus != DocumentApprovalStatus.Approved
@@ -284,7 +287,6 @@ namespace AuthApp.Controllers
                 .ToList();
             _context.ContractDocument.RemoveRange(docsToRemove);
 
-            // Добавляем только новые документы которых ещё нет
             var existingFileIds = oldDocs.Select(d => d.FileDocumentId).ToHashSet();
             foreach (var docId in documentIds)
             {
