@@ -27,5 +27,7 @@ namespace AuthApp.Models
         public double? Longitude { get; set; }
         public int? PositionId { get; set; }
         public Position? Position { get; set; }
+
+        public bool AlwaysInApproval { get; set; } = false;
     }
 }

@@ -190,6 +190,14 @@
     .ap-notif-msg   { font-size: 12px; color: var(--text-sub); margin-top: 2px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ap-notif-time  { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
     .ap-notif-empty { padding: 28px 16px; text-align: center; font-size: 13px; color: var(--text-sub); font-weight: 600; }
+    .ap-always-badge {
+        display: inline-flex; align-items: center; gap: 3px;
+        padding: 2px 7px; border-radius: 20px;
+        background: #e7ecfd; color: #3b5bdb;
+        font-size: 10px; font-weight: 800;
+        white-space: nowrap; flex-shrink: 0;
+        border: 1px solid rgba(59,91,219,.2);
+    }
 
     .ap-realtime-dot {
         width: 8px; height: 8px; border-radius: 50%;
@@ -495,6 +503,12 @@ function apBuildBlock(doc) {
         const vAt = r.viewedAt  ? `<span class="ap-date set">${new Date(r.viewedAt).toLocaleString('ru')}</span>`  : `<span class="ap-date">—</span>`;
         const dAt = r.decidedAt ? `<span class="ap-date set">${new Date(r.decidedAt).toLocaleString('ru')}</span>` : `<span class="ap-date">—</span>`;
         const cmt = r.comment   ? `<span class="ap-comment set" title="${apEsc(r.comment)}">${apEsc(r.comment)}</span>` : `<span class="ap-comment">—</span>`;
+        const alwaysBadge = r.isAlwaysInApproval
+            ? `<span class="ap-always-badge" title="Всегда в согласовании">
+                   <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 3.9 2.4-7.4L2 9.4h7.6z"/></svg>
+                   обязательный
+               </span>`
+            : '';
 
         const myRow = r.isCurrentUser && r.status === 0 && doc.approvalStatus === 1;
         const btns  = myRow
@@ -509,7 +523,9 @@ function apBuildBlock(doc) {
                     ${orderEl}
                     <div class="ap-avatar">${initials}</div>
                     <div>
-                        <div class="ap-name">${apEsc(r.fullName ?? '—')}</div>
+                        <div class="ap-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                            ${apEsc(r.fullName ?? '—')} ${alwaysBadge}
+                        </div>
                         <div class="ap-pos">${apEsc(r.position ?? '—')}</div>
                     </div>
                 </div>

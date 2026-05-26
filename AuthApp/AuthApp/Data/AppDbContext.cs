@@ -30,6 +30,7 @@ namespace AuthApp.Data
         public DbSet<DocumentApproval> DocumentApprovals => Set<DocumentApproval>();
         public DbSet<Position> Positions { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
+        public DbSet<ContractAcknowledgement> ContractAcknowledgements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

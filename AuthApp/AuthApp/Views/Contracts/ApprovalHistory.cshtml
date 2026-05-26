@@ -2,10 +2,16 @@
 @{
     ViewData["Title"] = "История согласования";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    int contractId = ViewBag.ContractId;
+    int contractId    = ViewBag.ContractId;
     string contractName = ViewBag.ContractName ?? "Договор";
-}
 
+    bool isParticipant       = ViewBag.IsParticipant       is bool vbip && vbip;
+    bool isApprover          = ViewBag.IsApprover          is bool vbia && vbia;
+    bool alreadyAcknowledged = ViewBag.AlreadyAcknowledged is bool vbak && vbak;
+    var  acknowledgements    = ViewBag.Acknowledgements
+                               as List<AuthApp.Models.ContractAcknowledgement>
+                               ?? new List<AuthApp.Models.ContractAcknowledgement>();
+}
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
     :root {
@@ -124,6 +130,14 @@
     .status-approved .badge .badge-dot { background: var(--green-text); }
     .status-rejected .badge { background: var(--danger-light); color: var(--danger); }
     .status-rejected .badge .badge-dot { background: var(--danger); }
+    .always-badge {
+        display: inline-flex; align-items: center; gap: 3px;
+        padding: 2px 7px; border-radius: 20px;
+        background: var(--accent-light); color: var(--accent);
+        font-size: 10px; font-weight: 800;
+        white-space: nowrap; flex-shrink: 0;
+        border: 1px solid rgba(59,91,219,.2);
+    }
 
     .date-cell { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; }
     .date-cell.has-date { color: var(--text); font-weight: 600; }
@@ -216,7 +230,87 @@
         </div>
     </div>
 </div>
+@if (isParticipant && !isApprover)
+{
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;box-shadow:var(--shadow-sm);">
+        <div style="font-size:13px;font-weight:700;color:var(--text-sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;">
+            Документы договора
+        </div>
+        <ul id="docNameList" style="list-style:none;padding:0;margin:0 0 18px 0;display:flex;flex-direction:column;gap:8px;">
+            <li style="color:var(--text-sub);font-size:13px;">Загрузка...</li>
+        </ul>
 
+        @if (alreadyAcknowledged)
+        {
+            <div style="width:100%;padding:11px 20px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;font-size:14px;font-weight:700;color:#1a7f37;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Вы ознакомились
+            </div>
+        }
+        else
+        {
+            <button id="acknowledgeBtn" onclick="openAcknowledgeModal()"
+                    style="width:100%;padding:11px 20px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Ознакомиться
+            </button>
+        }
+    </div>
+}
+
+<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow-sm);">
+    <div style="padding:16px 22px;border-bottom:1.5px solid var(--border);background:var(--surface-2);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:14px;font-weight:800;">
+            Ознакомление с договором
+        </div>
+        <span style="background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px;">
+            @acknowledgements.Count ознакомились
+        </span>
+    </div>
+
+    @if (!acknowledgements.Any())
+    {
+        <div style="padding:32px;text-align:center;color:var(--text-sub);font-size:13px;font-weight:600;">
+            Никто ещё не ознакомился с договором
+        </div>
+    }
+    else
+    {
+        <table class="approval-table">
+            <thead>
+                <tr>
+                    <th>ФИО / Должность</th>
+                    <th>Дата ознакомления</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ack in acknowledgements)
+                {
+                    var initials = (ack.User?.FullName ?? "?")
+                        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Take(2).Select(w => w[0].ToString().ToUpper())
+                        .Aggregate("", (a, b) => a + b);
+                    <tr>
+                        <td>
+                            <div class="participant-cell">
+                                <div class="avatar">@initials</div>
+                                <div>
+                                    <div class="participant-name">@(ack.User?.FullName ?? "—")</div>
+                                    <div class="participant-pos">@(ack.User?.Position?.Name ?? "—")</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="date-cell has-date">
+                                @ack.AcknowledgedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
 <div id="approvalRoot">
     <div class="loading-state">
         <div class="spinner"></div>
@@ -236,8 +330,19 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="acknowledgeModal">
+    <div class="modal-box">
+        <h3>Ознакомление с договором</h3>
+        <p style="line-height:1.6;color:var(--text-sub);font-size:14px;margin-top:8px;">Вы подтверждаете своё согласие со всеми аспектами Договора и обязуетесь выполнить все работы в срок указанный в договоре.</p>
+        <div class="modal-actions" style="margin-top:20px;">
+            <button class="btn btn-ghost btn-sm" onclick="closeAcknowledgeModal()">Отмена</button>
+            <button class="btn btn-success btn-sm" onclick="confirmAcknowledge()">Подтверждаю</button>
+        </div>
+    </div>
+</div>
+
 <script>
-const contractId      = @contractId;
+const contractId      = @(contractId);
 let pendingApprovalId = null;
 let pendingDocumentId = null;
 let pendingDecision   = null;
@@ -299,6 +404,12 @@ function buildCard(doc) {
             const viewedAt  = r.viewedAt  ? `<span class="date-cell has-date">${new Date(r.viewedAt).toLocaleString('ru')}</span>`  : `<span class="date-cell">—</span>`;
             const decidedAt = r.decidedAt ? `<span class="date-cell has-date">${new Date(r.decidedAt).toLocaleString('ru')}</span>` : `<span class="date-cell">—</span>`;
             const comment   = r.comment   ? `<span class="comment-cell has-comment" title="${esc(r.comment)}">${esc(r.comment)}</span>` : `<span class="comment-cell">—</span>`;
+            const alwaysBadge = r.isAlwaysInApproval
+                ? `<span class="always-badge" title="Всегда в согласовании">
+                       <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 3.9 2.4-7.4L2 9.4h7.6z"/></svg>
+                       обязательный
+                   </span>`
+                : '';
 
             const myRow = r.isCurrentUser && r.status === 0 && doc.approvalStatus === 1;
             const btns  = myRow
@@ -320,7 +431,9 @@ function buildCard(doc) {
                         ${orderBadge}
                         <div class="avatar">${initials}</div>
                         <div>
-                            <div class="participant-name">${esc(r.fullName ?? '—')}</div>
+                            <div class="participant-name" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+                                ${esc(r.fullName ?? '—')} ${alwaysBadge}
+                            </div>
                             <div class="participant-pos">${esc(r.position ?? '—')}</div>
                         </div>
                     </div>
@@ -404,5 +517,45 @@ function esc(s) {
     return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+async function loadDocNames() {
+    try {
+        const res  = await fetch(`/Contracts/GetContractDocumentNames/${contractId}`);
+        const docs = await res.json();
+        const ul   = document.getElementById('docNameList');
+        if (!docs.length) {
+            ul.innerHTML = '<li style="color:var(--text-sub);font-size:13px;">Нет прикреплённых документов</li>';
+            return;
+        }
+        ul.innerHTML = docs.map(d => `
+            <li style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--text);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--accent)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                ${esc(d.name)}
+            </li>`).join('');
+    } catch {
+        document.getElementById('docNameList').innerHTML =
+            '<li style="color:var(--danger);font-size:13px;">Не удалось загрузить документы</li>';
+    }
+}
+
+function openAcknowledgeModal() {
+    document.getElementById('acknowledgeModal').classList.add('open');
+}
+function closeAcknowledgeModal() {
+    document.getElementById('acknowledgeModal').classList.remove('open');
+}
+async function confirmAcknowledge() {
+    const res = await fetch(`/Contracts/Acknowledge/${contractId}`, { method: 'POST' });
+    closeAcknowledgeModal();
+    if (res.ok) {
+        window.location.reload();
+    } else {
+        alert('Ошибка при сохранении');
+    }
+}
+
 load();
+// loadDocNames только если блок участника отрендерился
+if (document.getElementById('docNameList')) {
+    loadDocNames();
+}
 </script>

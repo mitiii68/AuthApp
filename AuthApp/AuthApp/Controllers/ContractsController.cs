@@ -1,4 +1,4 @@
-﻿using AuthApp.Data;
+using AuthApp.Data;
 using AuthApp.Enums;
 using AuthApp.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -40,8 +40,8 @@ namespace AuthApp.Controllers
         {
             _context.UserActionLog.Add(new UserActionLog
             {
-                UserEmail = CurrentUserEmail(),
-                Action = action,
+                UserEmail  = CurrentUserEmail(),
+                Action     = action,
                 ActionTime = DateTime.Now
             });
             await _context.SaveChangesAsync();
@@ -50,7 +50,41 @@ namespace AuthApp.Controllers
         private void FillViewBag()
         {
             ViewBag.Stages = Enum.GetValues<ContractStage>();
-            ViewBag.Types = Enum.GetValues<ContractType>();
+            ViewBag.Types  = Enum.GetValues<ContractType>();
+        }
+
+        private async Task EnsureAlwaysInApprovalParticipantsAsync(
+            int contractId,
+            string contractName,
+            HashSet<int> existingParticipantIds)
+        {
+            var mandatoryUsers = await _context.Users
+                .Where(u => u.AlwaysInApproval && !u.IsBlocked)
+                .ToListAsync();
+
+            foreach (var user in mandatoryUsers)
+            {
+                if (!existingParticipantIds.Contains(user.UserId))
+                {
+                    _context.ContractParticipants.Add(new ContractParticipant
+                    {
+                        ContractId = contractId,
+                        UserId     = user.UserId
+                    });
+                    existingParticipantIds.Add(user.UserId);
+
+                    _context.UserNotifications.Add(new UserNotification
+                    {
+                        UserId    = user.UserId,
+                        Type      = "approval",
+                        Title     = "Добавлены в список согласования",
+                        Message   = $"Вы добавлены в список согласования по договору «{contractName}».",
+                        Url       = $"/Contracts/ApprovalHistory/{contractId}",
+                        IsRead    = false,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
         }
 
 
@@ -81,11 +115,11 @@ namespace AuthApp.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            ViewBag.Page = page;
+            ViewBag.Page       = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalCount = totalItems;
-            ViewBag.Search = search;
-            ViewBag.PageSize = pageSize;
+            ViewBag.Search     = search;
+            ViewBag.PageSize   = pageSize;
 
             return View(contracts);
         }
@@ -97,7 +131,12 @@ namespace AuthApp.Controllers
 
             FillViewBag();
             ViewBag.Counterparties = await _context.Counterparties.ToListAsync();
+
             ViewBag.Users = await _context.Users.ToListAsync();
+
+            ViewBag.ApprovalUsers = await _context.Users
+                .Where(u => u.AlwaysInApproval && !u.IsBlocked)
+                .ToListAsync();
 
             ViewBag.SelectedDocuments = new List<int>();
 
@@ -137,16 +176,17 @@ namespace AuthApp.Controllers
                 ModelState.AddModelError("ClosingDate", "Дата закрытия не может быть раньше даты начала исполнения.");
             if (string.IsNullOrWhiteSpace(contract.ResponsibleFromCustomer))
                 ModelState.AddModelError("ResponsibleFromCustomer", "Ответственный со стороны заказчика обязателен.");
-            if (participantIds == null || participantIds.Count == 0)
-                ModelState.AddModelError("participantIds", "Выберите хотя бы одного участника.");
             if (documentIds == null || documentIds.Count == 0)
                 ModelState.AddModelError("documentIds", "Прикрепите хотя бы один документ.");
 
             if (!ModelState.IsValid)
             {
                 FillViewBag();
-                ViewBag.Counterparties = await _context.Counterparties.ToListAsync();
-                ViewBag.Users = await _context.Users.ToListAsync();
+                ViewBag.Counterparties    = await _context.Counterparties.ToListAsync();
+                ViewBag.Users             = await _context.Users.ToListAsync();
+                ViewBag.ApprovalUsers     = await _context.Users
+                    .Where(u => u.AlwaysInApproval && !u.IsBlocked)
+                    .ToListAsync();
                 ViewBag.SelectedDocuments = documentIds ?? new List<int>();
                 return View(contract);
             }
@@ -164,14 +204,18 @@ namespace AuthApp.Controllers
             _context.Contracts.Add(contract);
             await _context.SaveChangesAsync();
 
-            foreach (var userId in participantIds)
+            var participantSet = (participantIds ?? new List<int>()).ToHashSet();
+            foreach (var userId in participantSet)
             {
                 _context.ContractParticipants.Add(new ContractParticipant
                 {
                     ContractId = contract.Id,
-                    UserId = userId
+                    UserId     = userId
                 });
             }
+
+            var contractName = contract.FullName ?? contract.ShortName ?? $"#{contract.Id}";
+            await EnsureAlwaysInApprovalParticipantsAsync(contract.Id, contractName, participantSet);
 
             foreach (var docId in documentIds)
             {
@@ -193,28 +237,27 @@ namespace AuthApp.Controllers
         {
             if (!IsAdmin()) return RedirectToAction("Index", "Home");
 
-            if (await IsContractLockedAsync(id))
-            {
-                TempData["Error"] = "Редактирование заблокировано: все документы договора согласованы.";
-                return RedirectToAction("Index");
-            }
-
             var contract = await _context.Contracts
                 .Include(c => c.Participants)
                 .FirstOrDefaultAsync(c => c.Id == id);
-
 
             if (contract == null) return NotFound();
 
             FillViewBag();
             ViewBag.Counterparties = await _context.Counterparties.ToListAsync();
-            ViewBag.Users = await _context.Users.ToListAsync();
-            ViewBag.SelectedParticipants = contract.Participants.Select(p => p.UserId).ToList();
 
-            ViewBag.SelectedDocuments = await _context.ContractDocument
-                 .Where(cd => cd.ContractId == id)
-                 .Select(cd => cd.FileDocumentId)
-                 .ToListAsync();
+            ViewBag.Users = await _context.Users.ToListAsync();
+
+            ViewBag.ApprovalUsers = await _context.Users
+                .Where(u => u.AlwaysInApproval && !u.IsBlocked)
+                .ToListAsync();
+
+            ViewBag.SelectedParticipants = contract.Participants.Select(p => p.UserId).ToList();
+            ViewBag.SelectedDocuments    = await _context.ContractDocument
+                .Where(cd => cd.ContractId == id)
+                .Select(cd => cd.FileDocumentId)
+                .ToListAsync();
+
             return View(contract);
         }
 
@@ -235,19 +278,19 @@ namespace AuthApp.Controllers
 
             if (existing == null) return NotFound();
 
-            existing.FullName = contract.FullName;
-            existing.ShortName = contract.ShortName;
-            existing.CounterpartyId = contract.CounterpartyId;
-            existing.Stage = contract.Stage;
-            existing.Type = contract.Type;
+            existing.FullName               = contract.FullName;
+            existing.ShortName              = contract.ShortName;
+            existing.CounterpartyId         = contract.CounterpartyId;
+            existing.Stage                  = contract.Stage;
+            existing.Type                   = contract.Type;
             existing.ResponsibleFromCustomer = contract.ResponsibleFromCustomer;
-            existing.ResponsibleUserId = contract.ResponsibleUserId;
-            existing.ConclusionDate = contract.ConclusionDate;
-            existing.ClosingDate = contract.ClosingDate;
-            existing.ExecutionStartDate = contract.ExecutionStartDate;
-            existing.ContractNumber = contract.ContractNumber;
-            existing.SourceContractId = contract.SourceContractId;
-            existing.ProjectId = contract.ProjectId;
+            existing.ResponsibleUserId      = contract.ResponsibleUserId;
+            existing.ConclusionDate         = contract.ConclusionDate;
+            existing.ClosingDate            = contract.ClosingDate;
+            existing.ExecutionStartDate     = contract.ExecutionStartDate;
+            existing.ContractNumber         = contract.ContractNumber;
+            existing.SourceContractId       = contract.SourceContractId;
+            existing.ProjectId              = contract.ProjectId;
 
             if (!string.IsNullOrWhiteSpace(amountRaw))
             {
@@ -261,10 +304,16 @@ namespace AuthApp.Controllers
                 existing.AmountWithVat = null;
             }
 
+            var mandatoryUserIds = await _context.Users
+                .Where(u => u.AlwaysInApproval && !u.IsBlocked)
+                .Select(u => u.UserId)
+                .ToHashSetAsync();
+
+            var newUserIds      = (participantIds ?? new List<int>()).ToHashSet();
             var existingUserIds = existing.Participants.Select(p => p.UserId).ToHashSet();
-            var newUserIds = participantIds.ToHashSet();
+
             var toRemove = existing.Participants
-                .Where(p => !newUserIds.Contains(p.UserId))
+                .Where(p => !newUserIds.Contains(p.UserId) && !mandatoryUserIds.Contains(p.UserId))
                 .ToList();
             _context.ContractParticipants.RemoveRange(toRemove);
 
@@ -273,9 +322,17 @@ namespace AuthApp.Controllers
                 _context.ContractParticipants.Add(new ContractParticipant
                 {
                     ContractId = id,
-                    UserId = userId
+                    UserId     = userId
                 });
             }
+
+            var allCurrentIds = existingUserIds
+                .Union(newUserIds)
+                .Except(toRemove.Select(p => p.UserId))
+                .ToHashSet();
+
+            var contractName = existing.FullName ?? existing.ShortName ?? $"#{id}";
+            await EnsureAlwaysInApprovalParticipantsAsync(id, contractName, allCurrentIds);
 
             var oldDocs = await _context.ContractDocument
                 .Where(cd => cd.ContractId == id)
@@ -342,7 +399,6 @@ namespace AuthApp.Controllers
         }
 
 
-
         [HttpPost]
         public async Task<IActionResult> UploadContractFile(IFormFile file)
         {
@@ -367,23 +423,22 @@ namespace AuthApp.Controllers
 
             var document = new FileDocuments
             {
-                FileName = file.FileName,
-                FilePath = "/uploads/" + uniqueFileName,
-                Extension = extension,
+                FileName   = file.FileName,
+                FilePath   = "/uploads/" + uniqueFileName,
+                Extension  = extension,
                 UploadDate = DateTime.Now
             };
 
             _context.FileDocuments.Add(document);
             await _context.SaveChangesAsync();
 
-           
             var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Name == "Договор");
             if (tag != null)
             {
                 _context.FileTags.Add(new FileTag
                 {
                     FileDocumentsId = document.Id,
-                    TagId = tag.Id
+                    TagId           = tag.Id
                 });
                 await _context.SaveChangesAsync();
             }
@@ -391,7 +446,51 @@ namespace AuthApp.Controllers
             await LogActionAsync($"Загрузил документ договора «{file.FileName}»");
 
             return Json(new { success = true, id = document.Id, name = document.FileName, ext = document.Extension });
+        }
 
+
+        private bool IsApproverPosition(string? positionName)
+        {
+            if (string.IsNullOrWhiteSpace(positionName)) return false;
+            var name = positionName.ToLower();
+            return name.Contains("директор")
+                || name.Contains("заместитель")
+                || name.Contains("зам.")
+                || name.Contains("начальник");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Debug(int id)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            int.TryParse(userIdStr, out int currentUserId);
+
+            var currentUser = await _context.Users
+                .Include(u => u.Position)
+                .FirstOrDefaultAsync(u => u.UserId == currentUserId);
+
+            var participants = await _context.ContractParticipants
+                .Include(p => p.User).ThenInclude(u => u.Position)
+                .Where(p => p.ContractId == id)
+                .Select(p => new {
+                    p.UserId,
+                    FullName = p.User != null ? p.User.FullName : null,
+                    Position = p.User != null && p.User.Position != null ? p.User.Position.Name : "нет должности",
+                    AlwaysInApproval = p.User != null && p.User.AlwaysInApproval
+                })
+                .ToListAsync();
+
+            var isParticipant = participants.Any(p => p.UserId == currentUserId);
+            var isApprover    = IsApproverPosition(currentUser?.Position?.Name);
+
+            return Json(new {
+                currentUserId,
+                currentUserName  = currentUser != null ? currentUser.FullName : null,
+                currentPosition  = currentUser != null && currentUser.Position != null ? currentUser.Position.Name : null,
+                isParticipant,
+                isApprover,
+                participants
+            });
         }
 
         public async Task<IActionResult> ApprovalHistory(int id)
@@ -401,9 +500,82 @@ namespace AuthApp.Controllers
 
             if (contract == null) return NotFound();
 
-            ViewBag.ContractId = id;
-            ViewBag.ContractName = contract.FullName ?? contract.ShortName ?? $"Договор #{id}";
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            int.TryParse(userIdStr, out int currentUserId);
+
+            var currentUser = await _context.Users
+                .Include(u => u.Position)
+                .FirstOrDefaultAsync(u => u.UserId == currentUserId);
+
+            var isParticipant = await _context.ContractParticipants
+                .AnyAsync(p => p.ContractId == id && p.UserId == currentUserId);
+
+            var isApprover = IsApproverPosition(currentUser?.Position?.Name);
+
+            var alreadyAcknowledged = await _context.ContractAcknowledgements
+                .AnyAsync(a => a.ContractId == id && a.UserId == currentUserId);
+
+            var acknowledgements = await _context.ContractAcknowledgements
+                .Include(a => a.User)
+                    .ThenInclude(u => u!.Position)
+                .Where(a => a.ContractId == id)
+                .OrderBy(a => a.AcknowledgedAt)
+                .ToListAsync();
+
+            ViewBag.ContractId          = id;
+            ViewBag.ContractName        = contract.FullName ?? contract.ShortName ?? $"Договор #{id}";
+            ViewBag.IsParticipant       = isParticipant;
+            ViewBag.IsApprover          = isApprover;
+            ViewBag.AlreadyAcknowledged = alreadyAcknowledged;
+            ViewBag.Acknowledgements    = acknowledgements;
+
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetContractDocumentNames(int id)
+        {
+            var docs = await _context.ContractDocument
+                .Where(d => d.ContractId == id)
+                .Select(d => new { d.Id, name = d.FullName ?? $"Документ #{d.Id}" })
+                .ToListAsync();
+            return Json(docs);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Acknowledge(int id)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out int userId))
+                return Unauthorized();
+            var isParticipant = await _context.ContractParticipants
+                .AnyAsync(p => p.ContractId == id && p.UserId == userId);
+            if (!isParticipant)
+                return Forbid();
+
+            var user = await _context.Users
+                .Include(u => u.Position)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (IsApproverPosition(user?.Position?.Name))
+                return Forbid();
+
+            var already = await _context.ContractAcknowledgements
+                .AnyAsync(a => a.ContractId == id && a.UserId == userId);
+
+            if (!already)
+            {
+                _context.ContractAcknowledgements.Add(new ContractAcknowledgement
+                {
+                    ContractId     = id,
+                    UserId         = userId,
+                    AcknowledgedAt = DateTime.UtcNow
+                });
+                await _context.SaveChangesAsync();
+                await LogActionAsync($"Ознакомился с договором #{id}");
+            }
+
+            return Ok();
         }
     }
 }

@@ -2,9 +2,10 @@
 
 @{
     ViewData["Title"] = "Пользователи";
-    var totalUsers = Model.Count;
-    var totalAdmins = Model.Count(u => u.RoleId == 2);
-    var totalRegularUsers = Model.Count(u => u.RoleId == 1);
+    var totalUsers          = Model.Count;
+    var totalAdmins         = Model.Count(u => u.RoleId == 2);
+    var totalRegularUsers   = Model.Count(u => u.RoleId == 1);
+    var totalAlwaysApproval = Model.Count(u => u.AlwaysInApproval);
 }
 
 <style>
@@ -171,6 +172,19 @@
         color: #9ca3af;
         font-weight: 500;
     }
+    .always-approval-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 700;
+        background: #e0e7ff;
+        color: #3730a3;
+        border: 1px solid #c7d2fe;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="users-page">
@@ -187,6 +201,10 @@
         <div class="stat-card">
             <div class="stat-label">Обычных пользователей</div>
             <div class="stat-value">@totalRegularUsers</div>
+        </div>
+        <div class="stat-card" style="border-color:#c7d4f8;background:#f0f4ff;">
+            <div class="stat-label" style="color:#4b68c7;">Всегда в согласовании</div>
+            <div class="stat-value" style="color:#2563eb;">@totalAlwaysApproval</div>
         </div>
     </div>
 
@@ -285,6 +303,7 @@
                         <th>Роль</th>
                         <th>Дата регистрации</th>
                         <th>Должность</th>
+                        <th>Согласование</th>
                         <th>Смена роли</th>
                         <th>Удаление</th>
                         <th>Действия</th>
@@ -321,7 +340,19 @@
                                 }
                             </td>
                             <td>
-                                <div class="action-group">
+                                @if (user.AlwaysInApproval)
+                                {
+                                    <span class="always-approval-badge">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 3.9 2.4-7.4L2 9.4h7.6z"/></svg>
+                                        обязательный
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="font-size:12px;color:#9ca3af;">—</span>
+                                }
+                            </td>
+                            <td>
                                     @if (user.RoleId == 1)
                                     {
                                         <form asp-action="ChangeRole" asp-controller="Users" method="post" class="action-form">
@@ -338,7 +369,6 @@
                                             <button type="submit" class="btn-mini btn-user">Сделать User</button>
                                         </form>
                                     }
-                                </div>
                             </td>
                             <td>
                                 @if (user.Email != Context.Session.GetString("user"))
@@ -375,7 +405,7 @@
                     </button>
                 </form>
             }
-            <a asp-controller="Users" asp-action="EditProfile" asp-route-id="@user.UserId"
+            <a asp-controller="Users" asp-action="EditProfile" asp-route-userId="@user.UserId"
                class="btn-mini btn-admin" style="margin-top:6px;display:inline-block;text-decoration:none;">
                  Редактировать
             </a>

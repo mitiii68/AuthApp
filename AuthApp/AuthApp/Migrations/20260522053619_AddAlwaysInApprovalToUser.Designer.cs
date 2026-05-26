@@ -4,6 +4,7 @@ using AuthApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522053619_AddAlwaysInApprovalToUser")]
+    partial class AddAlwaysInApprovalToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,32 +87,6 @@ namespace AuthApp.Migrations
                     b.HasIndex("SourceContractId");
 
                     b.ToTable("Contracts");
-                });
-
-            modelBuilder.Entity("AuthApp.Models.ContractAcknowledgement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AcknowledgedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("ContractId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContractId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ContractAcknowledgements");
                 });
 
             modelBuilder.Entity("AuthApp.Models.ContractDocument", b =>
@@ -802,25 +779,6 @@ namespace AuthApp.Migrations
                     b.Navigation("ResponsibleUser");
 
                     b.Navigation("SourceContract");
-                });
-
-            modelBuilder.Entity("AuthApp.Models.ContractAcknowledgement", b =>
-                {
-                    b.HasOne("AuthApp.Models.Contract", "Contract")
-                        .WithMany()
-                        .HasForeignKey("ContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AuthApp.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contract");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AuthApp.Models.ContractDocument", b =>

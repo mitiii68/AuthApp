@@ -3,8 +3,9 @@
     ViewData["Title"] = "Создать договор";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var counterparties = ViewBag.Counterparties as List<AuthApp.Models.Counterparty> ?? new();
-    var users          = ViewBag.Users as List<AuthApp.Models.User> ?? new();
+    var counterparties  = ViewBag.Counterparties as List<AuthApp.Models.Counterparty> ?? new();
+    var users           = ViewBag.Users as List<AuthApp.Models.User> ?? new();
+    var approvalUsers   = ViewBag.ApprovalUsers as List<AuthApp.Models.User> ?? new();
 }
 
 <style>
@@ -227,7 +228,7 @@
             </div>
 
             <div class="form-group full">
-                <label class="required">Участники</label>
+                <label>Участники</label>
                 @if (ViewData.ModelState["participantIds"]?.Errors.Count > 0)
                 { <span class="field-error">@ViewData.ModelState["participantIds"].Errors[0].ErrorMessage</span> }
                 <div class="multi-picker-wrap" id="participantWrap">
@@ -246,7 +247,7 @@
                             {
                                 <div class="multi-picker-option" data-id="@u.UserId" data-name="@(u.FullName ?? u.Email)" onclick="toggleOption(this)">
                                     <input type="checkbox" tabindex="-1" />
-                                    <span>@(u.FullName ?? u.Email)</span>
+                                    <span>@(u.FullName ?? u.Email)@(u.AlwaysInApproval ? " ★" : "")</span>
                                 </div>
                             }
                         </div>
@@ -312,22 +313,6 @@
 document.querySelector('form').addEventListener('submit', function(e) {
     let valid = true;
     const participantTrigger = document.getElementById('participantTrigger');
-    if (selectedIds.size === 0) {
-        participantTrigger.classList.add('input-error');
-        let err = document.getElementById('participantError');
-        if (!err) {
-            err = document.createElement('span');
-            err.id = 'participantError';
-            err.className = 'field-error';
-            err.textContent = 'Выберите хотя бы одного участника.';
-            participantTrigger.closest('.multi-picker-wrap').before(err);
-        }
-        valid = false;
-    } else {
-        participantTrigger.classList.remove('input-error');
-        const err = document.getElementById('participantError');
-        if (err) err.remove();
-    }
     const docTrigger = document.getElementById('docTrigger');
     if (selectedDocIds.size === 0) {
         docTrigger.classList.add('input-error');

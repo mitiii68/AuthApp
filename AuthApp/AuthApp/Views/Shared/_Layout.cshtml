@@ -224,7 +224,6 @@
                             Настройки
                         </a>
                         <ul class="dropdown-menu">
-                            @* Документы — Admin полный доступ, User только просмотр *@
                             <li><a class="dropdown-item" asp-controller="Documents" asp-action="Index">Документы</a></li>
                             @if (_isAdmin)
                             {
@@ -232,7 +231,6 @@
                                 <li><a class="dropdown-item" asp-controller="Tags" asp-action="Index">Теги</a></li>
                                 <li><a class="dropdown-item" asp-controller="TagCategories" asp-action="Index">Категории тегов</a></li>
                             }
-                            @* Проекты и Договоры — оба видят *@
                             <li><a class="dropdown-item" asp-controller="Projects" asp-action="Index">Проекты</a></li>
                             <li><hr class="dropdown-divider" /></li>
                             <li><a class="dropdown-item" asp-controller="Contracts" asp-action="Index">Договоры</a></li>

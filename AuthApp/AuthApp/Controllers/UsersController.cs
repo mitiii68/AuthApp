@@ -14,6 +14,7 @@ namespace AuthApp.Controllers
         {
             _context = context;
         }
+
         public IActionResult Index(string search, string sort)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
@@ -133,14 +134,14 @@ namespace AuthApp.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult EditProfile(int id)
+        public IActionResult EditProfile(int userId)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
 
             var user = _context.Users
                 .Include(u => u.Position)
-                .FirstOrDefault(u => u.UserId == id);
+                .FirstOrDefault(u => u.UserId == userId);
             if (user == null) return NotFound();
 
             ViewBag.Positions = _context.Positions.OrderBy(p => p.Name).ToList();
@@ -150,14 +151,18 @@ namespace AuthApp.Controllers
 
         [HttpPost]
         public IActionResult EditProfile(int userId, string? district, string? ruralDistrict,
-            string? settlement, string? street, string? house,
-            double? latitude, double? longitude, int? positionId)
+    string? settlement, string? street, string? house,
+    double? latitude, double? longitude, int? positionId,
+    bool alwaysInApproval = false)
         {
             if (HttpContext.Session.GetString("UserRole") != "Admin")
                 return RedirectToAction("Index", "Home");
 
             var user = _context.Users.FirstOrDefault(u => u.UserId == userId);
             if (user == null) return NotFound();
+
+            var rawValue = Request.Form["alwaysInApproval"].ToString();
+            bool alwaysInApprovalValue = rawValue.Contains("true");
 
             user.District = district;
             user.RuralDistrict = ruralDistrict;
@@ -166,7 +171,8 @@ namespace AuthApp.Controllers
             user.House = house;
             user.Latitude = latitude;
             user.Longitude = longitude;
-            user.PositionId = positionId; 
+            user.PositionId = positionId;
+            user.AlwaysInApproval = alwaysInApprovalValue;
 
             _context.SaveChanges();
 

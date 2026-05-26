@@ -17,7 +17,6 @@ namespace AuthApp.Controllers
         private bool IsAdmin() =>
             HttpContext.Session.GetString("UserRole") == "Admin";
 
-        // Проект заблокирован если хотя бы один привязанный договор полностью согласован
         private async Task<bool> IsProjectLockedAsync(int projectId)
         {
             var contractIds = await _context.ProjectContracts
