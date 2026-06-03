@@ -72,6 +72,13 @@ namespace AuthApp.Services
             document.ApprovalStatus = DocumentApprovalStatus.InApproval;
             document.ApprovedAt = null;
 
+            // Переводим договор в стадию "На согласовании"
+            if (document.Contract != null &&
+                document.Contract.Stage != ContractStage.OnApproval)
+            {
+                document.Contract.Stage = ContractStage.OnApproval;
+            }
+
             await _db.SaveChangesAsync(ct);
 
             var contractId = document.ContractId;
@@ -234,8 +241,10 @@ namespace AuthApp.Services
                 .Where(a => a.ContractDocumentId == contractDocumentId)
                 .ToListAsync(ct);
 
-            var document = await _db.ContractDocuments.FindAsync(new object[] { contractDocumentId }, ct)
-                           ?? throw new KeyNotFoundException();
+            var document = await _db.ContractDocuments
+                .Include(d => d.Contract)
+                .FirstOrDefaultAsync(d => d.Id == contractDocumentId, ct)
+                ?? throw new KeyNotFoundException();
 
             if (approvals.Any(a => a.Status == ApprovalStatus.Rejected))
             {
@@ -245,8 +254,25 @@ namespace AuthApp.Services
             {
                 document.ApprovalStatus = DocumentApprovalStatus.Approved;
                 document.ApprovedAt = DateTime.UtcNow;
+
+                // Проверяем: все ли документы этого договора теперь согласованы?
+                if (document.Contract != null)
+                {
+                    var allContractDocs = await _db.ContractDocument
+                        .Where(d => d.ContractId == document.ContractId)
+                        .ToListAsync(ct);
+
+                    bool allApproved = allContractDocs.All(d =>
+                        d.Id == contractDocumentId
+                            ? true  // текущий только что стал Approved
+                            : d.ApprovalStatus == DocumentApprovalStatus.Approved);
+
+                    if (allApproved)
+                    {
+                        document.Contract.Stage = ContractStage.ApprovedPendingAcknowledgement;
+                    }
+                }
             }
-            
 
             await _db.SaveChangesAsync(ct);
         }

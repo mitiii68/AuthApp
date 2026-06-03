@@ -192,6 +192,7 @@ namespace AuthApp.Controllers
             }
 
             contract.CreatedAt = DateTime.Now;
+            contract.Stage     = ContractStage.Created;
 
             if (!string.IsNullOrWhiteSpace(amountRaw))
             {
@@ -573,6 +574,49 @@ namespace AuthApp.Controllers
                 });
                 await _context.SaveChangesAsync();
                 await LogActionAsync($"Ознакомился с договором #{id}");
+
+                var allParticipants = await _context.ContractParticipants
+                    .Include(p => p.User).ThenInclude(u => u!.Position)
+                    .Where(p => p.ContractId == id)
+                    .ToListAsync();
+
+                var executors = allParticipants
+                    .Where(p => p.User != null && !IsApproverPosition(p.User.Position?.Name))
+                    .Select(p => p.UserId)
+                    .ToHashSet();
+
+                if (executors.Count > 0)
+                {
+                    var acknowledgedIds = await _context.ContractAcknowledgements
+                        .Where(a => a.ContractId == id)
+                        .Select(a => a.UserId)
+                        .ToHashSetAsync();
+
+                    bool allAcknowledged = executors.All(uid => acknowledgedIds.Contains(uid));
+
+                    if (allAcknowledged)
+                    {
+                        var contract = await _context.Contracts.FindAsync(id);
+                        if (contract != null &&
+                            contract.Stage == ContractStage.ApprovedPendingAcknowledgement)
+                        {
+                            contract.Stage = ContractStage.InProgress;
+
+                            if (!string.IsNullOrEmpty(contract.ProjectId) &&
+                                int.TryParse(contract.ProjectId, out int projectId))
+                            {
+                                var project = await _context.Projects
+                                    .FirstOrDefaultAsync(p => p.Id == projectId);
+                                if (project != null)
+                                {
+                                }
+                            }
+
+                            await _context.SaveChangesAsync();
+                            await LogActionAsync($"Договор #{id} переведён в стадию «Выполняется»");
+                        }
+                    }
+                }
             }
 
             return Ok();

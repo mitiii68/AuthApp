@@ -4,10 +4,12 @@ namespace AuthApp.Enums
 {
     public enum ContractStage
     {
-        InProgress,
-        Completed,
-        Terminated,
-        OnApproval,
-        OnRegistration
+        Created,                       // Создан
+        OnApproval,                    // На согласовании
+        ApprovedPendingAcknowledgement, // Согласован, на ознакомлении
+        InProgress,                    // Выполняется
+        Completed,                     // Завершён
+        Terminated,                    // Расторгнут
+        OnRegistration                 // На регистрации
     }
 }

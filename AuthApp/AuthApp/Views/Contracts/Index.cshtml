@@ -11,19 +11,23 @@
     bool isAdmin    = Context.Session.GetString("UserRole") == "Admin";
 
     string StageLabel(AuthApp.Enums.ContractStage? s) => s switch {
-        AuthApp.Enums.ContractStage.InProgress     => "Выполняется",
-        AuthApp.Enums.ContractStage.Completed      => "Завершён",
-        AuthApp.Enums.ContractStage.Terminated     => "Расторгнут",
-        AuthApp.Enums.ContractStage.OnApproval     => "На согласовании",
-        AuthApp.Enums.ContractStage.OnRegistration => "На регистрации",
+        AuthApp.Enums.ContractStage.Created                        => "Создан",
+        AuthApp.Enums.ContractStage.OnApproval                    => "На согласовании",
+        AuthApp.Enums.ContractStage.ApprovedPendingAcknowledgement => "Согласован, на ознакомлении",
+        AuthApp.Enums.ContractStage.InProgress                    => "Выполняется",
+        AuthApp.Enums.ContractStage.Completed                     => "Завершён",
+        AuthApp.Enums.ContractStage.Terminated                    => "Расторгнут",
+        AuthApp.Enums.ContractStage.OnRegistration                => "На регистрации",
         _ => "—"
     };
     string StageColor(AuthApp.Enums.ContractStage? s) => s switch {
-        AuthApp.Enums.ContractStage.InProgress     => "#2f9e44",
-        AuthApp.Enums.ContractStage.Completed      => "#1971c2",
-        AuthApp.Enums.ContractStage.Terminated     => "#e03131",
-        AuthApp.Enums.ContractStage.OnApproval     => "#e67700",
-        AuthApp.Enums.ContractStage.OnRegistration => "#7048e8",
+        AuthApp.Enums.ContractStage.Created                        => "#868e96",
+        AuthApp.Enums.ContractStage.OnApproval                    => "#e67700",
+        AuthApp.Enums.ContractStage.ApprovedPendingAcknowledgement => "#7048e8",
+        AuthApp.Enums.ContractStage.InProgress                    => "#2f9e44",
+        AuthApp.Enums.ContractStage.Completed                     => "#1971c2",
+        AuthApp.Enums.ContractStage.Terminated                    => "#e03131",
+        AuthApp.Enums.ContractStage.OnRegistration                => "#0c8599",
         _ => "#868e96"
     };
     string TypeLabel(AuthApp.Enums.ContractType? t) => t switch {
